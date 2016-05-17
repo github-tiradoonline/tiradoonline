@@ -1,0 +1,159 @@
+<%
+	Action = Trim(Request("Action"))
+	CompanyID = Trim(Request("CompanyID"))
+	ErrorMessage = Trim(Request("ErrorMessage"))
+	SickdayID = Trim(Request("SickdayID"))
+	SickDay = Trim(Request("SickDay"))
+	SickMonth = Trim(Request("SickMonth"))
+	SickYear = Trim(Request("SickYear"))
+	SickDate = SickMonth & "/" & SickDay & "/" & SickYear
+	If IsDate(SickDate) Then
+		SickDate = CDate(SickDate)
+	Else
+		SickDate = Date
+	End If
+	SubmitButton = Trim(Request("SubmitButton"))
+	
+	If SubmitButton = "Cancel" Then Response.Redirect Request.ServerVariables("SCRIPT_NAME") & "?Template=" & Template
+
+	If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
+		If SubmitButton = "Add" Then
+			sql = "sp_SickDays_CompanyID_SickDate " & CompanyID & ", '" & SickDate & "'"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If ors.EOF Then
+				ors.Close
+				Set ors = Nothing
+				sql = "sp_SickDays_insert " & CompanyID & ", '" & SickDate & "'"
+				WriteDebugger sql, Debugging, 0
+				oConn.Execute sql
+				ErrorMessage = "Sick day added"
+				Response.Redirect Request.ServerVariables("SCRIPT_NAME") & "?Template=SickDays&CompanyID=" & CompanyID & "&ErrorMessage=" & Server.URLEncode(ErrorMessage)
+			Else
+				ors.Close
+				Set ors = Nothing
+				ErrorMessage = "Sick day already exists"
+			End If
+		End If
+	End If
+	
+	Function FormatSickDate(Sick_date)
+		SickMonth = Month(Sick_date)
+		SickDay = Day(Sick_date)
+		SickYear = Year(Sick_date)
+		
+		SickDateText = ""
+		SickDateText = SickDateText & "<SELECT name=""SickMonth"" class=""EmploymentElement"">"
+		For x = 1 to 12
+			If SickMonth = x Then
+				SickDateText = SickDateText & "<option value=""" & x & """ SELECTED>" & MonthName(x) & "</option>" & vbCrLF
+			Else
+				SickDateText = SickDateText & "<option value=""" & x & """>" & MonthName(x) & "</option>" & vbCrLF
+			End If
+		Next
+		SickDateText = SickDateText & "</SELECT>&nbsp;"
+		SickDateText = SickDateText & "<SELECT name=""SickDay"" class=""EmploymentElement"">"
+		For x = 1 to 31
+			If SickDay = x Then
+				SickDateText = SickDateText & "<option value=""" & x & """ SELECTED>" & x & "</option>" & vbCrLF
+			Else
+				SickDateText = SickDateText & "<option value=""" & x & """>" & x & "</option>" & vbCrLF
+			End If
+		Next
+		SickDateText = SickDateText & "</SELECT>&nbsp;"
+		SickDateText = SickDateText & "<SELECT name=""SickYear"" class=""EmploymentElement"">"
+		For x = (Year(Now) - 1 ) to Year(Now) + 3
+			If SickYear = x Then
+				SickDateText = SickDateText & "<option value=""" & x & """ SELECTED>" & x & "</option>" & vbCrLF
+			Else
+				SickDateText = SickDateText & "<option value=""" & x & """>" & x & "</option>" & vbCrLF
+			End If
+		Next
+		SickDateText = SickDateText & "</SELECT>"
+		FormatSickDate = SickDateText
+	End Function
+
+%>
+
+<table cellspacing=0 cellpadding=0 border=0 width="100%">
+<tr>
+	<td align=center colspan=2><font face="Arial,Verdana" size=2 color="#ffffff"><b>Sick days</td>
+</tr>
+<tr>
+	<td bgcolor="#ffffff" valign=top>
+		<table>
+		<%
+			CompanyID_tmp = ""
+			sql = "sp_SickDays_get " & Session("UserID")
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			Do Until ors.EOF
+		%>
+		<% If ors("CompanyID") <> CompanyID_tmp Then %>
+		<tr>
+			<td bgcolor="#0000aa"><font face="Verdana" size=2 color="#ffffff"><b>&nbsp;&nbsp;<%= Replace(ors("CompanyName"), " ", "&nbsp;") %>&nbsp;&nbsp;</b></td>
+		</tr>
+		<% CompanyID_tmp = ors("CompanyID") %>
+		<% End If %>
+		<tr>
+			<td align="right">&nbsp;&nbsp;<a href="#"><%= ors("SickDate") %></a>&nbsp;&nbsp;</td>
+		</tr>
+		<%
+				ors.MoveNext
+			Loop
+			ors.Close
+			Set ors = Nothing
+		%>
+		<tr>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+		</tr>
+		</table>
+	</td>
+	<td bgcolor="#ffffff" valign=top>
+		<table>
+		<tr>
+			<td colspan=2><font face="Verdana" size=2 color="#ff0000"><b>&nbsp;<%= ErrorMessage %>&nbsp;</b></font></td>
+		</tr>
+		<tr>
+			<td><font face="Verdana" size=2>Company</td>
+			<td>
+				<select name="CompanyID" class="EmploymentElement">
+				<%
+					sql = "sp_Companies_CompanyID_CompanyName " & Session("UserID")
+					Set ors = oConn.Execute(sql)
+					Do Until ors.EOF
+						If CStr(CompanyID) = CStr(ors("CompanyID")) Then
+							Response.Write "<option value=""" & ors("CompanyID") & """ SELECTED>" & ors("CompanyName") & "</option>"
+						Else
+							Response.Write "<option value=""" & ors("CompanyID") & """>" & ors("CompanyName") & "</option>"
+						End If
+						ors.MoveNext
+					Loop
+					ors.Close
+					Set ors = Nothing
+				%>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td><font face="Verdana" size=2>Sick&nbsp;day</td>
+			<td>
+				<%= FormatSickDate(Date) %>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td><input type="submit" name="SubmitButton" value="Add" class="EmploymentElement"></td>
+		</tr>
+		</table>
+	</td>
+</tr>
+</table>
+
+<% If SickdayID <> "" Then %>
+
+<%= formHidden("SickdayID", SickdayID) %>
+
+<% End IF %>
+<%= formHidden("Action", Action) %>
+<%= formHidden("Template", Template) %>

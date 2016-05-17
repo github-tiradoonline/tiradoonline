@@ -1,0 +1,25 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Logs' AND TYPE = 'U')
+DROP TABLE Logs;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Logs' AND TYPE = 'U')
+	DROP TABLE Logs;
+GO
+
+CREATE TABLE Logs
+(
+	LogID		IDENTITY (1,1) INT  NOT NULL,
+	ApplicationName		 VARCHAR(1000)  NOT NULL,
+	LogDesc		 VARCHAR(MAX)  NOT NULL,
+	create_dt		 DATETIME DEFAULT (getdate()) NOT NULL
+
+);
+GO
+
+
+
+
+GO
+
+GO
+

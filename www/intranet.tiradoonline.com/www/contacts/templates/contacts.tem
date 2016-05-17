@@ -1,0 +1,685 @@
+<%
+	ContactID = Trim(Request("ContactID"))
+	EntryID = Trim(Request("EntryID"))
+    FileAs = Trim(Request("FileAs"))
+    FirstName = Trim(Request("FirstName"))
+    LastName = Trim(Request("LastName"))
+    FullName = Trim(Request("FullName"))
+    CompanyName = Trim(Request("CompanyName"))
+    JobTitle = Trim(Request("JobTitle"))
+    Email1Address = Trim(Request("Email1Address"))
+    Email2Address = Trim(Request("Email2Address"))
+    Email3Address = Trim(Request("Email3Address"))
+    WebPage = Trim(Request("WebPage"))
+    IMAddress = Trim(Request("IMAddress"))
+    MobileTelephoneNumber = Trim(Request("MobileTelephoneNumber"))
+    HomeTelephoneNumber = Trim(Request("HomeTelephoneNumber"))
+    BusinessTelephoneNumber = Trim(Request("BusinessTelephoneNumber"))
+    BusinessFaxNumber = Trim(Request("BusinessFaxNumber"))
+    HomeAddressStreet = Trim(Request("HomeAddressStreet"))
+    HomeAddressCity = Trim(Request("HomeAddressCity"))
+    HomeAddressState = Trim(Request("HomeAddressState"))
+    HomeAddressPostalCode = Trim(Request("HomeAddressPostalCode"))
+    BusinessAddressStreet = Trim(Request("BusinessAddressStreet"))
+    BusinessAddressCity = Trim(Request("BusinessAddressCity"))
+    BusinessAddressState = Trim(Request("BusinessAddressState"))
+    BusinessAddressPostalCode = Trim(Request("BusinessAddressPostalCode"))
+	HasPicture = Trim(Request("HasPicture"))
+	SearchString = Trim(Request("SearchString"))
+	If HasPicture = "" Then HasPicture = 0
+
+	Letter = Trim(Request("Letter"))
+	If Letter = "All" Then Letter = ""
+	
+	If Trim(Request("Letter")) = "" Then Letter = "A"
+	
+	If SubmitButton = "Delete" Then
+		sql = "sp_Contacts_delete " & ContactID
+		WriteDebugger sql, Debugging, 0
+		oConn.Execute sql
+		ContactsErrorMessage = "Contact '" & FileAs & "' deleted."
+		redirectURL = SCRIPT_NAME & "?Template=" & Template & "&Letter=" & Left(FileAs, 1) & "&ContactsErrorMessage=" & Server.URLEncode(ContactsErrorMessage)
+		Response.Redirect redirectURL
+	ElseIf SubmitButton = "Create Contact" Then
+		If WebPage <> "" Then WebPage = FormatWebsite(WebPage)
+		sql = "sp_Contacts_insert " & _
+			"'0', " & _
+		    Session("UserID") & ", " & _
+			"'" & SQLEncode(FileAs) & "', " & _
+			"'" & SQLEncode(FirstName) & "', " & _
+			"'" & SQLEncode(LastName) & "', " & _
+			"'" & SQLEncode(FullName) & "', " & _
+			"'" & SQLEncode(CompanyName) & "', " & _
+			"'" & SQLEncode(JobTitle) & "', " & _
+			"'" & SQLEncode(Email1Address) & "', " & _
+			"'" & SQLEncode(Email2Address) & "', " & _
+			"'" & SQLEncode(Email3Address) & "', " & _
+			"'" & SQLEncode(WebPage) & "', " & _
+			"'" & SQLEncode(IMAddress) & "', " & _
+			"'" & SQLEncode(MobileTelephoneNumber) & "', " & _ 
+			"'" & SQLEncode(HomeTelephoneNumber) & "', " & _
+			"'" & SQLEncode(BusinessTelephoneNumber) & "', " & _
+			"'" & SQLEncode(BusinessFaxNumber) & "', " & _
+			"'" & SQLEncode(HomeAddressStreet) & "', " & _
+			"'" & SQLEncode(HomeAddressCity) & "', " & _
+			"'" & SQLEncode(HomeAddressState) & "', " & _
+			"'" & SQLEncode(HomeAddressPostalCode) & "', " & _
+			"'" & SQLEncode(BusinessAddressStreet) & "', " & _
+			"'" & SQLEncode(BusinessAddressCity) & "', " & _
+			"'" & SQLEncode(BusinessAddressState) & "', " & _
+			"'" & SQLEncode(BusinessAddressPostalCode) & "', " & _
+			HasPicture & ", " & _
+			"'" & Now & "'"
+			
+		WriteDebugger sql, Debugging, 0
+		oConn.Execute sql
+		ContactsErrorMessage = "Contact '" & FileAs & "' Created."
+		redirectURL = SCRIPT_NAME & "?ContactID=" & ContactID & "&Template=View&Letter=" & Left(FileAs, 1) & "&ContactsErrorMessage=" & Server.URLEncode(ContactsErrorMessage)
+		Response.Redirect redirectURL
+	ElseIf SubmitButton = "Save Contact" Then
+		If WebPage <> "" Then WebPage = FormatWebsite(WebPage)
+		sql = "sp_Contacts_update " & _
+		    ContactID & ", " & _
+			"'" & SQLEncode(EntryID) & "', " & _
+			"'" & SQLEncode(FileAs) & "', " & _
+			"'" & SQLEncode(FirstName) & "', " & _
+			"'" & SQLEncode(LastName) & "', " & _
+			"'" & SQLEncode(FullName) & "', " & _
+			"'" & SQLEncode(CompanyName) & "', " & _
+			"'" & SQLEncode(JobTitle) & "', " & _
+			"'" & SQLEncode(Email1Address) & "', " & _
+			"'" & SQLEncode(Email2Address) & "', " & _
+			"'" & SQLEncode(Email3Address) & "', " & _
+			"'" & SQLEncode(WebPage) & "', " & _
+			"'" & SQLEncode(IMAddress) & "', " & _
+			"'" & SQLEncode(MobileTelephoneNumber) & "', " & _ 
+			"'" & SQLEncode(HomeTelephoneNumber) & "', " & _
+			"'" & SQLEncode(BusinessTelephoneNumber) & "', " & _
+			"'" & SQLEncode(BusinessFaxNumber) & "', " & _
+			"'" & SQLEncode(HomeAddressStreet) & "', " & _
+			"'" & SQLEncode(HomeAddressCity) & "', " & _
+			"'" & SQLEncode(HomeAddressState) & "', " & _
+			"'" & SQLEncode(HomeAddressPostalCode) & "', " & _
+			"'" & SQLEncode(BusinessAddressStreet) & "', " & _
+			"'" & SQLEncode(BusinessAddressCity) & "', " & _
+			"'" & SQLEncode(BusinessAddressState) & "', " & _
+			"'" & SQLEncode(BusinessAddressPostalCode) & "', " & _
+			HasPicture & ", " & _
+			"'" & Now & "'"
+		
+		WriteDebugger sql, Debugging, 0
+		oConn.Execute sql
+		ContactsErrorMessage = "Contact '" & FileAs & "' saved."
+		redirectURL = SCRIPT_NAME & "?Template=View&Letter=" & Left(FileAs, 1) & "&ContactsErrorMessage=" & Server.URLEncode(ContactsErrorMessage)
+		Response.Redirect redirectURL
+	End If
+%>
+
+<table border="0" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+	<td>
+    	<table border="0" cellspacing="0" cellpadding="<%= Application("TableCellPadding") %>" width="100%">
+		<tr>
+			<td class="ContactsTheme">
+			
+				<table cellspacing=0 cellpadding=5 border=0 width="100%" style="border-color:black" width="100%">
+				<tr class="Header">
+					<td align="center"><a href="<%= SCRIPT_NAME %>?Letter=&Template=View" title="ALL">ALL</a></td>
+					<td align="center"><a href="<%= SCRIPT_NAME %>?Letter=#&Template=View" title="#">#</a></td>
+					<% 
+						Counter = 1
+						For x = 65 To 90 
+					%>
+					<td align="center"><a href="<%= SCRIPT_NAME %>?Template=View&Letter=<%= Chr(x) %>" title="<%= Chr(x) %>"><%= Chr(x) %></a></td>
+					<% 
+						Next
+					%>
+					</tr>				
+				</table>
+			</td>
+		</tr>
+		<tr valign="top">
+			<!-- Contacts -->
+			<td>
+<% If ContactsErrorMessage <> "" Then %>
+<div class="ErrorMessage"><%= ContactsErrorMessage %></div>
+<% End If %>
+				&nbsp;<br />
+		    	<table border="0" cellspacing="0" cellpadding="3">
+				<tr valign="top">
+					<td>
+<form action="<%= SCRIPT_NAME %>" method="post" id="formContactsSearch" name="formContactsSearch">
+					<b>Search:</b>&nbsp;
+					<%= formTextBox("SearchString", "40", SearchString, "ContactElement", "Search", "Invalid Search") %>
+					&nbsp;&nbsp;&nbsp;<%= Submit_Button("SubmitButton", "Search", "Button", "", "Search") %>
+ 				<div style="float:right">
+					<%= Button("Button", "Create New Contact", "Button", "", "Create New Contact", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&Action=Create'") %>
+				</div>
+				<%= formHidden("Template", Template) %>
+
+					</form>
+				&nbsp;<br />
+				&nbsp;<br />
+<form action="<%= SCRIPT_NAME %>" method="post" id="formContacts" name="formContacts">
+				<%
+					If ContactID = "" AND Action <> "Create" Then 
+				%>
+			<div id="tabs">
+				<ul>
+					<li><a href="#tabs-1" title="Personal&nbsp;Information">Personal&nbsp;Information</a></li>
+					<li><a href="#tabs-2" title="Contact&nbsp;Information">Contact&nbsp;Information</a></li>
+					<li><a href="#tabs-3" title="Home/Business&nbsp;Address">Home/Business&nbsp;Address</a></li>
+				</ul>
+				
+				
+				<%
+					If SubmitButton = "Search" Then
+						sql = "sp_Contacts_Search_get " & Session("UserID") & ", '" & SQLEncode(SearchString) & "'"
+					Else
+						sql = "sp_Contacts_get " & Session("UserID") & ", '" & SQLEncode(Letter) & "'"                
+					End If
+					
+					WriteDebugger sql, Debugging, 0
+					Set ors = oConn.Execute(sql)
+					If NOT ors.EOF Then
+						Counter = 1
+				%>
+				<!--
+				**********************************
+				PERSONAL INFORMATION
+				**********************************
+				-->
+				<div id="tabs-1" name="tabs-1">
+				<p>
+
+					<table cellspacing="1" cellpadding="3" border=0 class="GridView">
+			
+					<tr class="ContactsTheme">
+						<td>Name</td>
+						<td>First&nbsp;Name</td>
+						<td>Last&nbsp;Name</td>
+						<td>Full&nbsp;Name</td>
+						<td>Company&nbsp;Name</td>
+						<td>Job&nbsp;Title</td>
+					</tr>
+				<%
+						Do Until ors.EOF
+							ContactID = ors("ContactID")
+							FileAs = ors("FileAs")
+							FirstName = ors("FirstName")
+							LastName = ors("LastName")
+							FullName = ors("FullName")
+							CompanyName = ors("CompanyName")
+							JobTitle = ors("JobTitle")
+				%>
+					<tr bgcolor="#ffffff" class="GridViewRow">
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>" ContactID="<%= ContactID %>"><%= HTMLFormat(FileAs) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(FirstName) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(LastName) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(FullName) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(CompanyName) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(JobTitle) %></a></td>
+					</tr>
+				<%
+							ors.MoveNext
+						Loop
+						ors.Close
+				%>
+					</table>
+				<%
+				Else
+				%>
+					&nbsp;<br />
+					<div class="ErrorMessage">No Contacts Found.</div>
+				<%
+					End If
+					Set ors = Nothing
+				%>
+				</p>
+				</div>
+				
+				<%
+					If SubmitButton = "Search" Then
+						sql = "sp_Contacts_Search_get " & Session("UserID") & ", '" & SQLEncode(SearchString) & "'"
+					Else
+						sql = "sp_Contacts_get " & Session("UserID") & ", '" & SQLEncode(Letter) & "'"                
+					End If
+					
+					WriteDebugger sql, Debugging, 0
+					Set ors = oConn.Execute(sql)
+					If NOT ors.EOF Then
+						Counter = 1
+				%>
+				<!--
+				**********************************
+				CONTACT INFORMATION
+				**********************************
+				-->
+				<div id="tabs-2" name="tabs-2">
+				<p>
+
+					<table cellspacing="1" cellpadding="3" border=0 class="GridView">
+			
+					<tr class="ContactsTheme">
+						<td>Name</td>
+						<td>Email1</td>
+						<td>Email2</td>
+						<td>Email3</td>
+						<td>Web&nbsp;Page</td>
+						<td>IM</td>
+						<td>Mobile</td>
+						<td>Home&nbsp;Phone</td>
+						<td>Work&nbsp;Phone</td>
+					</tr>
+				<%
+						Do Until ors.EOF
+							ContactID = ors("ContactID")
+							FileAs = ors("FileAs")
+							Email1Address = ors("Email1Address")
+							Email2Address = ors("Email2Address")
+							Email3Address = ors("Email3Address")
+							IMAddress = ors("IMAddress")
+							WebPage = ors("WebPage")
+							MobileTelephoneNumber = ors("MobileTelephoneNumber")
+							HomeTelephoneNumber = ors("HomeTelephoneNumber")
+							BusinessTelephoneNumber = ors("BusinessTelephoneNumber")
+				%>
+					<tr bgcolor="#ffffff" class="GridViewRow">
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>" ContactID="<%= ContactID %>"><%= HTMLFormat(FileAs) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(Email1Address) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(Email2Address) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(Email3Address) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(WebPage) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(IMAddress) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(MobileTelephoneNumber) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(HomeTelephoneNumber) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(BusinessTelephoneNumber) %></a></td>
+					</tr>
+				<%
+							ors.MoveNext
+						Loop
+						ors.Close
+				%>
+					</table>
+				<%
+				Else
+				%>
+<!-- 					<div class="ErrorMessage">No Contacts Found.</div> -->
+				<%
+					End If
+					Set ors = Nothing
+				%>
+				</p>
+				</div>
+				
+				<%
+					If SubmitButton = "Search" Then
+						sql = "sp_Contacts_Search_get " & Session("UserID") & ", '" & SQLEncode(SearchString) & "'"
+					Else
+						sql = "sp_Contacts_get " & Session("UserID") & ", '" & SQLEncode(Letter) & "'"                
+					End If
+					
+					WriteDebugger sql, Debugging, 0
+					Set ors = oConn.Execute(sql)
+					If NOT ors.EOF Then
+						Counter = 1
+				%>
+				<!--
+				**********************************
+				HOME/BUSINESS ADDRESS
+				**********************************
+				-->
+				<div id="tabs-3" name="tabs-3">
+				<p>
+
+					<table cellspacing="1" cellpadding="3" border=0 class="GridView">
+			
+					<tr class="ContactsTheme">
+						<td>Name</td>
+						<td>Home&nbsp;Street</td>
+						<td>Home&nbsp;City</td>
+						<td>Home&nbsp;State</td>
+						<td>Home&nbsp;Zip&nbsp;Code</td>
+						<td>Business&nbsp;Street</td>
+						<td>Business&nbsp;City</td>
+						<td>Business&nbsp;State</td>
+						<td>Business&nbsp;Zip&nbsp;Code</td>
+					</tr>
+				<%
+						Do Until ors.EOF
+							ContactID = ors("ContactID")
+							FileAs = ors("FileAs")
+							HomeAddressStreet = ors("HomeAddressStreet")
+							HomeAddressCity = ors("HomeAddressCity")
+							HomeAddressState = ors("HomeState")
+							HomeAddressPostalCode = ors("HomeAddressPostalCode")
+							BusinessAddressStreet = ors("BusinessAddressStreet")
+							BusinessAddressCity = ors("BusinessAddressCity")
+							BusinessAddressState = ors("BusinessState")
+							BusinessAddressPostalCode = ors("BusinessAddressPostalCode")
+				%>
+					<tr bgcolor="#ffffff" class="GridViewRow">
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>" ContactID="<%= ContactID %>"><%= HTMLFormat(FileAs) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(HomeAddressStreet) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(HomeAddressCity) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(HomeAddressState) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(HomeAddressPostalCode) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(BusinessAddressStreet) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(BusinessAddressCity) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(BusinessAddressState) %></a></td>
+						<td><a href="<%= SCRIPT_NAME %>?Template=View&ContactID=<%= ContactID %>"><%= HTMLFormat(BusinessAddressPostalCode) %></a></td>
+					</tr>
+				<%
+							ors.MoveNext
+						Loop
+						ors.Close
+				%>
+					</table>
+				<%
+				Else
+				%>
+<!-- 					<div class="ErrorMessage">No Contacts Found.</div> -->
+				<%
+					End If
+					Set ors = Nothing
+				%>
+				</p>
+				</div>
+			</div>
+				
+				<% End If %>
+				<% 
+					ContactID = Trim(Request("ContactID"))
+					PictureName = "/images/icons/users_off.gif"
+					If ContactID <> "" OR Action = "Create" Then
+						SubmitButtonValue = "Create Contact"
+						If ContactID <> "" Then
+							SubmitButtonValue = "Save Contact"
+							sql = "SELECT * FROM Contacts WHERE ContactID = " & ContactID
+							WriteDebugger sql, Debugging, 0
+							Set ors = oConn.Execute(sql)
+							If NOT ors.EOF Then
+								EntryID = ors("EntryID")
+								FileAs = ors("FileAs")
+								FirstName = ors("FirstName")
+								LastName = ors("LastName")
+								FullName = ors("FullName")
+								CompanyName = ors("CompanyName")
+								JobTitle = ors("JobTitle")
+								Email1Address = ors("Email1Address")
+								Email2Address = ors("Email2Address")
+								Email3Address = ors("Email3Address")
+								WebPage = ors("WebPage")
+								IMAddress = ors("IMAddress")
+								MobileTelephoneNumber = ors("MobileTelephoneNumber")
+								HomeTelephoneNumber = ors("HomeTelephoneNumber")
+								BusinessTelephoneNumber = ors("BusinessTelephoneNumber")
+								BusinessFaxNumber = ors("BusinessFaxNumber")
+								HomeAddressStreet = ors("HomeAddressStreet")
+								HomeAddressCity = ors("HomeAddressCity")
+								HomeAddressState = ors("HomeState")
+								HomeAddressPostalCode = ors("HomeAddressPostalCode")
+								BusinessAddressStreet = ors("BusinessAddressStreet")
+								BusinessAddressCity = ors("BusinessAddressCity")
+								BusinessAddressState = ors("BusinessState")
+								BusinessAddressPostalCode = ors("BusinessAddressPostalCode")
+								HasPicture = ors("HasPicture")
+								If HasPicture Then 
+									PictureName = "/contacts/photos/" & EntryID & ".jpg"
+								End If
+								ors.Close
+							End If
+								
+							Set ors = Nothing
+						End If
+						
+						If HomeAddressState = "" Then HomeAddressState = "NY"
+						If BusinessAddressState = "" Then BusinessAddressState = "NY"
+						
+				%>
+				<div id="tabs">
+					<ul>
+						<li><a href="#tabs-1">Personal&nbsp;Information</a></li>
+						<li><a href="#tabs-2">Contact&nbsp;Information</a></li>
+						<li><a href="#tabs-3">Home/Business&nbsp;Address</a></li>
+					</ul>
+					
+					<!--
+					**********************************
+					PERSONAL INFORMATION
+					**********************************
+					-->
+					<div id="tabs-1" name="tabs-1">
+					<p>
+
+					<table style="border:1px;margin:5px;" border=0>
+					<tr valign="top">
+						<td>
+							<img src="<%= PictureName %>" title="<%= FileAs %>" style="padding:5px;" width="200" height="200" hspace="0" vspace="0" border="1" />
+						</td>
+						<td>
+				    		<table border="0" cellspacing="0" cellpadding="5">
+						<% If ContactsErrorMessage <> "" Then %>
+							<tr>
+								<td colspan="2" class="ErrorMessage"><%= ContactsErrorMessage %></td>
+							</tr>		
+						<% End If %>
+							<tr>
+								<td align="right" colspan="2">
+									<% If ContactID <> "" Then %>
+									<%= Button("Button", "Delete", "DeleteButton", "", "Delete", "DeleteItem('Are you sure you want to delete this contact?', '" & SCRIPT_NAME & "?FileAs=" & Server.URLEncode(FileAs) & "&Template=" &Template & "&ContactID=" & ContactID & "&SubmitButton=Delete')") %>&nbsp;&nbsp;&nbsp;
+									<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>&nbsp;&nbsp;&nbsp;
+									<% End If %>
+									<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>
+								</td>
+							</tr>
+							<tr>
+								<td class="frm_label">File&nbsp;As:</strong></td>
+								<td><%= formTextBox("FileAs", "40",  FileAs, "ContactElement", "File As", "Invalid File As") %><%= REQUIRED_ICON %></td>
+							</tr>
+							<tr>
+								<td class="frm_label">First&nbsp;Name:</td>
+								<td><%= formTextBox("FirstName", "30",  FirstName, "ContactElement", "First Name", "Invalid File Name") %></td>
+							</tr>
+							<tr>
+								<td class="frm_label">Last&nbsp;Name:</td>
+								<td><%= formTextBox("LastName", "30",  LastName, "ContactElement", "Last Name", "Invalid Last Name") %></td>
+							</tr>
+							<tr>
+								<td class="frm_label">Full&nbsp;Name:</td>
+								<td><%= formTextBox("FullName", "30",  FullName, "ContactElement", "Full Name", "Invalid Full Name") %></td>
+							</tr>
+							<tr>
+								<td class="frm_label">Company:</td>
+								<td><%= formTextBox("CompanyName", "50",  CompanyName, "ContactElement", "Company", "Invalid Company") %></td>
+							</tr>
+							<tr>
+								<td class="frm_label">Job&nbsp;Title:</td>
+								<td><%= formTextBox("JobTitle", "30",  JobTitle, "ContactElement", "Job Title", "Invalid Job Title") %></td>
+							</tr>
+							</table>
+						</td>
+					</tr>
+					</table>
+					
+					</p>
+					
+					</div>
+
+					<!--
+					**********************************
+					CONTACT INFORMATION
+					**********************************
+					-->
+					<div id="tabs-2" name="tabs-2">
+					<p>
+
+					<table style="border:1px;margin:5px;" border=0>
+					<tr valign="top">
+						<td>
+							<img src="<%= PictureName %>" title="<%= FileAs %>" style="padding:5px;" width="200" height="200" hspace="0" vspace="0" border="1" />
+						</td>
+						<td>
+				    		<table border="0" cellspacing="0" cellpadding="5">
+						<% If ContactsErrorMessage <> "" Then %>
+							<tr>
+								<td colspan="2" class="ErrorMessage"><%= ContactsErrorMessage %></td>
+							</tr>		
+						<% End If %>
+							<tr>
+								<td align="right" colspan="2">
+									<% If ContactID <> "" Then %>
+									<%= Button("Button", "Delete", "DeleteButton", "", "Delete", "DeleteItem('Are you sure you want to delete this contact?', '" & SCRIPT_NAME & "?FileAs=" & Server.URLEncode(FileAs) & "&Template=" &Template & "&ContactID=" & ContactID & "&SubmitButton=Delete')") %>&nbsp;&nbsp;&nbsp;
+									<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>&nbsp;&nbsp;&nbsp;
+									<% End If %>
+									<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>
+								</td>
+							</tr>
+							<tr>
+								<td class="frm_label">Email1:</td>
+								<td><%= formTextBox("Email1Address", "50",  Email1Address, "ContactElement", "Email1", "Invalid Email Address 1") %></td>
+							</tr>
+							<tr>
+								<td class="frm_label">Email2:</td>
+								<td><%= formTextBox("Email2Address", "50",  Email2Address, "ContactElement", "Email2", "Invalid Email Address 2") %></td>
+							</tr>
+							<tr>
+								<td class="frm_label">Email3:</td>
+								<td><%= formTextBox("Email3Address", "50",  Email3Address, "ContactElement", "Email3", "Invalid Email Address 3") %></td>
+							</tr>
+							<tr>
+								<td class="frm_label">Web:</td>
+								<td><%= formTextBox("WebPage", "50",  WebPage, "ContactElement", "Web Page", "Invalid Web Page") %></td>
+							</tr>
+							<tr>
+								<td class="frm_label">IM:</td>
+								<td><%= formTextBox("IMAddress", "30",  IMAddress, "ContactElement", "IM", "Invalid IM") %></td>
+							</tr>
+							<tr>
+								<td class="frm_label">Mobile#:</td>
+								<td><%= formTextBox("MobileTelephoneNumber", "30",  MobileTelephoneNumber, "ContactElement", "Mobile", "Invalid Mobile") %></td>
+							</tr>
+							<tr>
+								<td class="frm_label">Home#:</td>
+								<td><%= formTextBox("HomeTelephoneNumber", "30",  HomeTelephoneNumber, "ContactElement", "Home Number", "Invalid Home Number") %></td>
+							</tr>
+							<tr>
+								<td class="frm_label">Business#:</td>
+								<td><%= formTextBox("BusinessTelephoneNumber", "30",  BusinessTelephoneNumber, "ContactElement", "Business Number", "Invalid Business Number") %></td>
+							</tr>
+							<tr>
+								<td class="frm_label">Fax#:</td>
+								<td><%= formTextBox("BusinessFaxNumber", "30",  BusinessFaxNumber, "ContactElement", "Fax", "Invalid Fax") %></td>
+							</tr>
+							</table>
+						</td>
+					</tr>
+					</table>
+					
+					</p>
+					
+					</div>
+
+					<!--
+					**********************************
+					HOME/BUSINESS ADDRESS
+					**********************************
+					-->
+					<div id="tabs-3" name="tabs-3">
+					<p>
+
+					<table style="border:1px;margin:5px;" border=0>
+					<tr valign="top">
+						<td>
+							<img src="<%= PictureName %>" title="<%= FileAs %>" style="padding:5px;" width="200" height="200" hspace="0" vspace="0" border="1" />
+						</td>
+						<td>
+				    		<table border="0" cellspacing="0" cellpadding="5">
+						<% If ContactsErrorMessage <> "" Then %>
+							<tr>
+								<td colspan="2" class="ErrorMessage"><%= ContactsErrorMessage %></td>
+							</tr>		
+						<% End If %>
+							<tr>
+								<td align="right" colspan="2">
+									<% If ContactID <> "" Then %>
+									<%= Button("Button", "Delete", "DeleteButton", "", "Delete", "DeleteItem('Are you sure you want to delete this contact?', '" & SCRIPT_NAME & "?FileAs=" & Server.URLEncode(FileAs) & "&Template=" &Template & "&ContactID=" & ContactID & "&SubmitButton=Delete')") %>&nbsp;&nbsp;&nbsp;
+									<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>&nbsp;&nbsp;&nbsp;
+									<% End If %>
+									<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>
+								</td>
+							</tr>
+							<tr>
+								<td class="frm_label">Home&nbsp;Street:</td>
+								<td><%= formTextBox("HomeAddressStreet", "50",  HomeAddressStreet, "ContactElement", "Home Street Address", "Invalid Home Street Address") %></td>
+							</tr>
+							<tr>
+								<td class="frm_label">Home&nbsp;City:</td>
+								<td><%= formTextBox("HomeAddressCity", "30",  HomeAddressCity, "ContactElement", "Home City", "Invalid Home City") %></td>
+							</tr>
+							<tr>
+								<td class="frm_label">Home&nbsp;State:</td>
+								<td><%= SelectBox(oConn, "sp_States_get", "HomeAddressState", HomeAddressState, "ContactElement", "Home State") %></td>
+							</tr>
+							<tr>
+								<td class="frm_label">Home&nbsp;Zip&nbsp;Code:</td>
+								<td><%= formTextBox("HomeAddressPostalCode", "30",  HomeAddressPostalCode, "ContactElement", "Home Zip Code", "Invalid Home Zip Code") %></td>
+							</tr>
+							<tr>
+								<td class="frm_label">Business&nbsp;Street:</td>
+								<td><%= formTextBox("BusinessAddressStreet", "50",  BusinessAddressStreet, "ContactElement", "Business Street Address", "Invalid Business Street Address") %></td>
+							</tr>
+							<tr>	
+								<td class="frm_label">Business&nbsp;City:</td>
+								<td><%= formTextBox("BusinessAddressCity", "30",  BusinessAddressCity, "ContactElement", "Business City", "Invalid Business City") %></td>
+							</tr>
+							<tr>
+								<td class="frm_label">Business&nbsp;State:</td>
+								<td><%= SelectBox(oConn, "sp_States_get", "BusinessAddressState", BusinessAddressState, "ContactElement", "Business State") %></td>
+							</tr>
+							<tr>
+								<td class="frm_label">Business&nbsp;Zip&nbsp;Code:</td>
+								<td><%= formTextBox("BusinessAddressPostalCode", "30",  BusinessAddressPostalCode, "ContactElement", "Business Zip Code", "Invalid Business Zip Code") %></td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td>
+									<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>
+								</td>
+							</tr>
+							</table>
+						</td>
+					</tr>
+					</table>
+					
+					</p>
+					</div>
+				<%
+					End If
+				%>
+				</td>
+			</tr>		
+			</table>
+		</td>
+	</tr>
+	</table>
+<% If InStr(SubmitButtonValue, "Save") > 0 Then %>
+
+<%= formHidden("ContactID", ContactID) %>
+<%= formHidden("EntryID", EntryID) %>
+
+<% End If %>				
+
+<%= formHidden("HasPicture", HasPicture) %>
+<%= formHidden("Template", Template) %>
+
+</form>
+
+<script type="text/javascript">
+
+	$("#tabs").tabs();
+
+</script>
+
+
+

@@ -1,0 +1,265 @@
+<!-- <form action="<%= SCRIPT_NAME %>" method="post" id="formBankingSearch" name="formBankingSearch"> -->
+<form action="<%= SCRIPT_NAME %>" method="post" id="formBankingSearch" name="formBankingSearch">
+<%
+	
+	checkboxBankingAccountID = Trim(Request("checkboxBankingAccountID"))
+	radioDebitCredit = Trim(Request("radioDebitCredit"))
+	checkboxTransactionID = Trim(Request("checkboxTransactionID"))
+	searchBankingAccountStartDate = Trim(Request("searchBankingAccountStartDate"))
+	searchBankingAccountEndDate = Trim(Request("searchBankingAccountEndDate"))
+	If searchBankingAccountEndDate = "" Then searchBankingAccountEndDate = FormatDateTime(Now, 2)
+	searchComment = Trim(Request("searchComment"))
+%>
+
+<div class="BankingElement" style="text-shadow: 1px 1px #000000;padding:10px;font-size:20px;border:3px solid #000">
+	Search&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<%= Submit_Button("SubmitButton", "Search", "Button", "", "Search") %>
+	
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;	
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;	
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;	
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;	
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;	
+	
+	
+	<%= Button("Button", "Clear All", "Button", "", "Clear All", "ClearAll()") %>
+</div>
+
+<fieldset>
+	<legend onclick="$('#divDateRange').toggle()">Date Range</legend>
+
+	<div id="divDateRange" name="divDateRange">
+	<table border=0 cellpadding="3">
+	<tr align="center">
+		<td>
+			<b>Start Date:</b>
+		</td>
+		<td>
+			<b>End Date:</b>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<%= formTextBox("searchBankingAccountStartDate", "10", Request.Cookies("searchBankingAccountStartDateCookies"), "BankingElement", "Start Date", "Invalid Start Date") %>
+		</td>
+		<td>
+			<!-- <%= formTextBox("searchBankingAccountEndDate", "10", Request.Cookies("searchBankingAccountEndDateCookies"), "BankingElement", "End Date", "Invalid End Date") %> -->
+			<%= formTextBox("searchBankingAccountEndDate", "10", searchBankingAccountEndDate, "BankingElement", "End Date", "Invalid End Date") %>
+		</td>
+	</tr>
+	</table>
+	</div>
+	
+</fieldset>
+
+<p />
+
+<fieldset>
+	<legend onclick="$('#divBankingAccounts').toggle()">Banking Accounts</legend>
+<%
+	If searchBankingAccountStartDate = "" Then searchBankingAccountStartDate = Month(Date) & "/1/" & Year(Date)
+	If searchBankingAccountEndDate = "" Then searchBankingAccountEndDate = Date
+	columns = 2
+	sql = "sp_BankingAccount_get " & Session("UserID")
+	Set ors = oConn.Execute(sql)
+	
+	If NOT ors.EOF Then
+%>
+	<div id="divBankingAccounts" name="divBankingAccounts">
+	<table border=0 cellpadding="5">
+	<tr valign="top">
+		<td>
+<%
+		checkboxBankingAccountIDCookies = Request.Cookies("checkboxBankingAccountIDCookies")
+		counter = 0
+		Do Until ors.EOF
+			BankingAccountID = ors("BankingAccountID")
+			BankingAccountName = ors("BankingAccountName")
+			Checked = ""
+			'If InStr(CStr(BankingAccountID), checkboxBankingAccountIDCookies) > 0 Then Checked = "  CHECKED"
+			
+			If columns = counter Then
+				Response.Write "</td><td>"
+				counter = 0
+			End If
+%>
+	<input type="checkbox" id="checkboxBankingAccountID" name="checkboxBankingAccountID" value="<%= BankingAccountID %>"<%= Checked %> />
+	&nbsp;&nbsp;<%= HTMLFormat(BankingAccountName) %>
+		<br />
+<%
+			counter = counter + 1
+			ors.MoveNext
+		Loop
+		ors.Close
+%>
+		</td>
+	</tr>
+	</table>
+	</div>
+
+<%
+	End If
+	
+	Set ors = Nothing
+	
+%>
+</fieldset>
+
+<p />
+
+<fieldset>
+	<legend onclick="$('#divDebitCredit').toggle()">Debits/Credits</legend>
+
+
+	<div id="divDebitCredit" name="divDebitCredit">
+	<table>
+	<tr>
+		<td>
+			<input type="radio" name="radioDebitCredit" value=""<% If Request.Cookies("radioDebitCreditCookies") = "" Then Response.Write " CHECKED"  %> />
+		</td>
+		<td>
+			Debits&nbsp;<%= Server.HTMLEncode("&") %>&nbsp;Credits
+		</td>
+		<td>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		</td>
+		<td>
+			<input type="radio" name="radioDebitCredit" value="Debit"<% If Request.Cookies("radioDebitCreditCookies") = "Debit" Then Response.Write " CHECKED"  %> />
+		</td>
+		<td>
+			Debits
+		</td>
+		<td>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		</td>
+		<td>
+			<input type="radio" name="radioDebitCredit" value="Credit"<% If Request.Cookies("radioDebitCreditCookies") = "Credit" Then Response.Write " CHECKED"  %> />
+		</td>
+		<td>
+			Credits
+		</td>
+	</tr>
+	</table>
+	</div>
+	
+</fieldset>
+
+<p />
+
+<fieldset>
+	<legend onclick="$('#divTransactions').toggle()">Transactions</legend>
+<%
+	If searchBankingAccountStartDate = "" Then searchBankingAccountStartDate = Month(Date) & "/1/" & Year(Date)
+	If searchBankingAccountEndDate = "" Then searchBankingAccountEndDate = Date
+	columns = 30
+	sql = "sp_Transactions_UserID_get " & Session("UserID")
+	Set ors = oConn.Execute(sql)
+	
+	If NOT ors.EOF Then
+%>
+	<div id="divTransactions" name="divTransactions">
+	<table border=0 cellspacing="0" cellpadding="0">
+	<tr valign="top">
+		<td>
+<%
+		counter = 0
+		checkboxTransactionIDCookies = Request.Cookies("checkboxTransactionIDCookies")
+		Do Until ors.EOF
+			TransactionID = ors("TransactionID")
+			TransactionName = ors("Description")
+
+			Checked = ""
+			'If InStr(CStr(TransactionID), checkboxTransactionIDCookies) > 0 Then Checked = "  CHECKED"
+			If columns = counter Then
+				Response.Write "</td><td>"
+				counter = 0
+			End If
+%>
+
+	<table border=0 cellspacing="0" cellpadding="0">
+	<tr valign="top">
+		<td>
+			<input type="checkbox" id="checkboxTransactionID" name="checkboxTransactionID" value="<%= TransactionID %>"<%= Checked %> />
+		</td>
+		<td>
+			<%= HTMLFormat(TransactionName) %>
+		</td>
+	</tr>
+	</table>
+		<br />
+<%
+			counter = counter + 1
+			ors.MoveNext
+		Loop
+		ors.Close
+%>
+		</td>
+	</tr>
+	</table>
+	</div>
+<%
+	End If
+	
+	Set ors = Nothing
+	
+%>
+</fieldset>
+
+	<p />
+	
+<fieldset>
+	<legend onclick="$('#divComment').toggle()">Comment</legend>
+
+
+	<div id="divComment" name="divComment">
+	<table border=0 cellpadding="3">
+	<tr>
+		<td class="frm_label">
+			Comment:
+		</td>
+		<td>
+			<%= formTextBox("searchComment", "60", Request.Cookies("searchCommentCookies"), "BankingElement", "End Date", "Invalid Comment") %>
+		</td>
+	</tr>
+	</table>
+	</div>
+	
+	
+</fieldset>
+
+<p />
+
+<%= Submit_Button("SubmitButton", "Search", "Button", "", "Search") %>
+
+	
+<script type="text/javascript">
+
+	$('#searchBankingAccountStartDate').datepicker();
+	$('#searchBankingAccountEndDate').datepicker();
+
+	//$('#btnClearAll').click
+	//(
+		function ClearAll()
+		{
+			$('#searchBankingAccountStartDate').val('');
+			$('#searchBankingAccountEndDate').val('');
+			$('#searchComment').val('');
+			$('input:checkbox').removeAttr('checked');
+			$("input[name=radioDebitCredit][value='']").attr('checked', 'checked');
+		}
+	//);
+
+</script>
+<%			
+			If EmailSent = "1" Then
+%>
+<script>
+	alert("<%= Trim(Request("MailMessage")) %>");
+</script>
+<%
+			End If
+%>
+<%= formHidden("Template", "View") %>
+</form>

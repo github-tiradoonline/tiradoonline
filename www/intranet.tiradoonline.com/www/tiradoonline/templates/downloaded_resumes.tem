@@ -1,0 +1,67 @@
+<%
+	sql = "sp_ResumeDownloads_get"
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+%>
+
+<% If tiradoonlineErrorMessage <> "" Then %>
+&nbsp;<br />
+<div class="ErrorMessage"><%= tiradoonlineErrorMessage %></div>
+<% End If %>
+<div class="tiradoonlineTheme"><h1 class="Header" style="padding: 5px;">Downloaded&nbsp;Resumes</h1></div>
+<p>
+
+
+<table cellspacing=1 cellpadding=5 class="GridView" width="100%">
+<%
+	If NOT ors.EOF Then
+%>
+<tr class="tiradoonlineTheme">
+	<td><b>Full&nbsp;Name</b></td>
+	<td><b>Company</b></td>
+	<td><b>Phone</b></td>
+	<td><b>Website</b></td>
+	<td><b>Comments</b></td>
+	<td><b>Referenced&nbsp;By</b></td>
+	<td><b>Resume&nbsp;Type</b></td>
+	<td colspan="2"><b>Referer</b></td>
+</tr>
+<%
+		Do Until ors.EOF
+			ResumeDownloadID = ors("ResumeDownloadID")
+			FullName = ors("FullName")
+			Company = ors("Company")
+			Phone = ors("Phone")
+			Website = ors("Website")
+			Comments = ors("Comments")
+			ReferencedBy = ors("ReferencedBy")
+			ResumeDownloadType = ors("ResumeDownloadType")
+			Referer = ors("Referer")
+%>
+<tr valign="top" valign="center" class="GridViewRow">
+	<td><%= FullName %></td>
+	<td><%= Company %></td>
+	<td><%= Phone %></td>
+	<td><%= Website %></td>
+	<td><%= Comments %></td>
+	<td><%= ReferencedBy %></td>
+	<td><%= ResumeDownloadType %></td>
+	<td><%= Referer %></td>
+	<td>
+		<%= Button("Button", "Delete", "DeleteButton", "", "Delete", "DeleteItem('Are you sure you want to delete this item?', '" & SCRIPT_NAME & "?Template=" & Template & "&SubmitButton=DeleteDownloadedResume&ResumeDownloadID=" & ResumeDownloadID & "')") %>
+	</td>
+</tr>
+<%
+			ors.MoveNext
+		Loop
+		ors.Close
+		Set ors = Nothing
+	Else
+%>
+<tr class="ErrorMessage">
+	<td>No Sessions found.</td>
+</tr>
+<%
+	End If
+%>
+</table>

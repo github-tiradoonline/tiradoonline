@@ -1,0 +1,37 @@
+<%= formOpen("frm_PhoneBill_MonthlyCharges", SCRIPT_NAME, "POST") %>
+
+<%= Header("PhoneBillTheme", "Phone Bill Account Detail") %>
+
+<div style="text-align:right">
+	<%= Submit_Button("SubmitButton", "Save", "Button", "", "Save") %>
+</div>
+
+<table>
+<tr valign="top">
+	<td>
+		<!-- #include virtual="/phonebill/includes/phonebill_surcharges_other_fees.inc" -->
+		<p />
+		<!-- #include virtual="/phonebill/includes/phonebill_monthly_charges.inc" -->
+	</td>
+	<td>
+		<!-- #include virtual="/phonebill/includes/phonebill_government_fees_taxes.inc" -->
+		<p />
+		<!-- #include virtual="/phonebill/includes/phonebill_monthly_data_charges.inc" -->
+		<p />
+		<!-- #include virtual="/phonebill/includes/phonebill_totals.inc" -->
+	</td>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("Template", Template) %>
+<%= formHidden("PhoneBillID", PhoneBillID) %>
+<%= formHidden("PhoneBillAccountID", PhoneBillAccountID) %>
+<%= formHidden("PhoneBillPhoneBillAccountID", PhoneBillPhoneBillAccountID) %>
+
+</form>
+
+
+
+
+

@@ -1,0 +1,244 @@
+<%
+	BalanceAccountID = Trim(Request("BalanceAccountID"))
+%>
+
+				<table cellspacing=0 cellpadding=2 border=0 bgcolor="#ffffff" width="100%">
+				<tr>
+					<td align="right"><font face="Verdana,Arial" size=2 color="#639a63"><b>Account&nbsp;Name</b></font>&nbsp;</td>
+					<td>
+						<input type="text" name="BalanceAccountName" value="" size="40" maxlength="20" class="TextBox">
+						<input type="submit" name="SubmitButton" value="Create Account" class="Button">
+					</td>
+				</tr>
+				</table>
+					<table cellspacing=0 cellpadding=0 width="100%" border=0 bgcolor="#ffffff">
+					<tr>
+						<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						<td width="100%">
+							<font face="Verdana,Arial" size=2>
+						<% If Action = "Edit" Then %>
+							&nbsp;<br>
+							&nbsp;<br>
+							&nbsp;<br>
+							&nbsp;<br>
+							&nbsp;<br>
+							&nbsp;<br>
+							<%
+										sql = "SELECT BalanceAccountName FROM BalanceAccounts WHERE BalanceAccountID = " & BalanceAccountID
+										Set ors = oConn.Execute(sql)
+										If ors.EOF Then
+											Response.Redirect SCRIPT_NAME
+										Else
+											BalanceAccountName = ors("BalanceAccountName")
+											ors.Close
+										End If
+										Set ors = Nothing
+							%>
+				<table cellspacing=0 cellpadding=2 border=0 bgcolor="#ffffff">
+				<tr>
+					<td bgcolor="#639a63" colspan="2"><font face="Verdana,Arial" size=2 color="#ffffff"><b>Edit Account</b></font></td>
+				</tr>
+				<% If ErrorMessage <> "" Then %>
+				<tr>
+					<td colspan="2" class="ErrorMessage"><%= ErrorMessage %></td>
+				</tr>
+				<% End If %>
+				<tr>
+					<td align="right"><font face="Verdana,Arial" size=2 color="#639a63"><b>Account&nbsp;Name</b></font>&nbsp;</td>
+					<td><input type="text" name="EditBalanceAccountName" value="<%= BalanceAccountName %>" size="50" maxlength="20"></td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>				
+						<input type="submit" name="SubmitButton" value="Save">&nbsp;&nbsp;&nbsp;
+						<input type="button" name="SubmitButton" value="Cancel" onClick="location.href='/banking/balance.asp'">&nbsp;&nbsp;&nbsp;
+						<input type="button" name="SubmitButton" value="Delete" onClick="DeleteItem('You will be deleting all transactions within this account and the account itself.  Are you sure you want to continue?', '<%= SCRIPT_NAME %>?BalanceAccountID=<%= BalanceAccountID %>&Action=Edit&SubmitButton=Delete')">&nbsp;&nbsp;&nbsp;
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">&nbsp;<br>&nbsp;<br>&nbsp;</td>
+				</tr>
+				<tr>
+					<td bgcolor="#639a63" colspan="2"><font face="Verdana,Arial" size=2 color="#ffffff"><b>Monthly&nbsp;Bills</b></font></td>
+				</tr>
+				<% If MonthlyErrorMessage <> "" Then %>
+				<tr>
+					<td colspan="2" class="ErrorMessage">
+						<%= MonthlyErrorMessage %>
+					</td>
+				</tr>
+				<% End If %>
+				<tr>
+					<td colspan="2">
+				<%
+					SubmitButtonValue = "Add Bill"
+					If MonthlyBillID <> "" Then 
+						sql = "sp_MonthlyBills_get " & BalanceAccountID & ", " & MonthlyBillID
+						'Response.Write "<br>sql:" & sql
+						Set ors = oConn.Execute(sql)
+						MonthlyBillID = ors("MonthlyBillID")
+						MonthlyBillStartDate = ors("MonthlyBillStartDate")
+						MonthlyBillDate = ors("MonthlyBillDate")
+						MonthlyBillDesc = ors("MonthlyBillDesc")
+						MonthlyBillAmount = ors("MonthlyBillAmount")
+						ors.Close
+						Set ors = Nothing
+						SubmitButtonValue = "Update Bill"
+					End If	
+				%>
+						<table>
+						<tr>
+							<td align="right"><font face="Verdana,Arial" size=2><b>Billing&nbsp;Start&nbsp;Date:</b></td><td><input type="text" id="MonthlyBillStartDate"></td>
+						</tr>
+						<tr>
+							<td align="right"><font face="Verdana,Arial" size=2><b>Date:</b></td><td><input type="text" name="MonthlyBillDate" id="MonthlyBillDate" value="<%= MonthlyBillDate %>"></td>
+						</tr>
+						<tr>
+							<td align="right"><font face="Verdana,Arial" size=2><b>Description:</b></td><td><input type="text" name="MonthlyBillDesc" id="MonthlyBillDesc" value="<%= MonthlyBillDesc %>"></td>
+						</tr>
+						<tr>
+							<td align="right"><font face="Verdana,Arial" size=2><b>Amount:</b></td><td><input type="text" name="MonthlyBillAmount" id="MonthlyBillAmount" value="<%= MonthlyBillAmount %>"></td>
+						</tr>
+						<tr>
+							<td>&nbsp;</td><td>
+							<input type="hidden" name="MonthlyBillID" class="SubmitButton" value="<%= MonthlyBillID %>" />
+							<input type="submit" name="SubmitButton" class="SubmitButton" value="<%= SubmitButtonValue %>" />&nbsp;&nbsp;&nbsp;
+							<input type="button" name="SubmitButton" class="SubmitButton" value="Cancel" onclick="location.href='<%= SCRIPT_NAME %>?BalanceAccountID=<%= BalanceAccountID %>&Action=Edit'" />
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">
+				<%
+					sql = "sp_MonthlyBills_get " & BalanceAccountID
+					Set ors = oConn.Execute(sql)
+					
+					If NOT ors.EOF Then
+%>
+						<table cellspacing="3" cellpadding="3" style="border:1px solid #000000">
+						<tr bgcolor="#639a63" style="border:1px solid #000000">
+							<td align="right" style="border:1px solid #000000"><font face="Verdana,Arial" size=2 color="#ffffff"><b>Billing&nbsp;Start&nbsp;Date</b></td>
+							<td align="right" style="border:1px solid #000000"><font face="Verdana,Arial" size=2 color="#ffffff"><b>Date</b></td>
+							<td style="border:1px solid #000000"><font face="Verdana,Arial" size=2 color="#ffffff"><b>Description</b></td>
+							<td align="right" style="border:1px solid #000000"><font face="Verdana,Arial" size=2 color="#ffffff"><b>Amount</b></td>
+							<td align="right" style="border:0px none #ffffff">&nbsp;</td>
+						</tr>
+<%					
+						Do Until ors.EOF
+							MonthlyBillID = ors("MonthlyBillID")
+							MonthlyBillStartDate = ors("MonthlyBillStartDate")
+							MonthlyBillDate = ors("MonthlyBillDate")
+							MonthlyBillDesc = ors("MonthlyBillDesc")
+							MonthlyBillAmount = ors("MonthlyBillAmount")
+				%>
+						<tr style="border:1px solid #000000">
+							<td align="right" style="border:1px solid #000000"><font face="Verdana,Arial" size=2><%= MonthlyBillStartDate %></td>
+							<td align="right" style="border:1px solid #000000"><font face="Verdana,Arial" size=2><%= MonthlyBillDate %></td>
+							<td style="border:1px solid #000000"><a href="<%= SCRIPT_NAME %>?BalanceAccountID=<%= BalanceAccountID %>&MonthlyBillID=<%= MonthlyBillID %>&Action=Edit"><font face="Verdana,Arial" size=2><%= MonthlyBillDesc %></a></td>
+							<td align="right" style="border:1px solid #000000"><font face="Verdana,Arial" size=2><%= FormatNumber(MonthlyBillAmount, 2) %></td>
+							<td align="right" style="border:1px solid #000000"><input type="button" name="SubmitButton" class="SubmitButton" value="Delete" onClick="DeleteItem('Are you sure you want to delete this monthly bill?', '<%= SCRIPT_NAME %>?MonthlyBillID=<%= MonthlyBillID %>&BalanceAccountID=<%= BalanceAccountID %>&Action=Edit&SubmitButton=DeleteBill')"
+						</tr>
+				<%
+							ors.MoveNext
+						Loop
+					Else
+				%>
+				<tr>
+					<td colspan="2" class="ErrorMessage">&nbsp;<br>No records found.</td>
+				</tr>
+				<%
+					End If
+					Set ors = Nothing   
+				%>
+				</table>
+						<input type="hidden" name="Action" value="Edit">
+						<input type="hidden" name="BalanceAccountID" value="<%= BalanceAccountID %>">
+							
+						<% Else %>
+							<table bgcolor="<%= bgcolor2 %>" cellspacing=0 cellpadding=5 border=0>
+				<% If ErrorMessage <> "" Then %>
+				<tr>
+					<td class="ErrorMessage"><%= ErrorMessage %></td>
+				</tr>
+				<% End If %>
+							<%
+								sql = "sp_BalanceAccount_get " & Session("UserID")
+								Set ors = oConn.Execute(sql)
+								If NOT ors.EOF Then 
+									Do Until ors.EOF
+										rsTotalBalance = ors("TotalBalance")
+										FONT_PAYMENT = "GREEN"
+										If CDbl(rsTotalBalance) <= 0 Then FONT_PAYMENT = "#ff0000"
+										bgcolor2 = "#ffffff"
+										rsTotalBalance = "$" & FormatNumber(rsTotalBalance, 2)
+										If CStr(BalanceAccountID) = CStr(ors("BalanceAccountID")) Then bgcolor2 = "#eeeeee"
+							%>
+									<tr bgcolor="<%= bgcolor2 %>">
+										<td>
+											<li><a href="<%= SCRIPT_NAME %>?BalanceAccountID=<%= ors("BalanceAccountID") %>&CurrentMonth=<%= CurrentMonth %>&CurrentYear=<%= CurrentYear %>&Template=View"><font face="Verdana,Arial" size=2><%= ors("BalanceAccountName") %></a>&nbsp;
+										</td>
+										<td>
+											<font face="Verdana,Arial" size=2 color="<%= FONT_PAYMENT %>"><%= rsTotalBalance %>&nbsp;
+										</td>
+										<!-- 
+										<td align="right">
+											<a href="../banking/balance.asp?BalanceAccountID=<%= ors("BalanceAccountID") %>&CurrentMonth=<%= CurrentMonth %>&CurrentYear=<%= CurrentYear %>">View Report</a>&nbsp;
+										</td> -->
+									</tr>
+									<p>
+									
+							<%
+									If CStr(BalanceAccountID) = CStr(ors("BalanceAccountID")) Then
+									sql = "sp_Balance_Transaction_Reports " & BalanceAccountID
+									Set ors2 = oConn.Execute(sql)
+									If NOT ors2.EOF Then
+							%>
+									<tr bgcolor="<%= bgcolor2 %>">
+										<td bgcolor="#ffffff">&nbsp;</td>
+										<td colspan="2">
+											<table>
+											<tr bgcolor="#dddddd">
+												<td><font face="Verdana,Arial" size=2><b>Transaction</td>
+												<td align="right"><font face="Verdana,Arial" size=2><b>Amount</td>
+												<td align="right"><font face="Verdana,Arial" size=2><b>Monthly</td>
+											</tr>
+							<%
+										Do Until ors2.EOF
+							%>
+											<tr>
+												<td><a href="../banking/balance.asp?BalanceAccountID=<%= ors("BalanceAccountID") %>&TransactionID=<%= ors2("TransactionID") %>&CurrentMonth=<%= CurrentMonth %>&CurrentYear=<%= CurrentYear %>&Template=View&ViewType=Transactions"><font face="Verdana,Arial" size=2><%= ors2("Description") %></a></td>
+												<td align="right"><font face="Verdana,Arial" size=2>$<%= ors2("Amount") %></td>
+												<td align="right"><font face="Verdana,Arial" size=2>$<%= ors2("Monthly") %></td>
+											</tr>
+									
+							<%
+											ors2.MoveNext
+										Loop
+										ors2.Close
+									End If
+									Set ors2 = Nothing
+							%>
+										</td>
+									</tr>								
+									</table>	
+							<%
+									End If
+										ors.MoveNext
+									Loop
+								Else
+							%>
+								<tr>
+									<td>No Accounts found</td>
+								</tr>
+							<% 
+								End If
+								ors.Close
+								Set ors = Nothing
+							%>
+							</table>
+							<% End If %>
+						</td>
+					</tr>
+					</table>

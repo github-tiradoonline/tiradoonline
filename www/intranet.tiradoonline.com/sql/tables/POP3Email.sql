@@ -1,0 +1,32 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'POP3Email' AND TYPE = 'U')
+DROP TABLE POP3Email;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'POP3Email' AND TYPE = 'U')
+	DROP TABLE POP3Email;
+GO
+
+CREATE TABLE POP3Email
+(
+	POP3EmailID		IDENTITY (1001,1) INT  NOT NULL,
+	POP3EmailFolderID		 INT DEFAULT ((1001)) NOT NULL,
+	POP3EmailMessageID		 VARCHAR(100)  NULL,
+	POP3EmailMessageDateTime		 DATETIME  NULL,
+	POP3EmailFromName		 VARCHAR(500)  NULL,
+	POP3EmailFromEmail		 VARCHAR(500)  NULL,
+	POP3EmailSubject		 VARCHAR(500)  NULL,
+	POP3EmailBodyText		 VARCHAR(MAX)  NULL,
+	Active		 BIT DEFAULT ((1)) NOT NULL,
+	create_dt		 DATETIME DEFAULT (getdate()) NULL
+
+);
+GO
+
+
+
+
+GO
+
+
+GO
+

@@ -1,0 +1,205 @@
+<%= formOpen("frm_PhoneBill", SCRIPT_NAME, "POST") %>
+
+<%= Header("PhoneBillTheme", "Phone Bills") %>
+
+<table width="100%">
+<tr>
+	<td>
+		<%= Button("Button", "Phone Bill Accounts", "Button", "", "Phone Bill Accounts", "location.href='" & SCRIPT_NAME & "?Template=phonebill_account'") %>
+	</td>
+	<td align="right">
+		<div style="text-align:right"><a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&Action=Create"><%= ADD_ICON %></a></div>
+	</td>
+</tr>
+</table>
+
+<% If PhoneBillID = "" AND Action = "" Then %>
+
+<% If PhoneBillErrorMessage <> "" Then %>
+&nbsp;<br />
+<div class="ErrorMessage"><%= PhoneBillErrorMessage %></div>
+<% End If %>
+
+
+<%
+	sql = "sp_PhoneBill_get " & Session("UserID")
+	'Response.Write sql
+	'Response.End
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+	If NOT ors.EOF Then
+%>
+<table class="GridViewAlteringRows" width="100%">
+<tr class="PhoneBillTheme">
+	<td><b>Name</b></td>
+	<td><b>Opening&nbsp;Date</b></td>
+	<td><b>Closing&nbsp;Date</b></td>
+	<td align="right"><b>Amount</b></td>
+	<td>&nbsp;</td>
+</tr>
+<%
+		Do Until ors.EOF
+			PhoneBillID = ors("PhoneBillID")
+			PhoneBillName = ors("PhoneBillName")
+			PhoneBillStartDate = ors("PhoneBillStartDate")
+			PhoneBillStartDate = FormatDateTime(PhoneBillStartDate, 2)
+			PhoneBillEndDate = ors("PhoneBillEndDate")
+			PhoneBillEndDate = FormatDateTime(PhoneBillEndDate, 2)
+			PhoneBillAmount = FormatCurrency(PhoneBillAmount)
+%>
+<tr valign="top" valign="center" class="GridViewRow">
+	<td>
+		<a onclick="ShowHideBill('div<%= PhoneBillID %>')"><%= ADD_SMALL_ICON %></a>
+		<b><a href="<%= SCRIPT_NAME %>?PhoneBillID=<%= PhoneBillID %>" style="font-size:20px"><%= PhoneBillName %></a></b>
+		<%
+			sql = "sp_PhoneBillPhoneBillAccount_PhoneBillID_get " & PhoneBillID
+			'Response.Write sql & "<br />"
+			'Response.End
+			Set orsPhoneBillAccount = oConn.Execute(sql)
+			If NOT orsPhoneBillAccount.EOF Then
+		%>
+				<div id="div<%= PhoneBillID %>" name="div<%= PhoneBillID %>">
+				<table class="GridViewAlteringRows" width="100%">
+				<tr class="PhoneBillTheme">
+					<td><b>Account</b></td>
+					<td><b>Device</b></td>
+					<td><b>Phone#</b></td>
+					<td><b>Data(MB)&nbsp;</b></td>
+					<td align="right"><b>Amount</b></td>
+					<td>&nbsp;</td>
+				</tr>
+				<%
+						Do Until orsPhoneBillAccount.EOF
+							PhoneBillPhoneBillAccountID = orsPhoneBillAccount("PhoneBillPhoneBillAccountID")
+							PhoneBillAccountID = orsPhoneBillAccount("PhoneBillAccountID")
+							Device = orsPhoneBillAccount("PhoneDeviceName")
+							Device = HTMLFormat(Device)
+							PhoneBillAccountName = orsPhoneBillAccount("PhoneBillAccountName")
+							PhoneBillAccountName = HTMLFormat(PhoneBillAccountName)
+							PhoneBillAccountPhoneNumber = orsPhoneBillAccount("PhoneBillAccountPhoneNumber")
+							PhoneBillAccountPhoneNumber = HTMLFormat(PhoneBillAccountPhoneNumber)
+
+							sql = "SELECT * FROM PhoneBillMonthlyDataCharges WHERE PhoneBillPhoneBillAccountID = " & PhoneBillAccountID
+							'Response.Write sql
+							'Response.End
+							Set orsMonthlyDataCharges = oConn.Execute(sql)
+							If NOT orsMonthlyDataCharges.EOF Then
+								MonthlyDataChargeUsedMB = orsMonthlyDataCharges("MonthlyDataChargeUsedMB")
+								MonthlyDataChargeMaxMB = orsMonthlyDataCharges("MonthlyDataChargeMaxMB")
+								orsMonthlyDataCharges.Close
+							End If
+							Set orsMonthlyDataCharges = Nothing
+							
+							PhoneBillTotal = orsPhoneBillAccount("PhoneBillTotal")
+							If isNull(PhoneBillTotal) Then PhoneBillTotal = 0.00
+							PhoneBillTotal = FormatCurrency(PhoneBillTotal)
+				%>
+				<tr valign="top" valign="center" class="GridViewRow">
+					<td><b><a href="<%= SCRIPT_NAME %>?Template=phonebill_monthlycharges&PhoneBillID=<%= PhoneBillID %>&PhoneBillPhoneBillAccountID=<%= orsPhoneBillAccount("PhoneBillPhoneBillAccountID") %>"><%= PhoneBillAccountName %></a></b></td>
+					<td><%= Device %></td>
+					<td><%= PhoneBillAccountPhoneNumber %></td>
+					<td><%= MonthlyDataChargeUsedMB %>/<%= MonthlyDataChargeMaxMB %></td>
+					<td align="right"><%= PhoneBillTotal %></td>
+					<td><a href="<%= SCRIPT_NAME %>?Template=phonebill_account&PhoneBillAccountID=<%= PhoneBillAccountID %>"><%= EDIT_ICON %></a></td>
+				</tr>
+				<%
+							orsPhoneBillAccount.MoveNext
+						Loop
+						orsPhoneBillAccount.Close
+				%>
+				</table>
+				</div>
+		<%
+			End If
+			Set orsPhoneBillAccount = Nothing
+		%>
+	</td>
+	<td><%= PhoneBillStartDate %></td>
+	<td><%= PhoneBillEndDate %></td>
+	<td align="right"><%= PhoneBillAmount %></td>
+	<td>
+		<a href="<%= SCRIPT_NAME %>?PhoneBillID=<%= PhoneBillID %>"><%= EDIT_ICON %></A>&nbsp;&nbsp;<%= DELETE_ICON %>
+	</td>
+</tr>
+<%
+			ors.MoveNext
+		Loop
+		ors.Close
+		Set ors = Nothing
+%>
+</table>
+<%
+	Else
+%>
+<tr class="ErrorMessage">
+	<td>No Phone Bills found.</td>
+</tr>
+<%
+	End If
+	
+	
+	Else
+		SubmitButtonValue = "CREATE"
+		
+		If Action = "" Then
+			sql = "sp_PhoneBill_PhoneBillID_get " & PhoneBillID
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			PhoneBillName = ors("PhoneBillName")
+			PhoneBillStartDate = ors("PhoneBillStartDate")
+			PhoneBillStartDate = FormatDateTime(PhoneBillStartDate, 2)
+			PhoneBillEndDate = ors("PhoneBillEndDate")
+			PhoneBillEndDate = FormatDateTime(PhoneBillEndDate, 2)
+			ors.Close
+			Set ors = Nothing
+			SubmitButtonValue = "SAVE"
+		End If
+%>
+<table cellpadding="3">
+<tr>
+	<td class="frm_label">Phone&nbsp;Bill&nbsp;Name:</td>
+	<td>
+		<%= formTextBox("PhoneBillName", "30", PhoneBillName, "PhoneBillElement", " Name", "Invalid  Name") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Opening Date:</td>
+	<td>
+		<%= formTextBox("PhoneBillStartDate", "10", PhoneBillStartDate, "PhoneBillElement", "Opening Date", "Opening Date") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr>  
+	<td class="frm_label">Closing Date:</td>
+	<td>
+		<%= formTextBox("PhoneBillEndDate", "10", PhoneBillEndDate , "PhoneBillElement", "Closing Date", "Closing Date") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">&nbsp;</td>
+	<td>
+		<%= Submit_Button("SubmitButton", SubmitButtonValue & " Phone Bill", "Button", "", SubmitButtonValue & " Phone Bill") %>
+		&nbsp;&nbsp;
+		<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("Template", Template) %>
+<%= formHidden("PhoneBillID", PhoneBillID) %>
+</form>
+<%
+	End If
+%>
+
+
+<script type="text/javascript">
+
+	$('#PhoneBillStartDate').datepicker();
+	$('#PhoneBillEndDate').datepicker();
+
+	function ShowHideBill(divObj)
+	{
+		alert(divObj);
+		$(divObj).toggle();
+	}
+</script>

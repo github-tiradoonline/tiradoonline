@@ -1,0 +1,511 @@
+<%
+	sql = "SELECT * FROM RecoveryTypes WHERE RecoveryTypeID = " & RecoveryTypeID
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+	If NOT ors.EOF Then
+		RecoveryTypeName = ors("RecoveryTypeName")
+		ors.Close
+	End If
+	Set ors = Nothing
+		
+	If SubmitButton = "Add Program" Then
+		sql = "INSERT INTO RecoveryPrograms (UserID, RecoveryTypeID, ProgramName, start_dt, end_dt, sober) VALUES (" & _
+			Session("UserID") & ", " & _
+			RecoveryTypeID & ", " & _
+			"'" & SQLEncode(ProgramName) & "', " & _
+			"'" & SQLEncode(start_dt) & "', " & _
+			"'" & SQLEncode(end_dt) & "', " & _
+			"'" & SQLEncode(sober_dt) & "')"
+		
+		WriteDebugger sql, Debugging, 0
+		oConn.Execute sql
+		RecoveryErrorMessage = Server.URLEncode(ProgramName & " added.")
+		Response.Redirect SCRIPT_NAME & "?Template=" & Template & "&RecoveryErrorMessage=" & RecoveryErrorMessage
+	ElseIf SubmitButton = "Save Program" Then
+		If end_dt = "" Then
+			end_dt = "null"
+		Else
+			end_dt = "'" & end_dt & "'"
+		End If
+		If sober_dt = "" Then
+			sober_dt = "null"
+		Else
+			sober_dt = "'" & sober_dt & "'"
+		End If
+		
+		sql = "UPDATE RecoveryPrograms " & _
+			"SET ProgramName = '" & SQLEncode(ProgramName) & "', " & _
+			"start_dt = '" & SQLEncode(start_dt) & "', " & _
+			"end_dt = " & end_dt & ", " & _
+			"sober_dt = " & sober_dt & " " & _
+			"WHERE RecoveryProgramID = " & RecoveryProgramID
+		
+		WriteDebugger sql, Debugging, 0
+		oConn.Execute(sql)
+		RecoveryErrorMessage = Server.URLEncode(ProgramName & " saved.")
+		Response.Redirect SCRIPT_NAME & "?Template=" & Template & "&RecoveryTypeID=" & RecoveryTypeID & "&RecoveryErrorMessage=" & RecoveryErrorMessage
+	End If
+
+	
+	If Action = "" Then
+
+		sql = "SELECT * FROM RecoveryPrograms WHERE RecoveryTypeID = " & RecoveryTypeID & " ORDER BY ProgramName"	
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+%>
+
+	<table border="0" width="550" cellspacing="0" cellpadding="10">
+	<tr bgcolor="<%= RECOVERY_THEME %>">
+		<td class="RecoveryTheme"><b><a href="<%= SCRIPT_NAME %>?RecoveryTypeID=<%= RecoveryTypeID %>"><%= HTMLFormat(RecoveryTypeName) %></a></b></td>
+		<td align="right">
+			
+			<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+			&nbsp;&nbsp;&nbsp;
+			
+			<%= Button("Button", "Add Program", "Button", "", "Add Program", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&RecoveryTypeID=" & RecoveryTypeID & "&Action=Add'") %>
+		</td>
+	</tr>
+<% If NOT ors.EOF Then %>
+	<%
+		
+	%>
+	<% If RecoveryErrorMessage <> "" Then %>
+	<tr>
+		<td colspan="2" class="ErrorMessage"><%= RecoveryErrorMessage %></td>
+	</tr>
+	<% End If %>
+	<tr valign="top">
+		<td colspan="2">
+			<table cellpadding="5" cellspacing="3" border=0>
+<%
+		ProgramCounter = 0
+		Do Until ors.EOF
+			boolRecoveryCounselors = false
+			boolRecoveryGroups = false
+			
+			v_RecoveryProgramID = ors("RecoveryProgramID")		
+			
+			sql = "SELECT COUNT(*) FROM RecoveryCounselors WHERE RecoveryProgramID = " & v_RecoveryProgramID
+			'Response.Write sql & "<br>"
+			WriteDebugger sql, Debugging, 0
+			Set orsTotal = oConn.Execute(sql)
+			TotalCounselors = orsTotal.Fields(0).Value
+			orsTotal.Close
+			Set orsTotal = Nothing 
+		
+			sql = "SELECT COUNT(*) FROM RecoveryGroups WHERE RecoveryProgramID = " & v_RecoveryProgramID
+			'Response.Write sql & "<br>"
+			WriteDebugger sql, Debugging, 0
+			Set orsTotal = oConn.Execute(sql)
+			TotalGroups = orsTotal.Fields(0).Value
+			orsTotal.Close
+			Set orsTotal = Nothing 
+		
+			sql = "SELECT COUNT(*) FROM RecoveryDrugTest WHERE RecoveryProgramID = " & v_RecoveryProgramID
+			'Response.Write sql & "<br>"
+			WriteDebugger sql, Debugging, 0
+			Set orsTotal = oConn.Execute(sql)
+			TotalDrugTests = orsTotal.Fields(0).Value
+			orsTotal.Close
+			Set orsTotal = Nothing 
+			ProgramName = HTMLFormat(ors("ProgramName"))
+			start_dt = ors("start_dt")
+			If start_dt = "" Then start_dt = "N/A"
+			end_dt = ors("end_dt")
+			if end_dt = "" or isNull(end_dt) Then end_dt = "N/A"
+			sober_dt = ors("sober_dt")
+			if sober_dt = "" or isNull(sober_dt) Then sober_dt = "N/A"
+
+			'**** COUNSELORS RECORDSET	
+			sql = "SELECT *, RecoveryCounselorGroupSessions = (SELECT COUNT(*) FROM RecoveryGroupSessions WHERE RecoveryCounselorID = RecoveryCounselors.RecoveryCounselorID) FROM RecoveryCounselors WHERE RecoveryProgramID = " & v_RecoveryProgramID & " ORDER BY FirstName"
+			'Response.Write sql & "<br>"
+
+			WriteDebugger sql, Debugging, 0
+			Set orsRecoveryCounselors = oConn.Execute(sql)
+			If NOT orsRecoveryCounselors.EOF Then boolRecoveryCounselors = true
+
+			'**** GROUPS RECORDSET	
+			sql = "SELECT RecoveryGroupID, RecoveryGroupName FROM RecoveryGroups WHERE RecoveryProgramID = " & v_RecoveryProgramID & " ORDER BY RecoveryGroupName"
+			'Response.Write sql & "<br>"
+			WriteDebugger sql, Debugging, 0
+
+			Set orsRecoveryGroups = oConn.Execute(sql)
+			If NOT orsRecoveryGroups.EOF  Then boolRecoveryGroups = true
+	%>
+			<tr valign="middle" class="RecoveryTheme">
+				<td><b>Program&nbsp;Name</b></td>
+				<td align="center"><b>Start&nbsp;Date</b></td>
+				<td align="center"><b>End&nbsp;Date</b></td>
+				<td align="center"><b>Sober&nbsp;Date</b></td>
+				<td align="right"><b>Counselors&nbsp;(<%= TotalCounselors %>)</b></td>
+				<td>
+					<table width="100%">
+					<tr>
+						<td class="RecoveryTheme" >
+					<b>Groups&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;(<%= TotalGroups %>)</b>
+					
+					<% If boolRecoveryCounselors AND boolRecoveryGroups Then %>
+					<%
+						sql = "SELECT COUNT(*) FROM RecoveryGroupSessions a, RecoveryGroups b, RecoveryPrograms c " & _
+						 	  "WHERE c.RecoveryProgramID = " & v_RecoveryProgramID & " AND c.RecoveryProgramID = b.RecoveryProgramID " & _
+							  "AND b.RecoveryGroupID = a.RecoveryGroupID"
+						'Response.Write sql & "<br>"
+						WriteDebugger sql, Debugging, 0
+						Set orsGroupSessions = oConn.Execute(sql)
+						totalGroupSessions = orsGroupSessions.Fields(0).Value
+						orsGroupSessions.Close
+						Set orsGroupSessions = Nothing
+
+						If isDate(start_dt) AND isDate(end_dt) Then TotalDays = DateDiff("d", start_dt, end_dt)
+						If isDate(sober_dt) Then DaysSober = DateDiff("d", sober_dt, Date)
+						
+						df=datediff("d",dtDate1,dtDate2)
+						df_inwords=cstr(df\360) & " year(s) " & cstr((df mod 360)\30) & " month(s) " & cstr(df mod 30) & " day(s)"
+					%> 
+						</td>
+						<td align="right">
+					<%= Button("Button", "Group Sessions (" & totalGroupSessions & ")", "Button", "", "View All Group Sessions", "location.href='" & SCRIPT_NAME & "?Template=recovery_group_sessions&RecoveryProgramID=" & Trim(Request("RecoveryProgramID")) & "&RecoveryTypeID=" & RecoveryTypeID & "'") %>
+					<% End If %>
+						</td>
+					</tr>
+					</table>
+
+				</td>
+			</tr>
+			<tr valign="top">
+				<!-- PROGRAMS -->
+				<td>
+					<%
+						anchorProgram = SCRIPT_NAME & "?Template=recovery_programs&RecoveryProgramID=" & Trim(Request("RecoveryProgramID")) & "&RecoveryTypeID=" & RecoveryTypeID & "&Action=AddEdit"
+						If NOT isNull(start_dt) Then 
+							If end_dt = "N/A" Then
+								TotalDays = DateDiff("d", start_dt, Date)
+							Else
+								TotalDays = DateDiff("d", start_dt, end_dt)
+							End If
+							
+						Else
+							TotalDays = 0
+						End If
+						If isNull(TotalDays) OR TotalDays = "" Then TotalDays = 0
+						If isNull(TotalGroupSessions) OR TotalGroupSessions = "" Then TotalGroupSessions = 0
+						If isNull(DaysSober) OR DaysSober = "" Then DaysSober = 0
+					%>
+					<a href="<%= anchorProgram %>"><%= ProgramName %>&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;(<%= TotalDays %>)&nbsp;day(s)</a><br />&nbsp;<br />
+					<div style="text-align:right">
+					<table align="right">
+					<tr valign="top" align="right">
+						<td align="right"><b>Total&nbsp;Days&nbsp;@&nbsp;<%= ProgramName %>:</b></td>
+						<td><%= TotalDays %></td>
+					</tr>
+					<tr valign="top" align="right">
+						<td align="right"><b>Total&nbsp;Groups:</b></td>
+						<td><%= TotalGroupSessions %></td>
+					</tr>
+					<tr valign="top" align="right">
+						<td align="right"><b>Days&nbsp;Sober:</b></td>
+						<td><%= DaysSober %></td>
+					</tr>
+					</table>
+					&nbsp;<br>
+					&nbsp;<br>
+					&nbsp;<br>
+					&nbsp;<br>
+					<p />
+					<table align="right" cellpadding="5" class="GridViewAlteringRows">
+					<tr>
+						<!-- <td class="RecoveryTheme" align="right"><a href="<%= SCRIPT_NAME %>?Template=recovery_drugtest&RecoveryProgramID=<%= Trim(Request("RecoveryProgramID")) %>"><b>Drug&nbsp;Test(s)&nbsp;(<%= TotalDrugTests %>)</b></a></td> -->
+						<td class="RecoveryTheme" align="right"><b>Drug&nbsp;Test(s)&nbsp;(<%= TotalDrugTests %>)</b></td>
+					</tr>
+					<%
+						sql = "SELECT " & _
+								"a.RecoveryDrugTestID, " & _
+								"a.RecoveryDrugTestDateTime, " & _
+								"a.RecoveryDrugTestResult, " & _
+								"a.RecoveryDrugTestDescription, " & _
+								"b.RecoveryDrugTestName " & _
+							"FROM " & _
+								"RecoveryDrugTest a, " & _
+								"RecoveryDrugTestType b " & _
+							"WHERE " & _
+								"a.RecoveryDrugTestTypeID = b.RecoveryDrugTestTypeID AND " &_
+								"RecoveryProgramID =  " & v_RecoveryProgramID & " " & _
+							"ORDER BY " & _
+								"RecoveryDrugTestDateTime DESC"
+						'Response.Write sql
+						'Response.End
+						'Response.Write sql & "<br>"
+						WriteDebugger sql, Debugging, 0
+						Set orsDrugTest = oConn.Execute(sql)
+					
+						
+						If NOT orsDrugTest.EOF Then 
+						Do Until orsDrugTest.EOF
+							RecoveryDrugTestID = orsDrugTest("RecoveryDrugTestID")
+							RecoveryDrugTestDateTime = FormatDateTime(orsDrugTest("RecoveryDrugTestDateTime"), 1)
+							RecoveryDrugTestResult = orsDrugTest("RecoveryDrugTestResult")
+							RecoveryDrugTestDescription = orsDrugTest("RecoveryDrugTestDescription")
+							RecoveryDrugTestName = orsDrugTest("RecoveryDrugTestName")
+					%>
+					<tr class="GridViewRow" valign="top">
+						<td align="right">
+							<a href="<%= SCRIPT_NAME %>?Template=recovery_drugtest&RecoveryProgramID=<%= Trim(Request("RecoveryProgramID")) %>&RecoveryTypeID=<%= RecoveryTypeID %>&RecoveryDrugTestID=<%= RecoveryDrugTestID %>&Action=Edit"><%= DrugTestColor(HTMLFormat(RecoveryDrugTestDateTime), RecoveryDrugTestResult) %>&nbsp;(<%= RecoveryDrugTestName %>)</a>
+						</td>
+					</tr>
+					<% If RecoveryDrugTestDescription <> "" Then %>
+					<tr valign="top">
+						<td align="right">
+							<b><%= RecoveryDrugTestDescription %></b>
+						</td>
+					</tr>
+					
+					<% End If %>
+					<%
+							orsDrugTest.MoveNext
+						Loop
+					%>
+					<%
+							orsDrugTest.Close
+					%>
+					<% Else %>
+					&nbsp;<br />
+					<tr>
+						<td class="ErrorMessage">No&nbsp;Drug&nbsp;Test&nbsp;found</td>
+					</tr>
+					<%
+						End If
+						Set orsDrugTest = Nothing
+					%>
+					</table>
+					
+					<p align="right" />
+					<%= Button("Button", "Add Drug Test", "Button", "", "Add Drug Test", "location.href='" & SCRIPT_NAME & "?Template=recovery_drugtest&RecoveryProgramID=" & Trim(Request("RecoveryProgramID")) & "&RecoveryTypeID=" & RecoveryTypeID & "'") %>
+				</td>
+				<td align="center"><a href="<%= anchorProgram %>"><%= start_dt %></a></td>
+				<td align="center"><a href="<%= anchorProgram %>"><%= end_dt %></a></td>
+				<td align="center"><a href="<%= anchorProgram %>"><%= sober_dt %></a></td>
+				<!-- COUNSELORS  -->
+				<td align="right">
+				<%
+					If NOT orsRecoveryCounselors.EOF Then
+				%>
+					<table class="GridViewAlteringRows">
+				<%
+						Do Until orsRecoveryCounselors.EOF
+							RecoveryCounselorID = orsRecoveryCounselors("RecoveryCounselorID")
+							v_FirstName = orsRecoveryCounselors("FirstName")
+							v_LastName = orsRecoveryCounselors("LastName")
+							FullName = Trim(v_FirstName & "&nbsp;" & v_LastName)
+							RecoveryCounselorGroupSessionsTotal = orsRecoveryCounselors("RecoveryCounselorGroupSessions")
+							orsRecoveryCounselors.MoveNext
+				%>
+					<tr class="GridViewRow" align="right">
+						<td>
+							<a href="<%= SCRIPT_NAME %>?Template=recovery_counselors&RecoveryProgramID=<%= Trim(Request("RecoveryProgramID")) %>&RecoveryCounselorID=<%= RecoveryCounselorID %>&"><%= Trim(FullName) %>&nbsp;(<%= RecoveryCounselorGroupSessionsTotal %>)</a><br />
+						</td>
+					</tr>
+				<%
+						Loop
+						orsRecoveryCounselors.Close
+				%>
+					</table>
+				<%
+					
+					Else
+				%>
+					<div class="ErrorMessage">No Counselors found.</div>
+					&nbsp;<br />
+					
+				<%
+					End If
+					
+					Set orsRecoveryCounselors =  Nothing
+				%>
+					&nbsp;<br />
+					<%= Button("Button", "Add Counselor", "Button", "", "Add Counselor", "location.href='" & SCRIPT_NAME & "?Template=recovery_counselors&Action=Add&RecoveryProgramID=" & Trim(Request("RecoveryProgramID")) & "'") %>
+				</td>
+				<!-- GROUPS  -->
+				<td>
+				<%
+					If NOT orsRecoveryGroups.EOF Then
+				%>
+					<table class="GridViewAlteringRows">
+				<%				
+						Do Until orsRecoveryGroups.EOF
+							RecoveryGroupID = orsRecoveryGroups("RecoveryGroupID")
+							sql = "SELECT COUNT(*) FROM RecoveryGroupSessions WHERE RecoveryGroupID = " & RecoveryGroupID
+							WriteDebugger sql, Debugging, 0
+							Set orsTotalGroupSessions = oConn.Execute(sql)
+							TotalGroupSessions = orsTotalGroupSessions.Fields(0).Value
+							orsTotalGroupSessions.Close
+							Set orsTotalGroupSessions = Nothing
+
+							RecoveryGroupName = orsRecoveryGroups("RecoveryGroupName")
+							orsRecoveryGroups.MoveNext
+				%>
+					<tr class="GridViewRow">
+						<td align="right">
+							<nobr><a href="<%= SCRIPT_NAME %>?Template=recovery_groups&RecoveryProgramID=<%= Trim(Request("RecoveryProgramID")) %>&RecoveryTypeID=<%= RecoveryTypeID %>&RecoveryGroupID=<%= RecoveryGroupID %>"><%= RecoveryGroupName %>&nbsp;(<%= TotalGroupSessions %>)</a>&nbsp;
+						</td>
+						<td>
+							<%= Button("Button", "Add Session", "Button", "", "Add Session to " & RecoveryGroupName, "location.href='" & SCRIPT_NAME & "?Template=recovery_group_sessions&Action=Add&RecoveryGroupID=" & RecoveryGroupID & "'") %>
+							</nobr><br />
+						</td>
+					</tr>
+				<%
+						Loop
+						orsRecoveryGroups.Close
+				%>
+					</table>
+				<%
+					
+					Else
+				%>
+					<div class="ErrorMessage">No groups found.</div>
+					&nbsp;<br />
+					
+				<%
+					End If
+					
+					Set orsRecoveryGroups =  Nothing
+				%>
+					&nbsp;<br />
+					<%= Button("Button", "Add Group", "Button", "", "Add Group", "location.href='" & SCRIPT_NAME & "?Template=recovery_groups&Action=Add&RecoveryProgramID=" & Trim(Request("RecoveryProgramID")) & "'") %>
+				</td>
+			</tr>
+		<% If ProgramCounter <> 0 Then %>
+		<tr>
+			<td colspan="6">
+				<hr width="100%" size=2 noshade />
+			</td>
+		</tr>
+		<% End If %>
+<%
+		ProgramCounter = ProgramCounter + 1
+		ors.MoveNext
+	Loop
+	ors.Close
+%>
+			</table>
+		</td>
+	</tr>
+<%
+	Else
+%>
+	<tr>
+		<td class="ErrorMessage" colspan="2">No Programs found.</td>
+	</tr>
+<%
+	End If
+	Set ors = Nothing
+%>
+	
+	</table>
+	
+<% Else %>
+	
+	<%
+		SubmitButtonValue = "Add"
+		If RecoveryProgramID <> "" Then
+			SubmitButtonValue = "Save"
+			sql = "SELECT * FROM RecoveryPrograms WHERE	RecoveryProgramID = " & Trim(Request("RecoveryProgramID"))
+			'Response.Write sql & "<br>"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+				ProgramName = ors("ProgramName")
+				RecoveryTypeID = ors("RecoveryTypeID")
+				start_dt = ors("start_dt")
+				end_dt = ors("end_dt")
+				sober_dt = ors("sober_dt")
+				ors.Close
+			End If 
+			Set ors = Nothing
+		End If
+	%>
+	&nbsp;
+	<form action="<%= SCRIPT_NAME %>" method="post" id="formRecoveryProgram" name="formRecoveryProgram">
+	<table border="0" cellspacing="0" cellpadding="10" width="550">
+	<tr bgcolor="<%= RECOVERY_THEME %>">
+		<td class="RecoveryTheme"><b><%= HTMLFormat(RecoveryTypeName) %></b></td>
+		<td align="right" width="100%">
+			<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&RecoveryTypeID=" & RecoveryTypeID & "'") %>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2" class="ErrorMessage">
+			<%= RecoveryErrorMessage %>&nbsp;&nbsp;
+		</td>
+	</tr>
+	<tr>
+		<td align="right">
+			<b>Program&nbsp;Name:</b>&nbsp;
+		</td>
+		<td>
+			<%= formTextBox("ProgramName", "50", ProgramName, "RecoveryElement", "Program Name", "Invalid Program Name") %><%= REQUIRED_ICON %>
+		</td>
+	</tr>
+	<tr>
+		<td align="right">
+			<b>Type:</b>&nbsp;
+		</td>
+		<td>
+			<%= SelectBox(oConn, "SELECT RecoveryTypeID, RecoveryTypeName FROM RecoveryTypes ORDER BY RecoveryTypeName", "RecoveryTypeID", RecoveryTypeID, "RecoveryElement", "Type") %>
+		</td>
+	</tr>
+	
+	<tr>
+		<td align="right">
+			<b>Start&nbsp;Date:</b>&nbsp;
+		</td>
+		<td>
+			<%= formTextBox("start_dt", "10", start_dt, "RecoveryElement", "Start Date", "Invalid Start Date") %><%= REQUIRED_ICON %>
+		</td>
+	</tr>
+	<tr>
+		<td align="right">
+			<b>End&nbsp;Date:</b>&nbsp;
+		</td>
+		<td>
+			<%= formTextBox("end_dt", "10", end_dt, "RecoveryElement", "End Date", "Invalid End Date") %>
+		</td>
+	</tr>
+	<tr>
+		<td align="right">
+			<b>Sober&nbsp;Date:</b>&nbsp;
+		</td>
+		<td>
+			<%= formTextBox("sober_dt", "10", sober_dt, "RecoveryElement", "Sober Date", "Invalid Sober Date") %>
+		</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td>
+			<%= Submit_Button("SubmitButton", SubmitButtonValue & " Program", "Button", "", SubmitButtonValue & " Program") %>&nbsp;&nbsp;&nbsp;&nbsp;
+		</td>
+	</tr>
+	</table>
+	<%= formHidden("Template", Template) %>
+	
+	<%= formHidden("RecoveryProgramID", RecoveryProgramID) %>
+	Hidden: <%= Trim(Request("RecoveryProgramID")) %>
+	<%= formHidden("RecoveryCounselorID", RecoveryCounselorID) %>
+
+	<%= formHidden("RecoveryGroupID", RecoveryGroupID) %>
+
+	<% If Action = "" Then %>
+	
+		<%= formHidden("RecoveryTypeID", RecoveryTypeID) %>
+
+	<% End If %>
+	
+	</form>	
+<% End If %>
+
+<script type="text/javascript">
+
+	$("#start_dt").datepicker();
+	$("#end_dt").datepicker();
+	$("#sober_dt").datepicker();
+
+</script>

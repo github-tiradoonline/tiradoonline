@@ -1,0 +1,109 @@
+<% 
+	SubmitButtonValue = "Create Blood Pressure"
+	If BloodPressureID <> "" Then
+		SubmitButtonValue = "Save Blood Pressure"
+		sql = "SELECT * FROM BloodPressure WHERE BloodPressureID = " & BloodPressureID
+			WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		BloodPressure_Date = ors("BloodPressureDateTime")
+		BloodPressureDate = FormatDateTime(BloodPressure_Date, 2)
+		BloodPressureTime = FormatDateTime(BloodPressure_Date, 3)
+		BloodPressureTop = ors("BloodPressureTop")
+		BloodPressureBottom = ors("BloodPressureBottom")
+		BloodPressureComments = ors("BloodPressureComments")
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<form action="<%= SCRIPT_NAME %>" method="post" id="formBloodPressure" name="formBloodPressure">
+
+<table>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td>
+		<div class="HealthTheme"><h1 class="Header" style="padding: 5px;">Blood&nbsp;Pressure</h1></div>
+		<p>
+		<table class="GridViewAlteringRows">
+		<%
+			sql = "SELECT * FROM BloodPressure WHERE UserID = " & Session("UserID") & " ORDER BY BloodPressureDateTime DESC"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+		%>
+		<tr class="HealthTheme" valign="top">
+			<td align="right"><b>Start&nbsp;Date</b></td>
+			<td align="right"><b>Endnbsp;Date</b></td>
+			<td align="right">&nbsp;</td>
+		</tr>
+		<tr>
+			<td>
+				<%= formTextBox("BloodPressureStartDate", "5", BloodPressureStartDate, "HealthElement", "Bottom", "Invalid Blood Pressure Start") %><%= REQUIRED_ICON %>
+			</td>
+			<td>
+				<%= formTextBox("BloodPressureEndDate", "5", BloodPressureEndDate, "HealthElement", "Bottom", "Invalid Blood Pressure End") %><%= REQUIRED_ICON %>
+			</td>
+			<td>
+				<%= Button("Button", "Edit", "Button", "", "Edit", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&BloodPressureID=" & BloodPressure_ID & "'") %>&nbsp;&nbsp;
+			</td>
+		</tr>
+		</table>
+		<%
+				tempBloodPressureDate = ""
+				Do Until ors.EOF
+					BloodPressure_ID = ors("BloodPressureID")
+					BloodPressureDate = FormatDateTime(ors("BloodPressureDateTime"), 2)
+					If tempBloodPressureDate <> BloodPressureDate Then 
+						outputBloodPressureDate = BloodPressureDate & "<br />"
+						tempBloodPressureDate = BloodPressureDate
+					Else
+						outputBloodPressureDate = ""
+					End If
+					BloodPressureTime = FormatDateTime(ors("BloodPressureDateTime"), 3)
+					BloodPressureTop = ors("BloodPressureTop")
+					BloodPressureBottom = ors("BloodPressureBottom")
+					BloodPressure = BloodPressureTop & "/" & BloodPressureBottom
+					BloodPressureComments = ors("BloodPressureComments")
+		%>
+		<tr class="GridViewRow" valign="top">
+			<td align="right" <% If outputBloodPressureDate = "" Then Response.Write "bgcolor=""#ffffff"""  %>>
+				<b><%= outputBloodPressureDate %></b>
+			</td>
+			<td align="right">
+				<%= HTMLFormat(BloodPressureTime) %>
+			</td>
+			<td align="center"><%= BloodPressureColor(BloodPressure, BloodPressureBottom) %></td>
+			<td align="center"><%= BloodPressureComments %></td>
+			<td>
+				<%= Button("Button", "Edit", "Button", "", "Edit", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&BloodPressureID=" & BloodPressure_ID & "'") %>&nbsp;&nbsp;
+			</td>
+		</tr>
+		<%
+					ors.MoveNext
+				Loop
+				ors.Close
+			
+			Else
+		%>
+		<tr>
+			<td class="ErrorMessage">No records found.</td>
+		</tr>
+		<% 	
+			End If 
+			Set ors = Nothing
+		%>
+		</table>
+	</td>
+</tr>
+</table>
+<%= formHidden("Template", Template) %>
+
+<%= formHidden("BloodPressureID", BloodPressureID) %>
+
+ <script>
+$(function() {
+$( "#BloodPressureStartDate" ).datepicker();
+$( "#BloodPressureEndDate" ).datepicker();
+});
+</script>
+
+</form>

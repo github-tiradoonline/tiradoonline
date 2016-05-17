@@ -1,0 +1,95 @@
+<% If Trim(Request("ReminderErrorMessage")) <> "" Then %>
+<div class="ErrorMessage"><%= Trim(Request("ReminderErrorMessage")) %></div>
+<p></p>
+<% End If %>
+<%
+	If Action = "" Then 	
+
+	sql = "SELECT * FROM Reminders WHERE UserID = " & Session("UserID") & " ORDER BY ReminderDateTime DESC"
+	Set ors = oConn.Execute(sql)
+	
+	If NOT ors.EOF Then
+%>
+<!-- #include virtual="/reminders/includes/grid.inc" -->
+<% Else %>
+
+<div class="ErrorMessage">No records found.</div>
+<% 
+	End If 
+	Set ors = Nothing
+%>
+
+<% Else %>
+<%
+	SubmitButtonValue = "Create"	
+
+	If ReminderID <> "" Then
+		sql = "SELECT * FROM Reminders WHERE ReminderID = " & ReminderID
+		Set ors = oConn.Execute(sql)
+
+		If NOT ors.EOF Then
+			ReminderID = ors("ReminderID")
+			ReminderDateTime = ors("ReminderDateTime")
+			ReminderDate = FormatDateTime(ReminderDateTime, 2)
+			ReminderTime = FormatDateTime(ReminderDateTime, 3)
+			ReminderName = ors("ReminderName")
+			ReminderDescription = ors("ReminderDescription")
+			SubmitButtonValue = "Save"
+			ors.Close
+		End If
+	
+		Set ors = Nothing
+	Else
+		ReminderDateTime = Trim(Request("ReminderDateTime"))
+		ReminderName = Trim(Request("ReminderName"))
+		ReminderDescription = Trim(Request("ReminderDescription"))
+	End If
+%>
+<form action="<%= SCRIPT_NAME %>" method="post" id="formReminders" name="formReminders">
+<table cellpadding="5">
+<tr>
+	<td class="frm_label">Date:</b></td>
+	<td>
+		<%= formTextBox("ReminderDate", "10", ReminderDate, "RemindersElement", "Reminder Date", "Invalid Date") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Time:</td>
+	<td>
+		<%= formTextBox("ReminderTime", "10", ReminderTime, "RemindersElement", "Reminder Time", "Invalid Time") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Reminder:</td>
+	<td>
+		<%= formTextBox("ReminderName", "50", ReminderName, "RemindersElement", "Reminder", "Invalid Reminder") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr valign="top">
+	<td class="frm_label">Description:</td>
+	<td>
+			<%= formTextArea("ReminderDescription", ReminderDescription, "400", "100", "RemindersElement", "ReminderDescription", "Invalid Description") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">&nbsp;</td>
+	<td>
+		<%= Submit_Button("SubmitButton", SubmitButtonValue & " Reminder", "Button", "", SubmitButtonValue & " Reminder") %>&nbsp;&nbsp;&nbsp;
+		<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=Reminders'") %>&nbsp;&nbsp;&nbsp;
+		<%= Button("Button", "Delete", "DeleteButton", "", "Delete", "DeleteItem('Are you sure you want to delete this Reminder?', '" & SCRIPT_NAME & "?Template=" & Template & "&SubmitButton=Delete&ReminderID=" & ReminderID & "')") %>
+	</td>
+</tr>
+</table>
+<% End If %>
+
+<%= formHidden("ReminderID", ReminderID) %>
+
+<%= formHidden("Template", Template) %>
+</form>
+
+<script type="text/javascript">
+
+	$('#ReminderDate').datepicker();
+
+</script>
+

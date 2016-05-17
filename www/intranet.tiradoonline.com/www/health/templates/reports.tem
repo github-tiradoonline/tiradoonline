@@ -1,0 +1,309 @@
+<form id="HealthReports" name="HealthReports" action="<%= SCRIPT_NAME %>" method="post" id="formHealthReports" name="formHealthReports">
+<%
+	TimesTaken = Trim(Request("TimesTaken"))
+	If TimesTaken = "" Then TimesTaken = "5"
+%>
+<div id="tabs">
+	<ul>
+		<li><a href="#tabs-1" title="Report 1">Report 1</a></li>
+		<li><a href="#tabs-2" title="Report 1">Report 2</a></li>
+	</ul>
+
+
+
+	<div id="tabs-1">
+		<p>
+
+<table>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td>
+		<div class="HealthTheme"><h1 class="Header" style="padding: 5px;">Health Reports</h1></div>
+		<p>
+		<div class="ErrorMessage" id="HealthErrorMessage" name="HealthErrorMessage"><%= HealthErrorMessage %></div>
+		<div>
+			<div style="float:right">
+				<b>Last 
+				<select id="TimesTaken" name="TimesTaken" class="HealthElement">
+				<% For x = 1 To 30 %>
+					<option <% If CStr(TimesTaken) = CStr(x) Then Response.Write "SELECTED" %>><%= x %></option>
+				<% Next %>
+				</select>
+				time(s) taken.</b>
+				<%= Submit_Button("SubmitButton", "Generate Report", "Button", "", "Generate Report") %>
+			</div>
+		</div>
+		&nbsp;<br />
+		&nbsp;<br />
+		&nbsp;<br />
+		<%
+			sql = "sp_Health_Reports " & Session("UserID") & ", " & TimesTaken & ", 1"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			
+			If NOT ors.EOF Then
+				HeartRate = ors("HeartRate")
+				Sugar = ors("Sugar")
+				Temperature = ors("Temperature")
+				BloodPressureTop = ors("BloodPressureTop")
+				BloodPressureBottom = ors("BloodPressureBottom")
+				If BloodPressureTop = "" OR BloodPressureBottom = "" Then
+					BloodPressure = ""
+				Else
+					BloodPressure = BloodPressureTop & "/" & BloodPressureBottom
+				End If
+				ors.Close
+		%>
+		<table cellpadding="5" class="GridView">
+		<tr class="HealthTheme" align="center">
+			<td colspan="4">AVERAGE</td>
+		</tr>
+		<tr class="HealthTheme" align="center">
+			<td><a href="<%= SCRIPT_NAME %>?Template=heart_rate">Heart&nbsp;Rate</a></td>
+			<td><a href="<%= SCRIPT_NAME %>?Template=sugar">Sugar</a></td>
+			<td><a href="<%= SCRIPT_NAME %>?Template=temperature">Temperature</a></td>
+			<td><a href="<%= SCRIPT_NAME %>?Template=blood_pressure">Blood&nbsp;Pressure</a></td>
+		</tr>
+		<tr class="GridViewRow" align="center">
+			<td><%= HeartRate %>&nbsp;</td>
+			<td><%= SugarColor(Sugar) %>&nbsp;</td>
+			<td><%= TemperatureColor(FormatNumber(Temperature, 1)) %>&nbsp;</td>
+			<td><%= BloodPressureColor(BloodPressure, BloodPressureBottom) %>&nbsp;</td>
+		</tr>
+		</table>
+		<% Else %>
+		<div class="ErrorMessage">No Records Found.</div>
+		<% 
+			End If
+			
+			Set ors = Nothing 
+		%>
+
+
+		<p>
+		<%
+			sql = "sp_Health_Reports " & Session("UserID") & ", " & TimesTaken & ", 2"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+		%>
+		<table class="GridView" cellpadding="5">
+		<tr class="HealthTheme" class="GridView">
+			<td colspan="2" align="center">Medicine(s)&nbsp;Taken&nbsp;(ALL)</td>
+		</tr>
+		<%
+			Do Until ors.EOF
+				MedicineID = ors("MedicineID")
+				Medicine = ors("Medicine")
+				Total = ors("Total")
+		%>
+		<tr class="GridViewRow">
+			<td><a href="<%= SCRIPT_NAME %>?Template=medicine&MedicineID=<%= MedicineID %>"><%= Medicine %></a></td>
+			<td align="center"><%= Total %></td>
+		</tr>
+		<%
+				ors.MoveNext
+			Loop
+			ors.Close
+		%>
+		</table>
+		<%
+			Else
+		%>
+		<div class="ErrorMessage">No Records Found.</div>
+		<%
+			End If
+			Set ors = Nothing
+		%>
+	</td>
+</tr>
+</table>
+<%= formHidden("Template", Template) %>
+</form>
+<script>
+	$(document).ready
+	(
+		function()
+		{
+			$('#TimesTaken').change
+			(
+				function()
+				{
+					$('#HealthReports').submit();
+				}
+			);
+		}
+	);
+</script>
+
+
+		</p>
+	</div>
+
+
+	<!-- TAB 2 -->
+	<div id="tabs-2">
+		<p>
+		<div class="HealthTheme"><h1 class="Header" style="padding: 5px;">Last 50</h1></div>
+		
+		<table class="GridViewAlteringRows">
+		<tr class="HealthTheme">
+			<td>Medicine</td>
+			<td>Sugar</td>
+			<td>Blood&nbsp;Pressure</td>
+			<td>Heart&nbsp;Rate</td>
+			<td>Temperature</td>
+			<td>Weight</td>
+		</tr>
+		<tr valign="top">
+			<!-- MEDICINE -->
+			<td>
+			<%
+				sql = "SELECT TOP 50 a.*, b.GenericName, MedicineDose = b.MedicineName, MedicineDoseAmount = CONVERT(VARCHAR, a.Amount) + ' ' + c.UnitName  FROM MedicineDose a, Medicine b, Unit c WHERE a.MedicineID = b.MedicineID AND b.UnitID = c.UnitID AND b.UserID = " & Session("UserID")
+				sql = sql & " ORDER BY a.MedicineDoseDateTime DESC, a.create_dt DESC"
+				Set ors = oConn.Execute(sql)
+				If NOT ors.EOF Then
+					Do Until ors.EOF
+						MedicineDose = ors("MedicineDose")
+						GenericName = ors("GenericName")
+						If GenericName <> "" Then MedicineDose = MedicineDose & "&nbsp;(" & GenericName & ")"
+			%>
+					<u><%= MedicineDose %></u><p />
+			<%
+						ors.MoveNext
+					Loop
+					ors.Close
+				End If
+				Set ors = Nothing			
+			%>
+			
+			</td>
+
+
+			<!-- SUGAR -->
+			<td align="center">
+			<%
+				sql = "SELECT TOP 50 * FROM Sugar WHERE UserID = " & Session("UserID") & " ORDER BY SugarDateTime DESC, create_dt DESC"
+				Set ors = oConn.Execute(sql)
+				If NOT ors.EOF Then
+					Do Until ors.EOF
+						Sugar = ors("Sugar")
+			%>
+					<%= SugarColor(Sugar) %><p />
+			<%
+						ors.MoveNext
+					Loop
+					ors.Close
+				End If
+				Set ors = Nothing			
+			%>
+			
+			</td>
+
+
+			<!-- BLOOD PRESSURE -->
+			<td align="center">
+			<%
+				sql = "SELECT TOP 50 * FROM BloodPressure WHERE UserID = " & Session("UserID") & " ORDER BY BloodPressureDateTime DESC"
+				Set ors = oConn.Execute(sql)
+				If NOT ors.EOF Then
+					Do Until ors.EOF
+						BloodPressureTop = ors("BloodPressureTop")
+						BloodPressureBottom = ors("BloodPressureBottom")
+						BloodPressure = BloodPressureTop & "/" & BloodPressureBottom
+			%>
+					<%= BloodPressureColor(BloodPressure, BloodPressureBottom) %><p />
+			<%
+						ors.MoveNext
+					Loop
+					ors.Close
+				End If
+				Set ors = Nothing			
+			%>
+			
+			
+			</td>
+
+
+			<!-- HEART RATE -->
+			<td align="center">
+			<%
+				sql = "SELECT TOP 50 * FROM HeartRate WHERE UserID = " & Session("UserID") & " ORDER BY HeartRateDateTime DESC"
+				Set ors = oConn.Execute(sql)
+				If NOT ors.EOF Then
+					Do Until ors.EOF
+						HeartRate = ors("HeartRate")
+			%>
+					<%= HeartRate %><p />
+			<%
+						ors.MoveNext
+					Loop
+					ors.Close
+				End If
+				Set ors = Nothing			
+			%>
+			
+			
+			</td>
+
+
+			<!-- TEMPERATURE -->
+			<td align="center">
+			
+			<%
+				sql = "SELECT TOP 50 * FROM Temperature WHERE UserID = " & Session("UserID") & " ORDER BY TemperatureDateTime DESC"
+				Set ors = oConn.Execute(sql)
+				If NOT ors.EOF Then
+					Do Until ors.EOF
+						Temperature = ors("Temperature")
+			%>
+					<%= FormatNumber(Temperature, 1) %><p />
+			<%
+						ors.MoveNext
+					Loop
+					ors.Close
+				End If
+				Set ors = Nothing			
+			%>
+			
+			</td>
+
+
+			<!-- WEIGHT -->
+			<td align="center">
+			<%
+				sql = "SELECT TOP 50 * FROM Weight WHERE UserID = " & Session("UserID") & " ORDER BY WeightDateTime DESC"
+				Set ors = oConn.Execute(sql)
+				If NOT ors.EOF Then
+					Do Until ors.EOF
+						Weight = ors("Weight")
+			%>
+					<%= Weight %><p />
+			<%
+						ors.MoveNext
+					Loop
+					ors.Close
+				End If
+				Set ors = Nothing			
+			%>
+			
+			
+			</td>
+		</tr>
+		</table>
+		
+		
+		
+		</p>
+	</div>
+	
+	
+	
+</div>
+
+<script>
+
+	$( "#tabs" ).tabs();
+	
+</script>
+</form>

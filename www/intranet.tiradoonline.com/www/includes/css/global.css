@@ -1,0 +1,501 @@
+<% 
+	shadow = "-moz-box-shadow: 3px 13px 4px #000;-webkit-box-shadow: 3px 3px 4px #000;box-shadow: 3px 3px 4px #000;/* For IE 8 */-ms-filter: ""progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000')"";/* For IE 5.5 - 7 */filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');" 
+%>
+<style type="text/css">
+A {
+	text-decoration : none;
+}
+
+A:hover {
+	color: #000000;
+	text-decoration : underline;
+}
+
+.BankingAccountIcon {
+	float: left;
+	text-align: center;
+	padding: 20px;
+	text-underline: none;
+}
+
+.BankingAccountIconName {
+	text-shadow: 1px 1px #000000;
+	text-underline: none;
+	font-size: 12px;
+	color: #000000;
+	position: relative;
+	top:-40px;
+	color: #ffffff;
+}
+
+.BankingHover {
+	background: <%= BANKING_THEME %>;
+	color : white;
+	font-family : Verdana;
+	font-size: 8pt;
+	font-weight : bold;
+	border: 1px solid #000000;
+}
+
+.BankingHover A {
+	background: <%= BANKING_THEME %>;
+	color : white;
+	font-family : Verdana;
+	font-size: 7pt;
+	font-weight : bold;
+}
+
+BODY {
+	font-family : Cambria;
+	padding: 0px;
+	margin: 0px;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center; 
+	background-image:url('/images/background/logo.gif');	
+}
+
+.BODY_home {
+	font-family : Cambria;
+	background-color: <%= HOME_THEME %>;
+}
+
+.Button {
+	text-shadow: 2px 2px #000000;
+	text-transform: uppercase;
+	background-color: <%= Application("ThemeColor") %>;
+	color: #ffffff;
+	-moz-border-radius: 15px;
+  	-webkit-border-radius: 15px;
+  	border: 2px solid #000000;
+	padding-top: 3px;
+	padding-bottom: 3px;
+	padding-left: 20px;
+	padding-right: 20px;
+	-moz-box-shadow: 3px 13px 4px #000;
+	-webkit-box-shadow: 3px 3px 4px #000;
+	box-shadow: 3px 3px 4px #000;
+	/* For IE 8 */
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000')";
+	/* For IE 5.5 - 7 */
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
+}
+
+.Button_focus {
+  	border: 2px solid #ff0000;
+  	color: #ff0000;
+}
+
+.Button_HOVER
+{
+	text-shadow: 2px 2px #FFFFFF;
+	text-transform: uppercase;
+	background-color: #D0E5FE;
+	color: #ff0000;
+	-moz-border-radius: 15px;
+  	-webkit-border-radius: 15px;
+  	border: 2px solid #ff0000;
+	padding-top: 3px;
+	padding-bottom: 3px;
+	padding-left: 20px;
+	padding-right: 20px;
+	-moz-box-shadow: 3px 13px 4px #000;
+	-webkit-box-shadow: 3px 3px 4px #000;
+	box-shadow: 3px 3px 4px #000;
+	/* For IE 8 */
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000')";
+	/* For IE 5.5 - 7 */
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
+}
+
+.CreditCardIcon {
+	float: left;
+	text-align: center;
+	padding: 20px;
+	text-underline: none;
+}
+
+.CreditCardIconName {
+	text-shadow: 1px 1px <%= CREDITCARDS_THEME %>;
+	text-underline: none;
+	font-size: 12px;
+	color: #000000;
+	position: relative;
+	top:0px;
+}
+ 
+.DeleteButton {
+	text-shadow: 2px 2px #000000;
+	text-transform: uppercase;
+	background-color: #ff0000;
+	color: #ffffff;
+	-moz-border-radius: 15px;
+  	-webkit-border-radius: 15px;
+  	border: 2px solid #000000;
+	padding-top: 3px;
+	padding-bottom: 3px;
+	padding-left: 20px;
+	padding-right: 20px;
+	-moz-box-shadow: 3px 13px 4px #000;
+	-webkit-box-shadow: 3px 3px 4px #000;
+	box-shadow: 3px 3px 4px #000;
+	/* For IE 8 */
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000')";
+	/* For IE 5.5 - 7 */
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
+}
+
+.ErrorMessage {
+	color : red;
+	font-weight : bold;
+	font-size: 16px;
+}
+
+fieldset {
+	-moz-box-shadow: 3px 13px 4px #000;
+	-webkit-box-shadow: 3px 3px 4px #000;
+	box-shadow: 3px 3px 4px #000;
+}
+
+legend
+{
+	font-size: 20px;
+	font-weight: bold;
+}
+
+.frm_label {
+	text-align: right;
+	font-weight: bold;
+	font-size: 15px;
+}
+
+.GridView {
+	background-color: #000000;
+	padding: 0px;
+	margin: 5px;
+}
+
+.GridViewAlteringRows {
+}
+
+.GridViewAlteringRows TR:nth-child(even) {
+	background-color: #dddddd;
+}
+
+.GridViewAlteringRows TR TD A:nth-child(even) {
+	color: #000000;
+}
+
+.GridViewAlteringRows TR TD A:nth-child(odd) {
+	color: #000000;
+}
+
+.GridViewAlteringRows TR TD {
+	padding: 5px;
+}
+
+.GridViewRow {
+	background-color: #ffffff;
+}
+
+.GridView TR:nth-child(even) {
+	color: #ffffff;
+	background-color: #dddddd;
+}
+
+.GridView TR:nth-child(even) A {
+	color: #ffffff;
+	background-color: #dddddd;
+}
+
+.GridView TR TD {
+	padding: 5px;
+}
+
+.GridViewRowHover {
+	background-color: <%= Application("ThemeColor") %>;
+}
+
+.GridViewRowHover A {
+	color: #ffffff;
+	text-decoration: none;
+}
+
+.Header {
+	border: 1px solid #000000;
+	text-shadow: 1px 1px #000000;
+	text-transform: uppercase;
+}
+
+.iconName {
+	/*
+	width: 116px;
+	text-align: center;
+	color: #000000;
+	font-size:15px;
+	*/
+	text-shadow: 1px 1px #000000;
+	text-underline: none;
+	top: -5px;
+	font-size: 15px;
+	color: #000000;
+	position: relative;
+	color: #ffffff;
+	text-align: center;
+	padding: 5px;
+	background-color: <%= Application("ThemeColor") %>;
+	-moz-box-shadow: 3px 13px 4px #000;
+	-webkit-box-shadow: 3px 3px 4px #000;
+	box-shadow: 3px 3px 4px #000;
+	/* For IE 8 */
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000')";
+	/* For IE 5.5 - 7 */
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
+	border: 1px;
+	border-style: solid;
+	border-color: #000000;
+	border-radius:5px;
+ 	/* mozilla */
+	-moz-border-radius:5px;
+ 	/* webkit */
+	-webkit-border-radius:5px;
+}
+
+.iconName a {
+	/*
+	width: 116px;
+	text-align: center;
+	color: #000000;
+	font-size:15px;
+	*/
+	text-shadow: 1px 1px #000000;
+	text-underline: none;
+	font-size: 15px;
+	color: #000000;
+	color: #ffffff;
+	text-align: center;
+	padding: 5px;
+	background-color: <%= Application("ThemeColor") %>;
+	/* For IE 8 */
+	/* For IE 5.5 - 7 */
+	border-color: #000000;
+ 	/* mozilla */
+}
+
+.iconName_sm {
+	/*
+	width: 116px;
+	text-align: center;
+	color: #000000;
+	font-size:15px;
+	*/
+	text-shadow: 1px 1px #000000;
+	text-underline: none;
+	top: -5px;
+	font-size: 12px;
+	color: #000000;
+	position: relative;
+	color: #ffffff;
+	text-align: center;
+	padding: 5px;
+	background-color: <%= Application("ThemeColor") %>;
+	-moz-box-shadow: 3px 13px 4px #000;
+	-webkit-box-shadow: 3px 3px 4px #000;
+	box-shadow: 3px 3px 4px #000;
+	/* For IE 8 */
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000')";
+	/* For IE 5.5 - 7 */
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
+	border: 1px;
+	border-style: solid;
+	border-color: #000000;
+	border-radius:5px;
+ 	/* mozilla */
+	-moz-border-radius:5px;
+ 	/* webkit */
+	-webkit-border-radius:5px;
+}
+
+.iconSubNav {
+	text-align: center;
+	float: left;
+	padding: 30px
+}
+
+.iconSubNav_sm {
+	text-align: center;
+	float: left;
+	padding: 10px
+}
+
+INPUT, SELECT, TEXTAREA {
+	margin: 2px;
+	padding: 5px;
+	border: 1px;
+	border-style: solid;
+	border-color: #000000;
+	border-radius:5px;
+ 	/* mozilla */
+	-moz-border-radius:5px;
+ 	/* webkit */
+	-webkit-border-radius:5px;
+	text-shadow: 1px 1px #000000;
+}
+
+#LoginBoxLogin {
+	top: 20%;
+	left: 18%;
+	position: absolute;
+	display: none;
+}
+
+#LoginBoxSite {
+	display: none;
+}
+
+.Navigation {
+	width: 200px;
+	padding: 5px;
+	margin: 5px;
+}
+
+#NavigationTable {
+	-moz-box-shadow: 3px 13px 4px #000;
+	-webkit-box-shadow: 3px 3px 4px #000;
+	box-shadow: 3px 3px 4px #000;
+	/* For IE 8 */
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000')";
+	/* For IE 5.5 - 7 */
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
+}
+
+.shadow {
+	<%= shadow %>
+}
+
+.SubHeader {
+	text-transform: uppercase;
+	border: 1px solid #000000;
+	text-shadow: 1px 1px #000000;
+}
+
+.subnav { 
+	position: fixed;
+	background: white;
+	border: 1px;
+	border-style: solid;
+	display: none;
+	z-index: 1;
+}
+
+.SubNavigation_off {
+	color : black;
+	font-family : Verdana;
+	font-size : 10px;
+	font-weight : bold;
+	text-decoration : none;
+}
+
+.SubNavigation_off:hover {
+	text-decoration : none;
+}
+
+.SubNavigation_on {
+	position: relative;
+}
+
+.SubNavigation_on A {
+	font-size: 14px;
+	font-face: Verdana;
+	font-weight: bold;
+	position: relative;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	-moz-box-shadow: 3px 13px 4px #000000;
+	-webkit-box-shadow: 3px 3px 4px #000000;
+	/* For IE 8 */
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000')";
+	/* For IE 5.5 - 7 */
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
+}
+
+TD {
+	font-size: 10px;
+}
+
+.textError {
+	opacity: 1;
+	background-color: 
+	border: 1px;
+	border-style: solid;
+	border-color: #ff0000;
+}
+
+.textFocus {
+	opacity: 1;
+	border:1px solid #fafafa;
+  	-webkit-box-shadow:0 0 6px <%= PageThemeColor %>;
+  	-moz-box-shadow:0 0 5px <%= PageThemeColor %>;
+  	box-shadow:0 0 5px <%= PageThemeColor %>;
+  	outline: none;
+
+/*  	border: 1px;
+	border-style: solid;
+	border-color: #ff0000; */
+}
+
+#TodaysDate {
+	padding-right: 10px;
+	color: #ffffff;
+	text-align:right;
+	text-shadow: 1px 1px #000000;
+}
+
+.TextBox, .SelectBox
+{
+	opacity: .5;
+	padding: 5px;
+	border: 1px;
+	border-style: solid;
+	border-color: #000000;
+	border-radius:5px;
+ 	/* mozilla */
+	-moz-border-radius:5px;
+ 	/* webkit */
+	-webkit-border-radius:5px;
+}
+ 
+.TextBox_focus, .SelectBox_focus
+{
+	padding: 5px;
+	border-width: 5px;
+	border-style: solid;
+	border-color: #ff0000;
+	border-radius:5px;
+ 	/* mozilla */
+	-moz-border-radius:5px;
+ 	/* webkit */
+	 -webkit-border-radius:5px;
+}
+
+.TextShadow
+{
+	text-shadow: 1px 1px #000000;
+}
+
+.ui-menu { 
+	font-weight: bold;
+	font-size: 12px; 
+	width: 200px;
+	color: <%= SNIPPETS_THEME %>;
+}
+
+</style>
+
+
+<!-- #include virtual="/includes/css/themes.css" -->
+<!-- #include virtual="/includes/css/elements.css" -->
+<!-- #include virtual="/includes/css/modal.css" -->
+<!-- #include virtual="/includes/css/tooltip.css" -->
+<!-- #include virtual="/includes/css/jquery-ui.css" -->
+

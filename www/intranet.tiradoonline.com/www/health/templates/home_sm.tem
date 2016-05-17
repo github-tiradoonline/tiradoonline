@@ -1,0 +1,90 @@
+	<div style="width:100px; text-align:center" >
+		<div class="iconSubNav_sm">
+			<a href="/health/health.asp?Template=all"><img src="/images/icons/all_health_off.gif" title="All" width="75" height="76" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm">All</div>
+		</div>	
+
+		<div class="iconSubNav_sm">
+			<a href="/health/health.asp?Template=medicine_last_100"><img src="/images/icons/last_100_off.gif" title="Last 100" width="75" height="76" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm">Last&nbsp;100<br />Transactions</div>
+		</div>	
+
+		<div class="iconSubNav_sm">
+			<a href="/health/health.asp?Template=sugar"><img src="/images/icons/sugar_off.gif" title="Sugar Levels" width="75" height="76" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm">Sugar</div>
+		</div>	
+	
+		<div class="iconSubNav">
+			<a href="/health/health.asp?Template=medicine_dose"><img src="/images/icons/medicine_dose_off.gif" title="Medicine Dose" width="105" height="116" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName"><a href="<%= SCRIPT_NAME %>?Template=medicine_dose">Medicine&nbsp;Dose</a></div>
+			<div class="iconName"><a href="<%= SCRIPT_NAME %>?Template=medicine">Medicine</a></div>
+			<div class="iconName"><a href="<%= SCRIPT_NAME %>?Template=medicine_dose_package">Medicine&nbsp;Package</a></div>
+			<div class="iconName"><a href="<%= SCRIPT_NAME %>?Template=medicinerefill">Medicine&nbsp;Refills</a></div>
+		</div>	
+<!-- 		<div class="iconSubNav_sm">
+			<a href="/health/health.asp?Template=medicine"><img src="/images/icons/medicine_off.gif" title="Medicine" width="75" height="76" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm">Medicine</div>
+		</div>	
+ -->	
+		<div class="iconSubNav_sm">
+			<a href="/health/health.asp?Template=blood_pressure"><img src="/images/icons/blood_pressure_off.gif" title="Blood Pressure" width="75" height="76" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm">Blood Pressure</div>
+		</div>	
+
+		<div class="iconSubNav_sm">
+			<a href="/health/health.asp?Template=heart_rate"><img src="/images/icons/heart_rate_off.gif" title="Heart Rate" width="75" height="76" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm">Heart Rate</div>
+		</div>	
+
+		<div class="iconSubNav_sm">
+			<a href="/health/health.asp?Template=oxygen"><img src="/images/icons/oxygen_off.gif" title="Oxygen" width="75" height="76" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm">Oxygen</div>
+		</div>	
+	
+		<div class="iconSubNav_sm">
+			<a href="/health/health.asp?Template=weight"><img src="/images/icons/weight_off.gif" title="Weight" width="75" height="76" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm">Weight</div>
+		</div>	
+
+		<div class="iconSubNav_sm">
+			<a href="/health/health.asp?Template=temperature"><img src="/images/icons/temperature_off.gif" title="Temperature" width="75" height="76" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm">Temperature</div>
+		</div>	
+<!-- 	
+		<div class="iconSubNav_sm">
+			<a href="/health/health.asp?Template=insulin"><img src="/images/icons/tests_off.gif" title="" width="75" height="76" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm">Insulin</div>
+		</div>	
+	
+ -->		
+	 	<div class="iconSubNav_sm">
+			<a href="/health/health.asp?Template=tests"><img src="/images/icons/tests_off.gif" title="Tests" width="75" height="76" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm">Tests</div>
+		</div>	
+		
+		<div class="iconSubNav_sm">
+			<a href="/health/health.asp?Template=reports"><img src="/images/icons/reports_off.gif" title="Reports" width="75" height="76" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm">Reports</div>
+		</div>	
+	
+		<div class="iconSubNav_sm">
+			<a href="/health/health.asp?Template=export"><img src="/images/icons/excel_off.gif" title="Export" width="75" height="76" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm">Export</div>
+		</div>	
+	
+		<div class="iconSubNav_sm">
+			<a href="/health/health.asp?Template=hospital"><img src="/images/icons/hospital_off.gif" title="Hospitals" width="75" height="76" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm">Hospitals</div>
+		</div>	
+	
+		<div class="iconSubNav_sm">
+			<a href="/health/health.asp?Template=doctor"><img src="/images/icons/doctor_off.gif" title="Doctors" width="75" height="76" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm">Doctors</div>
+		</div>	
+	
+		<div class="iconSubNav_sm">
+			<a href="/health/health.asp?Template=pharmacy"><img src="/images/icons/pharmacy_off.gif" title="Pharmacy(s)" width="75" height="76" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm">Pharmacies</div>
+		</div>	
+	
+	</div>		

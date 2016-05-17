@@ -1,0 +1,381 @@
+<%
+	If Request.Form("CompanyID") = "" Then
+		CompanyID = Trim(Request.QueryString("CompanyID"))
+	Else
+		CompanyID = Trim(Request.Form("CompanyID"))
+	End If
+	CurrentWeek  = Request("CurrentWeek")
+
+	ErrorMessage = ""
+	SubmitButton = Trim(Request("SubmitButton"))
+	
+	If SubmitButton = "Cancel" Then Response.Redirect Request.ServerVariables("SCRIPT_NAME") & "?CompanyID=" & CompanyID & "&Template=" & Template
+
+	If CompanyID = "" Then
+		sql = "sp_Companies_Count " & Session("UserID")
+		Set TotalCompanies = oConn.Execute(sql)
+		TOTAL = TotalCompanies("TOTAL")
+		TotalCompanies.Close
+		Set TotalCompanies = Nothing
+
+		sql = "sp_Companies_CompanyID_CompanyName " & Session("UserID")
+		Set Companies = oConn.Execute(sql)
+		If Debugging Then Response.Write "<font color=#ffffff>" & sql & "</font><p>"
+		If TOTAL = 1 Then
+			CompanyID = Companies("CompanyID")
+			Companies.Close
+			Set Companies = Nothing
+			Response.Redirect Request.ServerVariables("SCRIPT_NAME") & "?CompanyID="& CompanyID & "&Template=" & Template
+		End If
+		Title = UCase(Session("UserName")) & "&nbsp;-&nbsp;Companies"
+		If Total = 0 Then
+			ErrorMessage = "No&nbsp;companies available."
+		Else
+			'ErrorMessage = "Select a company"
+		End IF
+	Else
+		Response.Cookies("CompanyID") = CompanyID
+		Response.Cookies("CompanyID").Expires = Date + 60
+		Redim WeeksArray(1)
+		sql = "SELECT MinDate = (SELECT MIN(a.WorkDate) FROM Hours a, Companies b WHERE a.CompanyID = b.CompanyID AND b.CompanyID = " & CompanyID & "), " & _
+					 "MaxDate = (SELECT MAX(a.WorkDate) FROM Hours a, Companies b WHERE a.CompanyID = b.CompanyID AND b.CompanyID = " & CompanyID & "), " & _
+					 "CompanyName = (SELECT CompanyName FROM Companies WHERE CompanyID = " & CompanyID & ")"
+
+		Set ors = oConn.Execute(sql)
+		WriteDebugger sql, Debugging, 0
+
+		If NOT IsNull(ors("MinDate")) Then
+			CompanyName = ors("CompanyName")
+			MinDate = ors("MinDate")
+			MaxDate = ors("MaxDate")
+		Else
+			CompanyName = ors("CompanyName")
+			MinDate = Date
+			MaxDate = Date
+		End IF
+		Title = UCase(Session("UserName")) & "&nbsp;-&nbsp;" & CompanyName & "&nbsp;-&nbsp;Work Weeks"
+		ors.Close
+		Set ors = Nothing
+		
+		WeeksApart = DateDiff("w", MinDate, MaxDate)
+		If Debugging Then Response.Write "Weeks apart: " & WeeksApart & "<p>"
+	End If
+	
+	Function SelectBox(SelectBoxName, Hourvar)
+		SelectString = ""
+		SelectString = SelectString & "<select name=""" & SelectBoxName & """ class=""EmploymentElement"">" & vbCrLF
+		
+		SelectString = SelectString & "<option value=""0"">---------------</option>" & vbCrLF
+		DisplayTime = 1.0
+		AMPM = "AM"
+		For y = 1.0 To 23.5 STEP .5
+			If Instr(CStr(y), ".5") > 0 Then
+				If y = Hourvar Then
+					SelectString = SelectString & "<option value=""" & y & """ SELECTED>" & Replace(CStr(DisplayTime), ".5", "") & ":30 " & AMPM & "</option>" & vbCrLF
+				Else
+					SelectString = SelectString & "<option value=""" & y & """>" & Replace(CStr(DisplayTime), ".5", "") & ":30 " & AMPM & "</option>" & vbCrLF
+				End If
+			Else
+				If y = Hourvar Then
+					SelectString = SelectString & "<option value=""" & y & """ SELECTED>" & DisplayTime & ":00 " & AMPM & "</option>" & vbCrLF
+				Else
+					SelectString = SelectString & "<option value=""" & y & """>" & DisplayTime & ":00 " & AMPM & "</option>" & vbCrLF
+				End If
+			End If
+			DisplayTime = DisplayTime + .5
+			If DisplayTime = 12.0 Then AMPM = "PM"
+			If DisplayTime = 13.0 Then DisplayTime = 1.0
+		Next
+		SelectString = SelectString & "</select>" & vbCrLF
+		SelectBox = SelectString
+	End Function
+
+	Function LunchHoursBox(LunchBoxName, Lunchvar)
+		SelectString = ""
+		Redim LunchArray(8,1)
+		LunchArray(0,0) = "0.0"
+		LunchArray(0,1) = "---------------"
+		LunchArray(1,0) = ".25"
+		LunchArray(1,1) = "15 min."
+		LunchArray(2,0) = ".50"
+		LunchArray(2,1) = "30 min."
+		LunchArray(3,0) = ".75"
+		LunchArray(3,1) = "45 min."
+		LunchArray(4,0) = "1"
+		LunchArray(4,1) = "60 min."
+		LunchArray(5,0) = "1.25"
+		LunchArray(5,1) = "75 min."
+		LunchArray(6,0) = "1.50"
+		LunchArray(6,1) = "90 min."
+		LunchArray(7,0) = "1.75"
+		LunchArray(7,1) = "105 min."
+		LunchArray(8,0) = "2"
+		LunchArray(8,1) = "120 min."
+
+		SelectString = SelectString & "<select name=""" & LunchBoxName & """ class=""EmploymentElement"">" & vbCrLF
+		For y = 0 To UBound(LunchArray)
+			If CDbl(Lunchvar) = CDbl(LunchArray(y,0)) Then
+				SelectString = SelectString & "<!-- " & Lunchvar & " = " & LunchArray(y,0) & " -->"
+				SelectString = SelectString & "<option value=""" & LunchArray(y,0) & """ SELECTED>" & LunchArray(y,1) & "</option>" & vbCrLF
+			Else
+				SelectString = SelectString & "<!-- " & Lunchvar & " = " & LunchArray(y,0) & " -->"
+				SelectString = SelectString & "<option value=""" & LunchArray(y,0) & """>" & LunchArray(y,1) & "</option>" & vbCrLF
+			End If
+		Next
+		SelectString = SelectString & "</select>" & vbCrLF
+		LunchHoursBox = SelectString
+	End Function
+
+	If SubmitButton = "Update" Then
+		ErrorMessage = "Records Updated."
+		For Each Item in Request.Form
+			If InStr(Item, "_") > 0 Then
+				HourArray = Split(Item, "_")
+				MonthVar = HourArray(1)
+				DayVar = HourArray(2)
+				YearVar = HourArray(3)
+				sql = ""
+				sql = "SELECT WorkDate FROM Hours "
+				sql = sql & "WHERE CompanyID = " & CompanyID & " AND "
+				sql = sql & "WorkDate = '" & MonthVar & "/" & DayVar & "/" & YearVar & "'"
+				WriteDebugger sql, Debugging, 0
+				Set ors = oConn.Execute(sql)
+
+				sql = null
+				sql = ""
+				If ors.EOF Then
+					sql = sql & "INSERT INTO Hours "
+					sql = sql & "(CompanyID, WorkDate, StartHour, EndHour, LunchHour) "
+					sql = sql & "VALUES "
+					sql = sql & "(" & CompanyID  & ", '" & MonthVar & "/" & DayVar & "/" & YearVar & "', 0, 0, 0)"
+					WriteDebugger sql, Debugging, 0
+					oConn.Execute sql
+				End If
+				ors.Close
+				Set ors = Nothing
+
+				sql = null
+				sql = ""
+				If HourArray(0) = "StartHour" Then
+					sql = sql & "UPDATE Hours SET StartHour = " & Request(Item) & ", "
+					sql = sql & "EndHour = " & Request("EndHour_" & HourArray(1) & "_" & HourArray(2) & "_" & HourArray(3)) &  ", "
+					sql = sql & "LunchHour = " & Request("LunchHour_" & HourArray(1) & "_" & HourArray(2) & "_" & HourArray(3)) &  " "
+					sql = sql & "WHERE "
+					sql = sql & "CompanyID = " & CompanyID & " AND "
+					sql = sql & "WorkDate = '" & MonthVar & "/" & DayVar & "/" & YearVar & "'"
+					WriteDebugger sql, Debugging, 0
+					oConn.Execute sql
+				End If
+			End If
+		Next
+	End If
+%>
+
+<table cellspacing=0 cellpadding=0 border=0 width="100%">
+<tr>
+	<td align=center>
+		<% If CompanyID = "" Then %>
+		<font face="Arial,Verdana" size=2 color="#ffffff"><b>Select a company
+		<% ElseIf CurrentWeek = "" Then %>
+		<font face="Arial,Verdana" size=2 color="#ffffff"><b>Select work period
+		<% Else %>
+		<table cellspacing=0 cellpadding=3 border=0 width="100%">
+		<tr>
+			<td>&nbsp;&nbsp;&nbsp;</td>
+			<td><a href="<%= Request.ServerVariables("SCRIPT_NAME") %>?CompanyID=<%= CompanyID %>&CurrentWeek=<%= DateAdd("d", -7, CurrentWeek) %>&Template=<%= Template %>"><img src="images/previous.gif" width=13 height=16 hspace=0 vspace=0 border=0></a></td>
+			<td align=center width="100%"><font face="Arial,Verdana" size=2 color="#ffffff"><b>Week&nbsp;ending&nbsp;<%= CurrentWeek %></b></td>
+			<td><a href="<%= Request.ServerVariables("SCRIPT_NAME") %>?CompanyID=<%= CompanyID %>&CurrentWeek=<%= DateAdd("d", 7, CurrentWeek) %>&Template=<%= Template %>"><img src="images/next.gif" width=13 height=16 hspace=0 vspace=0 border=0></a></td>
+			<td>&nbsp;&nbsp;&nbsp;</td>
+		</tr>
+		</table>
+		<% End If %>
+	</td>
+</tr>
+<tr>
+	<td bgcolor="#ffffff" align="center">
+		<table cellspacing=0 cellpadding=0 border=0 width="100%">
+						<% If CompanyID = "" Then %>
+							<% If NOT Companies.EOF Then %>
+							<tr>
+								<td align=center>
+									&nbsp;<br />
+									&nbsp;<br />
+									<select name="CompanyID" class="EmploymentElement">
+								<%
+									Do Until Companies.EOF
+										If CStr(Request.Cookies("CompanyID")) = CStr(Companies("CompanyID")) Then
+											Response.Write "<option value=""" & Companies("CompanyID") & """ SELECTED>" & Companies("CompanyName") & "</option>" & vbCrLF
+										Else
+												Response.Write "<option value=""" & Companies("CompanyID") & """>" & Companies("CompanyName") & "</option>" & vbCrLF
+										End If
+										Companies.MoveNext
+									Loop
+									Companies.Close
+									Set Companies = Nothing
+								%>
+									</select>&nbsp;&nbsp;<input type="submit" name="SubmitButton" value="Select" class="EmploymentElement">
+								</td>
+							</tr>
+							<% End If %>
+						<% ElseIf CurrentWeek = "" Then %>
+						<tr>
+							<td align=center>
+								&nbsp;<br />
+								<table>
+								<tr>
+									<td>
+										<font face="Verdana" size=1 color="#0000aa">
+								<% 
+									If Weekday(MinDate) = 1 Then
+										CurrentWeek = MinDate
+									Else
+										CurrentWeek = DateAdd("d", -1 * (Weekday(MinDate) - 1), MinDate)
+									End If
+									If WeeksApart > 0 Then
+										For x = 1 to WeeksApart + 1
+											Redim PRESERVE WeeksArray(x)
+											WeeksArray(x) =  "<li><a href=""" & Request.ServerVariables("SCRIPT_NAME") & "?CompanyID="& CompanyID & "&CurrentWeek=" & Server.URLEncode(CurrentWeek) & "&Template=" & Template & """>Week&nbsp;ending&nbsp;" & CurrentWeek & "</a><br />"
+											CurrentWeek = DateAdd("d", 7, CurrentWeek)
+										Next
+									End If
+									Redim PRESERVE WeeksArray(x)
+									WeeksArray(x) = "<li><a href=""" & Request.ServerVariables("SCRIPT_NAME") & "?CompanyID="& CompanyID & "&CurrentWeek=" & Server.URLEncode(CurrentWeek) & "&Template=" & Template & """>Week&nbsp;ending&nbsp;" & CurrentWeek & "</a><br />"
+									
+									For x = UBound(WeeksArray) to LBound(WeeksArray) Step -1
+										Response.Write WeeksArray(x)
+									Next
+								%>
+									</td>
+								</tr>
+								</table>
+							</td>
+						</tr>
+						<% Else %>
+						<tr>
+							<td valign=top>
+						<table cellspacing=0 cellpadding=0 border=0 width="100%">
+						<tr>
+							<td>
+								<table cellspacing=1 cellpadding=3 bgcolor="#000066" width="100%">
+								<tr bgcolor="#000094">
+									<td><font face="Verdana" size=2 color="#ffffff">&nbsp;&nbsp;<b>Weekday&nbsp;&nbsp;</td>
+									<td><font face="Verdana" size=2 color="#ffffff">&nbsp;&nbsp;<b>Start&nbsp;Hour&nbsp;&nbsp;</td>
+									<td><font face="Verdana" size=2 color="#ffffff">&nbsp;&nbsp;<b>End&nbsp;Hour&nbsp;&nbsp;</td>
+									<td><font face="Verdana" size=2 color="#ffffff">&nbsp;&nbsp;<b>Lunch&nbsp;&nbsp;</td>
+									<td><font face="Verdana" size=2 color="#ffffff">&nbsp;&nbsp;<b>Total&nbsp;Hours&nbsp;&nbsp;</td>
+								</tr>
+								<% 
+									CurrentWeek  = CDate(Request("CurrentWeek"))
+									CurrentDay = DateAdd("d", -6, CurrentWeek)
+									ErrorMessage = ""
+									OverTimeHours = 0.0
+									SubmitButton = Trim(Request("SubmitButton"))
+
+									LunchHours = 0
+									For x = 1 to 7
+										sql = "SELECT StartHour, EndHour, LunchHour FROM Hours WHERE WorkDate = '" & CurrentDay & "' AND CompanyID = " & CompanyID
+										If Debugging Then Response.Write "<tr><td colspan=4>" & sql & "</td></tr>"
+										Set ors = oConn.Execute(sql)
+										If NOT ors.EOF Then
+											StartHour = CDbl(ors("StartHour"))
+											EndHour = CDbl(ors("EndHour"))
+											LunchHour = CDbl(ors("LunchHour"))
+											TotalHour = EndHour - StartHour - LunchHour
+											TotalHours = TotalHours + TotalHour
+											LunchHours = LunchHours + LunchHour
+										Else
+											If WeekDay(CurrentDay) = 1 OR WeekDay(CurrentDay) = 7 Then
+												StartHour = 0.0
+												EndHour = 0.0
+												LunchHour = 0.0
+												TotalHour = 0.0
+												TotalHours = TotalHours + TotalHour
+											Else
+												StartHour = 10.0
+												EndHour = 18.0
+												LunchHour = 1.0
+												TotalHour = 7.0
+												TotalHours = TotalHours + TotalHour
+											End If
+										End If
+										ors.Close
+										Set ors = Nothing
+								%>
+									<tr bgcolor="#ffffff">
+										<td><font face="Verdana" size=1 color="#000066">&nbsp;&nbsp;<%= WeekdayName(WeekDay(CurrentDay)) %>&nbsp;&nbsp;</td>
+										<td align=center><%= SelectBox("StartHour_" & Month(CurrentDay) & "_" & Day(CurrentDay) & "_" & Year(CurrentDay), StartHour) %></td>
+										<td align=center><%= SelectBox("EndHour_" & Month(CurrentDay) & "_" & Day(CurrentDay) & "_" & Year(CurrentDay), EndHour) %></td>
+										<td align=center><%= LunchHoursBox("LunchHour_" & Month(CurrentDay) & "_" & Day(CurrentDay) & "_" & Year(CurrentDay), LunchHour) %></td>
+										<td><font face="Verdana" size=1 color="#0000aa">&nbsp;&nbsp;<%= TotalHour %>&nbsp;&nbsp;</td>
+									</tr>
+								<% 
+										CurrentDay = DateAdd("d", 1, CurrentDay)
+								   Next
+								   If TotalHours > 40 Then
+										OverTimeHours = TotalHours - 40
+								   		TotalHours = CDbl(40)
+										'Response.Write TotalHours & ":" & OverTimeHours
+								   End If
+								%>
+								<% If TotalHours > 0 Then %>
+								<%
+									sql = "SELECT HourlyRate FROM Users WHERE UserID = " & Session("UserID")
+									Set ors = oConn.Execute(sql)
+									HourlyRate = ors("HourlyRate")
+									ors.Close
+									Set ors = Nothing
+								%>
+								<% If CDbl(TotalHours + OverTimeHours) > 40 Then %>
+								<tr bgcolor="#ffffff">
+									<td colspan=4 align=right><font face="Verdana" size=2 color="#000066">&nbsp;&nbsp;<b>&nbsp;Regular&nbsp;Hours&nbsp;&nbsp;</td>
+									<td><font face="Verdana" size=2 color="#0000aa">&nbsp;&nbsp;<b><%= TotalHours %></b>&nbsp;&nbsp;</td>
+								</tr>
+								<tr bgcolor="#ffffff">
+									<td colspan=4 align=right><font face="Verdana" size=2 color="#000066">&nbsp;&nbsp;<b>Overtime&nbsp;hours&nbsp;&nbsp;</td>
+									<td><font face="Verdana" size=2 color="#0000aa">&nbsp;&nbsp;<b><%= OvertimeHours %></b>&nbsp;&nbsp;</td>
+								</tr>
+								<% End If %>
+								<tr bgcolor="#ffffff">
+									<td colspan=4 align=right><font face="Verdana" size=2 color="#000066">&nbsp;&nbsp;<b>&nbsp;Total&nbsp;Hours&nbsp;&nbsp;</td>
+									<td><font face="Verdana" size=2 color="#0000aa">&nbsp;&nbsp;<b><%= TotalHours + OvertimeHours %></b>&nbsp;&nbsp;</td>
+								</tr>
+								<tr bgcolor="#ffffff">
+									<td colspan=4 align=right><font face="Verdana" size=2 color="#000066">&nbsp;&nbsp;<b>Hourly&nbsp;Rate&nbsp;&nbsp;</td>
+									<td><font face="Verdana" size=2 color="#0000aa">&nbsp;&nbsp;<b><%= FormatCurrency(HourlyRate) %></b>&nbsp;&nbsp;</td>
+								</tr>
+								<tr bgcolor="#ffffff">
+									<td colspan=4 align=right><font face="Verdana" size=2 color="#ffffff">&nbsp;&nbsp;<b>Total Pay&nbsp;&nbsp;</td>
+									<td><font face="Verdana" size=2 color="#ff0000">&nbsp;&nbsp;<b><%= FormatCurrency((CDbl(HourlyRate) * CDbl(TotalHours)) + (OvertimeHours * (CDbl(HourlyRate) + (CDbl(HourlyRate) / 2)))) %></b>&nbsp;&nbsp;</td>
+								</tr>
+								<% End If %>
+								</table>
+								
+							</td>
+						</tr>
+						<tr>
+							<td colspan=3 align=center>
+								&nbsp;<br />
+								<input type="submit" name="SubmitButton" value="Update" class="EmploymentElement">&nbsp;&nbsp;
+								<input type="submit" name="SubmitButton" value="Cancel" class="EmploymentElement">
+							</td>
+						</tr>
+						<tr>
+							<td colspan=3>&nbsp;</td>
+						</tr>
+						</table>
+							</td>
+						</tr>
+						<% End If %>
+						</table>
+	</td>
+</tr>
+</table>
+<% If CompanyID <> "" Then %>
+
+<%= formHidden("CompanyID", CompanyID) %>
+
+<% End IF %>
+
+<%= formHidden("CurrentWeek", CurrentWeek) %>
+
+<%= formHidden("Template", Template) %>

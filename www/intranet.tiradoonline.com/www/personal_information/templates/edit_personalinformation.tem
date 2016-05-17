@@ -1,0 +1,247 @@
+<!-- #include virtual="/includes/functions.inc" -->
+<%
+	If PersonalInformationID <> "" Then
+		sql = "SELECT * FROM PersonalInformation WHERE PersonalInformationID = " & PersonalInformationID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		AccountName =  ors("AccountName")
+		AccountNameEncoded = Server.URLEncode(AccountName)
+		RegistrationDate  =  ors("RegistrationDate")
+		If RegistrationDate = "" Then RegistrationDate = ""
+		UserName  =  ors("UserName")
+		Password  =  ors("Password")
+		Password2  =  ors("Password2")
+		Website  =  ors("Website")
+		AccountNumber  =  ors("AccountNumber")
+		AccountNumber2  =  ors("AccountNumber2")
+		Rewards  =  ors("Rewards")
+		Phone  =  ors("Phone")
+		Phone2  =  ors("Phone2")
+		ATM  =  ors("ATM")
+		Pin = ors("Pin")
+		Checking  =  ors("Checking")
+		RoutingNumber  =  ors("RoutingNumber")
+		CCTypeID  =  ors("CCTypeID")
+		Expiration  =  ors("Expiration")
+		CSV  =  ors("CSV")
+		SerialNumber =  ors("SerialNumber")
+		Code  =  ors("Code")
+		Notes =  ors("Notes")
+		ors.Close
+		Set ors = Nothing
+	End If 
+%>
+
+<% If PersonalInformationErrorMessage <> "" Then %>
+	<div class="ErrorMessage"><%= PersonalInformationErrorMessage %></div>
+	&nbsp;<br />
+<% End If %>
+
+<table border="0" cellspacing="3" cellpadding="3">
+<tr>
+	<td class="frm_label">Account&nbsp;Name:</td>
+	<td>
+		<%= formTextBoxTabIndex("AccountName", "20", AccountName, "PersonalInformationElement", "Account Name", "1", "Invalid Account Name") %><%= REQUIRED_ICON %>
+	</td>
+	<td colspan="3" rowspan="3" align="center" valign="middle">
+		<table border="0">
+		<tr>
+			<td>
+
+				<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=View'") %>
+
+			</td>
+			<td>&nbsp;</td>
+			<td>
+				<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>
+			</td>
+		</tr>
+		<% If PersonalInformationID <> "" Then %>
+		<tr>
+			<td colspan="3" align="center">
+				<%= Button("Button", "Delete", "DeleteButton", "", "Delete", "DeleteItem('Are you sure you want to delete this account?', '" & SCRIPT_NAME & "?Template=View&SubmitButton=Delete&PersonalInformationID=" & PersonalInformationID & "&AccountName=" & AccountNameEncoded & "')") %>
+			</td>
+		</tr>
+		<% End If %>
+		</table>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Registration&nbsp;Date:</td>
+	<td>
+		<%= formTextBoxTabIndex("RegistrationDate", "10", RegistrationDate, "PersonalInformationElement", "Registration Date", "2", "Invalid Registration Date") %>
+	</td>
+</tr>
+<tr>
+	<td colspan="4">&nbsp;</td>
+</tr>
+</table>
+
+
+<div id="tabs">
+	<ul>
+		<li><a href="#tabs-1" title="Website">Website</a></li>
+		<li><a href="#tabs-2" title="Banking / Credit Cards">Banking / Credit Cards</a></li>
+		<li><a href="#tabs-3" title="Software">Software</a></li>
+		<li><a href="#tabs-4" title="Notes">Notes</a></li>
+	</ul>
+
+
+
+	<div id="tabs-1" name="tabs-1">
+	<p>
+<!-- WEBSITE -->
+<table border="0" cellspacing="3" cellpadding="3">
+<tr>
+	<td class="frm_label">Username:</td>
+	<td>
+		<%= formTextBoxTabIndex("UserName", "20", UserName, "PersonalInformationElement", "Username", "3", "Invalid Username") %>
+	</td>
+	<td class="frm_label">Account#:</td>
+	<td>
+		<%= formTextBoxTabIndex("AccountNumber", "20", AccountNumber, "PersonalInformationElement", "Account#", "7", "Invalid Account#") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Password:</td>
+	<td>
+		<%= formTextBoxTabIndex("Password", "20", Password, "PersonalInformationElement", "Password", "4", "Invalid Password") %>
+	</td>
+	<td class="frm_label">Account2#:</td>
+	<td>
+		<%= formTextBoxTabIndex("AccountNumber2", "20", AccountNumber2, "PersonalInformationElement", "Account2#", "7", "Invalid Account2#") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Password2:</td>
+	<td>
+		<%= formTextBoxTabIndex("Password2", "20", Password2, "PersonalInformationElement", "Password2", "5", "Invalid Password2") %>
+	</td>
+	<td class="frm_label">Rewards:</td>
+	<td>
+	<%= formTextBoxTabIndex("Rewards", "20", Rewards, "PersonalInformationElement", "Rewards", "8", "Invalid Rewards") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Email:</td>
+	<td>
+		<%= formTextBoxTabIndex("Email", "20", Email, "PersonalInformationElement", "Email", "5", "Invalid Email") %>
+	</td>
+	<td class="frm_label">Phone:</td>
+	<td>
+		<%= formTextBoxTabIndex("Phone", "20", Phone, "PersonalInformationElement", "Phone", "9", "Invalid Phone") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Website:</td>
+	<td>
+		<%= formTextBoxTabIndex("Website", "20", Website, "PersonalInformationElement", "Website", "6", "Invalid Website") %>
+	</td>
+	<td class="frm_label">Phone2:</td>
+	<td>
+		<%= formTextBoxTabIndex("Phone2", "20", Phone2, "PersonalInformationElement", "Phone", "9", "Invalid Phone") %>
+	</td>
+</tr>
+</table>
+	</p>
+	</div>
+	
+	<div id="tabs-2" name="tabs-2">
+	<p>
+
+<!-- BANKING/CREDIT CARDS -->
+<table border="0" cellspacing="3" cellpadding="3">
+<tr>
+	<td class="frm_label">ATM:</td>
+	<td>
+		<%= formTextBoxTabIndex("ATM", "20", ATM, "PersonalInformationElement", "ATM", "10", "Invalid ATM") %>
+	</td>
+	<td class="frm_label">Card&nbsp;Type:</td>
+	<td>
+		<%= SelectBoxTabIndex(oConn, "SELECT PersonalInformationCardID, PersonalInformationCard FROM PersonalInformationCards ORDER BY PersonalInformationCard", "CCTypeID", CCTypeID, "PersonalInformationElement", "13", "Card Type") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Checking:</td>
+	<td>
+		<%= formTextBoxTabIndex("Checking", "20", Checking, "PersonalInformationElement", "Checking Account", "11", "Invalid Checking Account") %>
+	</td>
+	<td class="frm_label">Expiration:</td>
+	<td>
+		<%= formTextBoxTabIndex("Expiration", "10", Expiration, "PersonalInformationElement", "Expiration", "14", "Invalid Expiration") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Routing&nbsp;Number:</td>
+	<td>
+		<%= formTextBoxTabIndex("RoutingNumber", "20", RoutingNumber, "PersonalInformationElement", "Routing Number", "12", "Invalid Routing Number") %>
+	</td>
+	<td class="frm_label">CSV:</td>
+	<td>
+		<%= formTextBoxTabIndex("CSV", "10", CSV, "PersonalInformationElement", "CSV", "15", "Invalid CSV") %>
+	</td>
+</tr>
+<tr>
+	<td colspan="2">&nbsp;&nbsp;</td>
+	<td class="frm_label">Pin:</td>
+	<td>
+		<%= formTextBoxTabIndex("Pin", "10", Pin, "PersonalInformationElement", "Pin", "16", "Invalid Pin") %>
+	</td>
+</tr>
+</table>
+	</p>
+	</div>
+	
+	<div id="tabs-3" name="tabs-3">
+	<p>
+	
+
+<!-- SOFTWARE -->
+<table border="0" cellspacing="3" cellpadding="3">
+<tr>
+	<td class="frm_label">Serial&nbsp;Number:</td>
+	<td colspan="4">
+		<%= formTextBoxTabIndex("SerialNumber", "40", SerialNumber, "PersonalInformationElement", "Serial Number", "17", "Invalid Serial Number") %>
+	</td>
+</tr>
+<tr valign="top">
+	<td class="frm_label">Code:</td>
+	<td colspan="4">
+		<%= formTextAreaTabIndex("Code", Code, "400", "110", "PersonalInformationElement", "Code", "18", "Invalid Code") %>
+	</td>
+</tr>
+</table>
+	</p>
+	</div>
+	
+	<div id="tabs-4" name="tabs-4">
+	<p>
+	
+
+<!-- Notes -->
+<table border="0" cellspacing="3" cellpadding="3">
+<tr>
+	<td colspan="4">
+		<%= formTextAreaTabIndex("Notes", Notes, "500", "200", "PersonalInformationElement", "Notes", "19", "Invalid Notes") %>
+	</td>
+</tr>
+<tr>
+	<td colspan="4" align="right">
+		<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>
+	</td>
+</tr>
+</table>
+	</p>
+</div>
+
+</div>
+
+<%= formHidden("PersonalInformationID", PersonalInformationID) %>
+
+<script type="text/javascript">
+
+	$('#RegistrationDate').datepicker();
+	$('#tabs').tabs();
+	//<%= DatePicker("RegistrationDate") %>
+</script>
+

@@ -1,0 +1,84 @@
+<form action="<%= SCRIPT_NAME %>" method="post">
+<script>
+function resetNotes()
+{
+		setCookie("NoteXLocation", "", 200);
+		setCookie("NoteYLocation", "", 200);
+		setCookie("NoteXSize", "", 200);
+		setCookie("NoteYSize", "", 200);
+}
+</script>
+<style type="text/css">
+.NoteBorder
+{
+	color: #000000;
+	background-color: <%= NOTES_THEME %>;
+	font-family: Cambria;
+	font-size: 12pt;
+  	border: 2px solid #000000;
+	padding: 0px;
+	-moz-box-shadow: 3px 13px 4px #000;
+	-webkit-box-shadow: 3px 3px 4px #000;
+	box-shadow: 3px 3px 4px #000;
+}
+
+#NoteContainer1
+{
+	position: absolute;
+	
+}
+
+.NoteElement
+{
+	color: #000000;
+	background-color: <%= NOTES_THEME %>;
+	font-family: Cambria;
+	font-size: 12pt;
+	border: 0px;
+	text-align: left;
+	width: 100%;
+	height: <%= Height %>px;
+}
+</style>
+
+
+			<table id="NoteContainer1" border=0 cellspacing=0>
+			<tr valign="top" height="20">
+				<td bgcolor="<%= NOTES_THEME %>"><img src="/images/notes/note_icon.gif" title="" width="18" height="16" hspace="0" vspace="0" border="0"></td>
+				<td width="100%" style="background-color:#dddddd">&nbsp;&nbsp;TITLE</td>
+				<td style="background-color:#dddddd">&nbsp;&nbsp;<b><a href="#" onclick="resetNotes()">X</a></b>&nbsp;&nbsp;</td>
+			</tr>
+			<tr valign="top" bgcolor="<%= NOTES_THEME %>">
+				<td colspan="3">
+				<textarea id="NoteText" class="NoteElement">
+	test test test test test test test test test test test test test test test test 
+	test test test test test test test test test test test test test test test test 
+	test test test test test test test test test test test test test test test test 
+	test test test test test test test test test test test test test test test test 
+				</textarea>
+				</td>
+			</tr>
+			</table>
+</form>
+
+ <script>
+ xLocation = getCookie("NoteXLocation");
+ yLocation = getCookie("NoteYLocation");
+ xSize = getCookie("NoteXSize");
+ ySize = getCookie("NoteYSize");
+ 
+ if(xLocation != "") {
+ 	$("#NoteContainer1").css("left",  xLocation); 
+ 	$("#NoteContainer1").css("top",  yLocation); 
+ 	$("#NoteContainer1").css("width",  xSize); 
+ 	$("#NoteContainer1").css("height",  ySize); 
+ }
+  
+ <script>
+$(function() {
+$( "#NoteText" ).resizable({
+handles: "se"
+});
+});
+</script>
+</script

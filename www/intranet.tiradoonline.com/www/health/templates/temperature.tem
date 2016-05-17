@@ -1,0 +1,133 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formTemperature" name="formTemperature">
+<% 
+	SubmitButtonValue = "Create Temperature"
+	If TemperatureID <> "" Then
+		SubmitButtonValue = "Save Temperature"
+		sql = "SELECT * FROM Temperature WHERE TemperatureID = " & TemperatureID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		Temperature = ors("Temperature")
+		Temperature_Date = ors("TemperatureDateTime")
+		TemperatureDate = FormatDateTime(Temperature_Date, 2)
+		TemperatureTime = FormatDateTime(Temperature_Date, 3)
+		TemperatureComments = ors("TemperatureComments") 
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<table>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td>
+		<div class="HealthTheme"><h1 class="Header" style="padding: 5px;">Temperature</h1></div>
+		<p>
+		<div class="ErrorMessage" id="HealthErrorMessage" name="HealthErrorMessage"><%= HealthErrorMessage %></div>
+		<table cellpadding="3">
+		<tr>
+			<td align="right">Date:</td>
+			<td>
+				<%= formTextBox("TemperatureDate", "10", TemperatureDate, "HealthElement", "Date", "Invalid Date") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td align="right">Time:</td>
+			<td>
+				<%= formTextBox("TemperatureTime", "10", TemperatureTime, "HealthElement", "Time", "Invalid Time") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td align="right">Temperature:</td>
+			<td>
+				<%= formTextBox("Temperature", "5", Temperature, "HealthElement", "Temperature", "Invalid Temperature") %><%= REQUIRED_ICON %>
+		</tr>
+		<tr>
+			<td class="frm_label" valign="top">Comments:</td>
+			<td>
+				<%= formTextArea("TemperatureComments", TemperatureComments, "400", "100", "HealthElement", "Temperature", "Invalid Temperature") %>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+
+				<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+
+			</td>
+		</tr>
+		</table>
+		&nbsp;<br />
+		&nbsp;<br />
+		<table class="GridViewAlteringRows">
+		<%
+			sql = "SELECT * FROM Temperature WHERE UserID = " & Session("UserID") & " ORDER BY TemperatureDateTime DESC"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+		%>
+		<tr class="HealthTheme" valign="top">
+			<td align="right"><b>Date</b></td>
+			<td align="right"><b>Time</b></td>
+			<td align="center"><b>Temperature</b></td>
+			<td align="center"><b>Comments</b></td>
+			<td bgcolor="#ffffff">&nbsp;</td>
+		</tr>
+		<%
+				tempTemperatureDate = ""
+				Do Until ors.EOF
+					Temperature_ID = ors("TemperatureID")
+					TemperatureDate = FormatDateTime(ors("TemperatureDateTime"), 2)
+					If tempTemperatureDate <> TemperatureDate Then 
+						outputTemperatureDate = TemperatureDate & "<br />"
+						tempTemperatureDate = TemperatureDate
+					Else
+						outputTemperatureDate = ""
+					End If
+					TemperatureTime = FormatDateTime(ors("TemperatureDateTime"), 3)
+					Temperature = ors("Temperature")
+					TemperatureComments = ors("TemperatureComments")
+		%>
+		<tr class="GridViewRow" valign="top">
+			<td align="right">
+				<b><%= outputTemperatureDate %></b>
+			</td>
+			<td align="right">
+				<%= HTMLFormat(TemperatureTime) %>
+			</td>
+			<td align="center"><%= TemperatureColor(FormatNumber(Temperature, 1)) %></td>
+			<td align="center"><%= TemperatureComments %></td>
+			<td>
+				<!-- <%= Button("Button", "Edit", "Button", "", "Edit", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&TemperatureID=" & Temperature_ID & "'") %> -->
+				<a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&TemperatureID=<%= Temperature_ID %>"><%= EDIT_ICON %></a>
+				&nbsp;&nbsp;
+				<a onclick="DeleteItem('Are you sure you want to delete this temperature?', '<%= SCRIPT_NAME %>?SubmitButton=DeleteTemperature&Template=<%= Template %>&TemperatureID=<%= Temperature_ID %>')"><%= DELETE_ICON %></a>
+			</td>
+		</tr>
+		<%
+					ors.MoveNext
+				Loop
+				ors.Close
+			
+			Else
+		%>
+		<tr>
+			<td class="ErrorMessage">No records found.</td>
+		</tr>
+		<% 	
+			End If 
+			Set ors = Nothing
+		%>
+		</table>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("TemperatureID", TemperatureID) %>
+
+<%= formHidden("Template", Template) %>
+ <script>
+$(function() {
+$( "#TemperatureDate" ).datepicker();
+});
+</script>
+</form>

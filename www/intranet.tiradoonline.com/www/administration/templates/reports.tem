@@ -1,0 +1,319 @@
+<div id="tabs">
+	<ul>
+		<li><a href="#tabs-1" title="Table Rows">Table Rows</a></li>
+		<li><a href="#tabs-2" title="Stored Procedures">Stored Procedures</a></li>
+		<li><a href="#tabs-3" title="Users">Users</a></li>
+	</ul>
+
+
+	<!--
+	**********************************
+	TABLE ROWS
+	**********************************
+	-->
+	<div id="tabs-1" name="tabs-1">
+	<p>
+		<table cellspacing=1 cellpadding=3 border=0 class="GridView">
+		<tr class="AdministrationTheme">
+			<td colspan="4" align="center">Tables</td>
+		</tr>
+		<tr class="tiradoonlineTheme">
+			<td>Table</td>
+			<td align="center">Rows</td>
+			<td align="center">Reserved&nbsp;Space</td>
+			<td align="center">Space&nbsp;Used</td>
+		</tr>
+		<%
+			sql = "sp_administration_totalrows"
+			WriteDebugger sql, Debugging, 0
+			oConn.Execute sql
+			
+			sql = "SELECT ObjectID, TableName = CASE " & _
+		                               "WHEN " & _
+		                               "    TableOwner <> USER THEN ObjectName + '(' + TableOwner + ')' " & _
+		                               "ELSE " & _
+		                               "    ObjectName " & _
+		                           "END, " & _
+				"TableRows " & _
+			"FROM " & _
+				"TableRows " & _
+			"ORDER BY " & _
+				"ObjectName, " & _ 
+				"TableOwner"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			TotalRows = 0
+			TotalReservedSpaceUsed = 0
+			TotalSpaceUsed = 0
+			Do Until ors.EOF
+			
+				Table_Name = ors("TableName")
+				Table_Name = Replace(Table_Name, "(dbo)", "")
+				'Response.Write Table_Name
+				sql = "sp_spaceused '" & Table_Name & "'"
+				WriteDebugger sql, Debugging, 0
+				Set rs2 = oConn.Execute(sql)
+				If NOT rs2.EOF Then
+					ReservedSpaceUsed = rs2("reserved")
+					TotalReservedSpaceUsed = TotalReservedSpaceUsed + Replace(ReservedSpaceUsed, " KB", "")
+					SpaceUsed = rs2("data")
+					TotalSpaceUsed = TotalSpaceUsed + Replace(SpaceUsed, " KB", "")
+					rs2.Close
+				End If
+				Set rs2 = Nothing
+
+		%>
+		<tr class="GridViewRow">
+			<td><%= "<a href=""" & SCRIPT_NAME & "?Template=Schema&ObjectType=U&ObjectID=" & ors("ObjectID") & """>" & Table_Name & "</a>" %></td>
+			<td align="center"><%= ors("TableRows") %></td>
+			<td align="center"><%= ReservedSpaceUsed %></td>
+			<td align="center"><%= SpaceUsed %></td>
+		</tr>
+		<%
+				TotalRows = TotalRows + ors("TableRows")
+				ors.MoveNext
+			Loop
+			ors.Close
+			Set ors = Nothing
+		%>
+		<tr class="AdministrationTheme">
+			<td>Total Rows</td>
+			<td><%= FormatNumber(TotalRows, 0) %></td>
+			<td align="center"><%= TotalReservedSpaceUsed %>&nbsp;KB</td>
+			<td align="center"><%= TotalSpaceUsed %>&nbsp;KB</td>
+		</tr>
+		</table>
+	</p>
+	</div>
+	
+	<!--
+	**********************************
+	STORED PROCEDURES
+	**********************************
+	-->
+	<div id="tabs-2" name="tabs-2">
+	<p>
+		<table cellspacing=1 cellpadding=3 border=0 class="GridView">
+		<tr class="AdministrationTheme">
+			<td colspan="2">Stored&nbsp;Procedures</td>
+		</tr>
+		<%
+			sql = "SELECT ID, NAME FROM SYSOBJECTS WHERE TYPE = 'P' AND LEFT(NAME, 3) <> 'dt_' ORDER BY NAME"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			Do Until ors.EOF
+				ProcedureName = ors("NAME")
+				ObjectID = ors("ID")
+		
+				sql = "sp_sproc_columns " & ProcedureName
+				WriteDebugger sql, Debugging, 0
+				Set Procedures = oConn.Execute(sql)
+		
+				x = 1
+				If NOT Procedures.EOF Then
+					Do Until Procedures.EOF
+						column_name = Procedures("column_name")
+		
+						If UCase(column_name) <> "@RETURN_VALUE" Then
+							If x <> 1 Then 
+								ProcedureName = ProcedureName & ", "
+							Else
+								ProcedureName = ProcedureName & " ("
+							End If
+							ProcedureName = ProcedureName & column_name
+							x = x + 1
+						End If
+		
+						Procedures.MoveNext
+					Loop
+					
+					If x > 1 Then ProcedureName = ProcedureName & ")"
+					ProcedureName = "<a href=""" & SCRIPT_NAME & "?Template=Schema&ObjectType=P&ObjectID=" & ObjectID & """>" & ProcedureName & "</a>"
+					
+					Procedures.Close
+					Set Procedures = Nothing
+					
+					x = 1
+				End If
+		%>
+		<tr class="GridViewRow">
+			<td><%= ProcedureName %></td>
+		</tr>
+		<%
+				ors.MoveNext
+			Loop
+			ors.Close
+			Set ors = Nothing
+		%>
+		</table>
+
+		</p>
+		</div>
+		
+		
+	<!--
+	**********************************
+	USERS
+	**********************************
+	-->
+	<div id="tabs-3" name="tabs-3">
+	<p>
+		
+<%
+	sql = "sp_Users_reports " & Session("UserID") & ", 1"
+	Set ors = oConn.Execute(sql)
+	
+	If NOT ors.EOF Then
+%>
+<table cellpadding="1" class="GridView">
+<tr class="AdministrationTheme" align="center">
+	<td>Active</td>
+	<td>UserID</td>
+	<td>UserName</td>
+	<td>FullName</td>
+	<td>Artists</td>
+	<td>Backups</td>
+	<td>Banking</td>
+	<td>BalancAccounts</td>
+	<td>BloodPressure</td>
+	<td>Companies</td>
+	<td>Company</td>
+	<td>CompanyAddress</td>
+	<td>CompanyContact</td>
+	<td>Contacts</td>
+	<td>CreditCard</td>
+	<td>Emails</td>
+	<td>EmailTemplates</td>
+	<td>HeartRate</td>
+	<td>Hours</td>
+	<td>Insulin</td>
+	<td>Interview</td>
+	<td>Logins</td>
+	<td>Medicine</td>
+	<td>MedicineDose</td>
+	<td>MonthlyBills</td>
+	<td>Movies</td>
+	<td>Notes</td>
+	<td>PageLogs</td>
+	<td>Paychecks</td>
+	<td>PersonalDays</td>
+	<td>PersonalInformation</td>
+	<td>PhoneCall</td>
+	<td>RecoveryCounselors</td>
+	<td>RecoveryGroups</td>
+	<td>RecoveryGroupSessions</td>
+	<td>RecoveryPrograms</td>
+	<td>Reminders</td>
+	<td>ResumeFile</td>
+	<td>ResumeQueue</td>
+	<td>ResumeText</td>
+	<td>Settings</td>
+	<td>SickDays</td>
+	<td>Snippets</td>
+	<td>SnippetGroups</td>
+	<td>SQLScripts</td>
+	<td>Sugar</td>
+	<td>Temperature</td>
+	<td>Test</td>
+	<td>TestType</td>
+	<td>TimeSheet</td>
+	<td>TimeSheetCompany</td>
+	<td>TimeSheetDetail</td>
+	<td>TimeSheetPayment</td>
+	<td>Unit</td>
+	<td>Created</td>
+</tr>
+<%
+	Do Until ors.EOF
+		Active = ors("Active")
+		If Active Then
+			ActiveImage = "<img src=""/images/icons/user_active.gif"" title=""Active"">"
+		Else
+			ActiveImage = "<img src=""/images/icons/user_inactive.gif"" title=""Inactive"">"
+		End If
+%>
+<tr class="GridViewRow" align="center">
+	<td><%= ActiveImage %></td>
+	<td><%= ors("UserID") %></td>
+	<td><a href="<%= SCRIPT_NAME %>?Template=users&UserID=<%= ors("UserID") %>&Action=Edit"><%= ors("UserName") %></a></td>
+	<td><%= HTMLFormat(ors("FullName")) %></td>
+	<td><%= ors("Artists") %></td>
+	<td><%= ors("Backups") %></td>
+	<td><%= ors("Banking") %></td>
+	<td><%= ors("BalancAccounts") %></td>
+	<td><%= ors("BloodPressure") %></td>
+	<td><%= ors("Companies") %></td>
+	<td><%= ors("Company") %></td>
+	<td><%= ors("CompanyAddress") %></td>
+	<td><%= ors("CompanyContact") %></td>
+	<td><%= ors("Contacts") %></td>
+	<td><%= ors("CreditCard") %></td>
+	<td><%= ors("Emails") %></td>
+	<td><%= ors("EmailTemplates") %></td>
+	<td><%= ors("HeartRate") %></td>
+	<td><%= ors("Hours") %></td>
+	<td><%= ors("Insulin") %></td>
+	<td><%= ors("Interview") %></td>
+	<td><%= ors("Logins") %></td>
+	<td><%= ors("Medicine") %></td>
+	<td><%= ors("MedicineDose") %></td>
+	<td><%= ors("MonthlyBills") %></td>
+	<td><%= ors("Movies") %></td>
+	<td><%= ors("Notes") %></td>
+	<td><%= ors("PageLogs") %></td>
+	<td><%= ors("Paychecks") %></td>
+	<td><%= ors("PersonalDays") %></td>
+	<td><%= ors("PersonalInformation") %></td>
+	<td><%= ors("PhoneCall") %></td>
+	<td><%= ors("RecoveryCounselors") %></td>
+	<td><%= ors("RecoveryGroups") %></td>
+	<td><%= ors("RecoveryGroupSessions") %></td>
+	<td><%= ors("RecoveryPrograms") %></td>
+	<td><%= ors("Reminders") %></td>
+	<td><%= ors("ResumeFile") %></td>
+	<td><%= ors("ResumeQueue") %></td>
+	<td><%= ors("ResumeText") %></td>
+	<td><%= ors("Settings") %></td>
+	<td><%= ors("SickDays") %></td>
+	<td><%= ors("Snippets") %></td>
+	<td><%= ors("SnippetGroups") %></td>
+	<td><%= ors("SQLScripts") %></td>
+	<td><%= ors("Sugar") %></td>
+	<td><%= ors("Temperature") %></td>
+	<td><%= ors("Test") %></td>
+	<td><%= ors("TestType") %></td>
+	<td><%= ors("TimeSheet") %></td>
+	<td><%= ors("TimeSheetCompany") %></td>
+	<td><%= ors("TimeSheetDetail") %></td>
+	<td><%= ors("TimeSheetPayment") %></td>
+	<td><%= ors("Unit") %></td>
+	<td><%= HTMLFormat(ors("create_dt")) %></td>
+</tr>
+<%
+		ors.MoveNext
+	Loop
+	ors.Close
+%>
+</table>
+<% Else %>
+<div class="ErrorMessage">No Records Found</div>
+
+<% 
+	End If 
+	Set ors = Nothing
+%>
+
+		</p>
+		</div>
+		
+		
+		
+<!-- END OF TABS -->
+</div>
+
+
+<script type="text/javascript">
+
+	$("#tabs").tabs();
+	
+</script>

@@ -1,0 +1,39 @@
+<!-- 
+<div class="iconSubNav">
+	<a href="/timesheet/timesheet.asp?Template=reports"><img src="/images/icons/reports_off.gif" title="Reports" hspace="0" vspace="0" border="0" class="icon"></a>
+	<div class="iconName">Reports</div>
+</div>	
+ -->
+<%
+	sql = "sp_Timehseet_UserID_Company_get " & Session("UserID")
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+	If NOT ors.EOF Then
+		Do Until ors.EOF
+			v_TimeSheetCompanyID = ors("TimeSheetCompanyID")
+			v_TimeSheetCompanyName = ors("TimeSheetCompanyName")
+			v_TimeSheetTotalTimesheets = ors("TotalTimesheets")
+			v_TimeSheetTotalPaychecks = ors("TotalPaychecks")
+			v_TimesheetCompanyAddress1 = ors("TimesheetCompanyAddress1")
+			v_TimesheetCompanyAddress2 = ors("TimesheetCompanyAddress2")
+			v_TimesheetCompanyCity = ors("TimesheetCompanyCity")
+			v_TimesheetCompanyStateName = ors("TimesheetCompanyStateName")
+			v_TimesheetCompanyZipCode = ors("TimesheetCompanyZipCode")
+			'v_TimeSheetCompanyPhone = ors("TimeSheetCompanyPhone")
+					
+			Address = ""
+			If v_TimesheetCompanyAddress1 <> "" AND v_TimesheetCompanyCity <> "" AND v_TimesheetCompanyStateName <> "" AND v_TimesheetCompanyZipCode <> "" Then
+				Address = v_TimesheetCompanyAddress1 & " " & v_TimesheetCompanyCity & ", " & v_TimesheetCompanyStateName & " " & v_TimesheetCompanyZipCode
+			End If
+%>
+<div class="iconSubNav">
+	<a href="<%= SCRIPT_NAME %>?Template=timesheet&TimesheetCompanyID=<%= v_TimeSheetCompanyID %>"><img src="/images/icons/timesheet_off.gif" title="<%= v_TimeSheetCompanyName %>" hspace="0" vspace="0" border="0" class="icon"></a>
+	<div class="iconName"><%= v_TimeSheetCompanyName %></div>
+</div>	
+<%
+			ors.MoveNext
+		Loop
+		ors.Close
+	End If
+	Set ors = Nothing
+%>

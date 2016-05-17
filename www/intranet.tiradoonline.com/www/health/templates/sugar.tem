@@ -1,0 +1,141 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formSugar" name="formSugar">
+<% 
+	SubmitButtonValue = "Create Sugar"
+	If SugarID <> "" Then
+		SubmitButtonValue = "Save Sugar"
+		sql = "SELECT * FROM Sugar WHERE SugarID = " & SugarID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		Sugar = ors("Sugar")
+		Sugar_Date = ors("SugarDateTime")
+		SugarDate = FormatDateTime(Sugar_Date, 2)
+		SugarTime = FormatDateTime(Sugar_Date, 3)
+		SugarComments = ors("SugarComments")
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<table>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td>
+		<div class="HealthTheme"><h1 class="Header" style="padding: 5px;">Sugar</h1>	</div>
+		<p>
+		<div class="ErrorMessage" id="HealthErrorMessage" name="HealthErrorMessage"><%= HealthErrorMessage %></div>
+		<table cellpadding="3">
+		<tr>
+			<td class="frm_label">Date:</td>
+			<td>
+				<%= formTextBox("SugarDate", "10", SugarDate, "HealthElement", "Date", "Invalid Date") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Time:</td>
+			<td>
+				<%= formTextBox("SugarTime", "10", SugarTime, "HealthElement", "Time", "Invalid Time") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Sugar:</td>
+			<td>
+				<%= formTextBox("Sugar", "5", Sugar, "HealthElement", "Sugar", "Invalid Sugar") %><%= REQUIRED_ICON %>
+				&nbsp;
+				<%= Button("Button", "Report", "Button", "", "Report", "location.href='" & SCRIPT_NAME & "?Template=sugar_report'") %>
+
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label" valign="top">Comments:</td>
+			<td>
+				<%= formTextArea("SugarComments", SugarComments, "400", "100", "HealthElement", "Description", "Invalid Description") %>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+				
+				<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+			</td>
+		</tr>
+		</table>
+		&nbsp;<br />
+		&nbsp;<br />
+		<table class="GridViewAlteringRows" width="<%= mainContentWidth %>">
+		<%
+			sql = "SELECT * FROM Sugar WHERE UserID = " & Session("UserID") & " ORDER BY SugarDateTime DESC, create_dt DESC"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+		%>
+		<tr class="HealthTheme" valign="top">
+			<td align="right"><b>Date</b></td>
+			<td align="right"><b>Time</b></td>
+			<td align="center"><b>Sugar</b></td>
+			<td bgcolor="#ffffff">&nbsp;</td>
+		</tr>
+		<%
+				tempSugarDate = ""
+				Do Until ors.EOF
+					Sugar_ID = ors("SugarID")
+					SugarDate = FormatDateTime(ors("SugarDateTime"), 2)
+					If tempSugarDate <> SugarDate Then 
+						outputSugarDate = SugarDate & "<br />"
+						tempSugarDate = SugarDate
+					Else
+						outputSugarDate = ""
+					End If
+					SugarTime = FormatDateTime(ors("SugarDateTime"), 3)
+					Sugar = ors("Sugar")
+					SugarComments = Trim(ors("SugarComments"))
+		%>
+		<tr class="GridViewRow" valign="top">
+			<td align="right" <% If outputSugarDate = "" Then Response.Write "bgcolor=""#ffffff"""  %>>
+				<b><%= outputSugarDate %></b>
+			</td>
+			<td align="right">
+				<%= HTMLFormat(SugarTime) %>
+			</td>
+			<td align="center"><%= SugarColor(Sugar) %></td>
+			<td>
+				<a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&SugarID=<%= Sugar_ID %>"><%= EDIT_ICON %></a>
+				<!-- <%= Button("Button", "Edit", "Button", "", "Edit", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&SugarID=" & Sugar_ID & "'") %> -->
+				&nbsp;&nbsp;
+				<a onclick="DeleteItem('Are you sure you want to delete this sugar?', '<%= SCRIPT_NAME %>?SubmitButton=DeleteSugar&Template=<%= Template %>&SugarID=<%= Sugar_ID %>')"><%= DELETE_ICON %></a>
+			</td>
+		</tr>
+		<% If SugarComments <> "" Then %>
+		<tr class="GridViewRow" valign="top">
+			<td>&nbsp;</td>
+		 	<td colspan="3"><%= SugarComments %></td>
+		</tr>
+		<% End If %>
+		<%
+					ors.MoveNext
+				Loop
+				ors.Close
+			
+			Else
+		%>
+		<tr>
+			<td class="ErrorMessage">No records found.</td>
+		</tr>
+		<% 	
+			End If 
+			Set ors = Nothing
+		%>
+		</table>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("SugarID", SugarID) %>
+
+<%= formHidden("Template", Template) %>
+
+ <script type="text/javascript">
+	$( "#SugarDate" ).datepicker();
+</script>
+</form>
+
+<% 'ExportToExcel "SELECT TOP 10 * FROM Sugar" %>

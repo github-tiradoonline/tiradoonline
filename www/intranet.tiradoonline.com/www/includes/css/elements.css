@@ -1,0 +1,168 @@
+<style type="text/css">
+
+.AdministrationElement { 
+	background: <%= ADMINISTRATION_THEME %>;
+	color : white;
+	font-weight : bold;
+}
+
+.BankingElement { 
+	background: <%= BANKING_SUB_THEME %>;
+	color : white;
+	font-weight : bold;
+}
+
+.BankingElement td A { 
+	font-size: 14px;
+}
+
+.BankingMonthlyExpensesElement { 
+	background: <%= BANKING_MONTHLY_EXPENSES_THEME %>;
+	color : white;
+	font-weight : bold;
+ }
+
+.BankingSubElement {
+	background: <%= BANKING_SUB_THEME %>;
+	color : white;
+	font-family : Verdana;
+	font-size: 6px;
+	font-weight : bold;
+	border: 1px solid #000000;
+	text-shadow: 1px 1px #000000;
+}
+
+.BankingSubElement A {
+	color : white;
+	font-size: 6px;
+}
+
+.CalendarElement { 
+	background: <%= CALENDAR_THEME %>;
+	color : white;
+	font-weight : bold;
+ }
+
+.CollectionAgencyElement { 
+	background: <%= COLLECTION_AGENCY_THEME %>;
+	color : white;
+	font-weight : bold;
+ }
+
+.ContactElement { 
+	background: <%= CONTACTS_THEME %>;
+	color : white;
+	font-weight : bold;
+ }
+
+.CreditCardsElement { 
+	background: <%= CREDITCARDS_THEME %>;
+	color : white;
+	font-weight : bold;
+ }
+
+.EmailElement { 
+	background: <%= EMAIL_THEME %>;
+	color : white;
+	font-weight : bold;
+ }
+ 
+.EmploymentElement { 
+	background: #0000aa;
+	color : white;
+	font-weight : bold;
+ }
+ 
+.FacebookElement { 
+	background: <%= FACEBOOK_THEME %>;
+	color : white;
+	font-weight : bold;
+ }
+
+.HealthElement { 
+	background: <%= HEALTH_THEME %>;
+	color : #fff;
+	font-weight : bold;
+}
+
+.HomeElement { 
+	background: <%= HOME_THEME %>;
+	color : white;
+	font-weight : bold;
+}
+
+.JobsElement { 
+	background: <%= JOBS_THEME %>;
+	color : white;
+	font-weight : bold;
+}
+
+.NotesElement { 
+	background: <%= NOTES_THEME %>;
+	color : white;
+	font-weight : bold;
+}
+
+.LoginElement { 
+	background: <%= LOGIN_THEME %>;
+	color : white;
+	font-weight : bold;
+ }
+
+.PersonalInformationElement {
+	background-color: <%= PERSONAL_INFORMATION_THEME %>;
+	color: #ffffff;
+	font-weight: bold;
+}
+
+.PhoneBillElement {
+	background-color: <%= PHONEBILL_THEME %>;
+	color: #ffffff;
+	font-weight: bold;
+}
+
+.RecoveryElement { 
+	background: <%= RECOVERY_THEME %>;
+	color : white;
+	font-weight : bold;
+}
+
+.RemindersElement { 
+	background: <%= REMINDERS_THEME %>;
+	color : white;
+	font-weight : bold;
+}
+
+.ServerElement { 
+	background: <%= SERVER_THEME %>;
+	color : white;
+	font-weight : bold;
+}
+
+.SettingsElement { 
+	background: <%= SETTINGS_THEME %>;
+	color : white;
+	font-weight : bold;
+}
+
+.SnippetElement { 
+	background: <%= SNIPPETS_THEME %>;
+	color : white;
+	font-weight : bold;
+}
+
+.TimesheetElement { 
+	background: <%= TIMESHEET_THEME %>;
+	color : white;
+	font-weight : bold;
+}
+
+.tiradoonlineElement {
+	font-weight: bold;
+	background: <%= TIRADOONLINE_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+</style>

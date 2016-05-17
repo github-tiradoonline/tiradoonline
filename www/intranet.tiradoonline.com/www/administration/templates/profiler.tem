@@ -1,0 +1,52 @@
+<%
+	CurrentDate = Trim(Request("CurrentDate"))
+	If CurrentDate = "" Then 
+		CurrentDate = Date
+	Else
+		CurrentDate = CDate(CurrentDate)
+	End If
+
+	sql = "sp_Profiler_create_dt_get '" & CurrentDate & "'"
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+%>
+
+<table width="100%" cellspacing=0 cellpadding=5 border=0 class="SubHeader">
+<tr class="AdministrationTheme">
+	<td><a href="<%= Request.ServerVariables("SCRIPT_NAME") %>?Template=<%= Template %>&CurrentDate=<%= DateAdd("d", -1, CurrentDate) %>"><img src="/images/administration/previous.gif" width=13 height=16 hspace=0 vspace=0 border=0></a></td>
+	<td align=center width="100%">Profiles&nbsp;for&nbsp;<%= FormatDateTime(CurrentDate, vbLongDate) %></td>
+	<td align=right><a href="<%= Request.ServerVariables("SCRIPT_NAME") %>?Template=<%= Template %>&CurrentDate=<%= DateAdd("d", 1, CurrentDate) %>"><img src="/images/administration/next.gif" width=13 height=16 hspace=0 vspace=0 border=0></a></td>
+</tr>
+</table>
+<p>
+<%
+	If NOT ors.EOF Then
+%>
+<table cellpadding=5 border=0 width="100%" class="GridView">
+<tr class="AdministrationTheme">
+	<td align="right">Date</td>
+	<td>SQL</td>
+</tr>
+<%
+		Do Until ors.EOF
+			ExecutedSQLScript = ""
+			ExecutedSQLScript = ors("ExecutedSQLScript")
+			If IsNull(ExecutedSQLScript) Then ExecutedSQLScript = ""
+			Response.Write "<tr class='GridViewRow' valign=""top"">" & vbCrLF
+			Response.Write "	<td align='right'>" & Replace(FormatDateTime(ors("create_dt"), 3), " ", "&nbsp;") & "</td>"  & vbCrLF
+			Response.Write "	<td width=""100%"">" & FormatText(Server.HTMLEncode(ExecutedSQLScript)) & "</td>" & vbCrLF
+			Response.Write "</tr>" & vbCrLF
+			ors.MoveNext
+		Loop
+		ors.Close
+		Set ors = Nothing
+%>
+</table>
+<%
+	Else
+%>
+<div class="ErrorMessage">No Records Found.</div>
+
+<%
+	End If
+%>

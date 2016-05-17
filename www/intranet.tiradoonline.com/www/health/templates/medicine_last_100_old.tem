@@ -1,0 +1,70 @@
+		<table class="GridViewAlteringRows">
+		<%
+			sql = "SELECT * FROM Medicine WHERE UserID = " & Session("UserID")
+			WriteDebugger sql, Debugging, 0
+			Set ordMED = oConn.Execute(sql)
+			
+			If ordMED.EOF Then
+				ordMED.Close
+				Response.Redirect SCRIPT_NAME & "?Template=medicine"
+			End If
+			Set ordMED = Nothing
+			
+			sql = "SELECT TOP 100 a.*, b.GenericName, MedicineDose = b.MedicineName, MedicineDoseAmount = CONVERT(VARCHAR, a.Amount) + ' ' + c.UnitName  FROM MedicineDose a, Medicine b, Unit c WHERE a.MedicineID = b.MedicineID AND b.UnitID = c.UnitID AND b.UserID = " & Session("UserID")
+			sql = sql & " ORDER BY a.MedicineDoseDateTime DESC, a.create_dt DESC"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+		%>
+		<tr class="HealthTheme" valign="top">
+			<td align="right"><b>Date</b></td>
+			<td align="right"><b>Time</b></td>
+			<td><b>Medicine</b></td>
+			<td align="center"><b>Amount</b></td>
+			<td><b>Description</b></td>
+		</tr>
+		<%
+				tempMedicineDoseDate = ""
+				Do Until ors.EOF
+					Medicine_ID = ors("MedicineID")
+					MedicineDose_ID = ors("MedicineDoseID")
+					MedicineDoseDate = FormatDateTime(ors("MedicineDoseDateTime"), 2)
+					If tempMedicineDoseDate <> MedicineDoseDate Then 
+						outputMedicineDoseDate = MedicineDoseDate & "<br />"
+						tempMedicineDoseDate = MedicineDoseDate
+					Else
+						outputMedicineDoseDate = ""
+					End If
+					MedicineDoseTime = FormatDateTime(ors("MedicineDoseDateTime"), 3)
+					MedicineDose = ors("MedicineDose")
+					GenericName = ors("GenericName")
+					If GenericName <> "" Then MedicineDose = MedicineDose & "&nbsp;(" & GenericName & ")"
+					Amount = ors("MedicineDoseAmount")
+					MedicineDoseDescription = ors("MedicineDoseDescription")
+		%>
+		<tr class="GridViewRow" valign="top">
+			<td align="right" <% If outputMedicineDoseDate = "" Then Response.Write "bgcolor=""#ffffff"""  %>>
+				<b><%= outputMedicineDoseDate %></b>
+			</td>
+			<td align="right">
+				<%= HTMLFormat(MedicineDoseTime) %>
+			</td>
+			<td><a href="<%= SCRIPT_NAME %>?Template=medicine&MedicineID=<%= Medicine_ID %>"><%= MedicineDose %></a></td>
+			<td align="center"><%= HTMLFormat(Amount) %></td>
+			<td><%= MedicineDoseDescription %></td>
+		</tr>
+		<%
+					ors.MoveNext
+				Loop
+				ors.Close
+			
+			Else
+		%>
+		<tr>
+			<td class="ErrorMessage">No records found.</td>
+		</tr>
+		<% 	
+			End If 
+			Set ors = Nothing
+		%>
+		</table>

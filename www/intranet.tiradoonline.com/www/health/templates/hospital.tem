@@ -1,0 +1,156 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formHospital" name="formHospital">
+<% 
+	SubmitButtonValue = "Create Hospital"
+	If HospitalID <> "" Then
+		SubmitButtonValue = "Save Hospital"
+		sql = "sp_Hospital_get " & Session("UserID") & ", " & HospitalID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		HospitalName = ors("HospitalName")
+		HospitalAddress = ors("HospitalAddress")
+		HospitalCity = ors("HospitalCity")
+		HospitalStateID = ors("HospitalStateID")
+		HospitalStateName = ors("HospitalStateName")
+		HospitalZipCode = ors("HospitalZipCode")
+		HospitalPhone = ors("HospitalPhone")
+		HospitalWebsite = ors("HospitalWebsite")
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<table>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td>
+		<div style="text-align:right">
+			<%= Button("Button", "Positions", "Button", "", "Positions", "location.href='" & SCRIPT_NAME & "?Template=hospitalposition'") %>&nbsp;&nbsp;
+			<%= Button("Button", "Staff", "Button", "", "Staff", "location.href='" & SCRIPT_NAME & "?Template=hospitalstaff'") %>
+		</div>
+		<div class="HealthTheme"><h1 class="Header" style="padding: 5px;">Hospitals</h1></div>
+		<p>
+		<p>
+		<div class="ErrorMessage" id="HealthErrorMessage" name="HealthErrorMessage"><%= HealthErrorMessage %></div>
+		<table cellpadding="3">
+		<tr>
+			<td class="frm_label">Hospital:</td>
+			<td>
+				<%= formTextBox("HospitalName", "50", HospitalName, "HealthElement", "Hospital", "Invalid Hospital") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+			<tr>
+				<td align="right"><b>Address:</b></td>
+				<td>
+					<%= formTextBox("HospitalAddress", "40", HospitalAddress, "HealthElement", "Address", "Invalid Address") %><%= REQUIRED_ICON %>
+				</td>
+			</tr>
+			<tr>
+				<td align="right"><b>City:</b></td>
+				<td>
+					<%= formTextBox("HospitalCity", "20", HospitalCity, "HealthElement", "City", "Invalid City") %><%= REQUIRED_ICON %>
+				</td>
+			</tr>
+			<tr>
+				<td align="right"><b>State:</b></td>
+				<td>
+					<%= SelectBox(oConn, "SELECT * FROM States ORDER by State", "HospitalStateID", HospitalStateID, "HealthElement", "State") %>
+				</td>
+			</tr>
+			<tr>
+				<td align="right"><b>Zip&nbsp;Code:</b></td>
+				<td>
+					<%= formTextBox("HospitalZipCode", "20", HospitalZipCode, "HealthElement", "Zip Code", "Invalid Zip Code") %><%= REQUIRED_ICON %>
+				</td>
+			</tr>
+			<tr>
+				<td align="right"><b>Phone:</b></td>
+				<td>
+					<%= formTextBox("HospitalPhone", "20", HospitalPhone, "HealthElement", "Phone", "Invalid Phone") %><%= REQUIRED_ICON %>
+				</td>
+			</tr>
+			<tr>
+				<td align="right"><b>Website:</b></td>
+				<td>
+					<%= formTextBox("HospitalWebsite", "50", HospitalWebsite, "HealthElement", "Website", "Invalid Website") %>
+				</td>
+			</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+
+				<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+				
+			</td>
+		</tr>
+		</table>
+		&nbsp;<br />
+		&nbsp;<br />
+		<table cellpadding="3" class="GridViewAlteringRows">
+		<%
+			sql = "sp_Hospital_get " & Session("UserID")
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+		%>
+		<tr class="HealthTheme">
+			<td align="center"><b>Hospital</b></td>
+			<td bgcolor="#ffffff">&nbsp;</td>
+		</tr>
+		<%
+				Do Until ors.EOF
+					Hospital_ID = ors("HospitalID")
+					HospitalName = ors("HospitalName")
+					HospitalAddress = ors("HospitalAddress")
+					HospitalCity = ors("HospitalCity")
+					HospitalStateID = ors("HospitalStateID")
+					HospitalStateName = ors("HospitalStateName")
+					HospitalZipCode = ors("HospitalZipCode")
+					HospitalPhone = ors("HospitalPhone")
+					HospitalWebsite = ors("HospitalWebsite")
+					Address = HospitalAddress & " " & HospitalCity & ", " & HospitalStateName & " " & HospitalZipCode
+		%>
+		<tr class="GridViewRow" valign="top">
+			<td>
+			<div style="float:right">
+				<%= ShowMap(Address) %>
+			</div>
+			<b><%= HospitalName %></b><br>
+			<%= HospitalAddress %><br>
+			<%= HospitalCity %>,&nbsp;<%= HospitalStateID %>&nbsp;<%= HospitalZipCode %><br>
+			<%= HospitalPhone %><br>
+			<% If HospitalWebsite <> "" Then %>
+				<a href="http://<%= HospitalWebsite %>" target="_blank"><%= HospitalWebsite %></a>
+			<% End If %>
+			</td>
+			<td>
+				<!-- <%= Button("Button", "Edit", "Button", "", "Edit", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&HospitalID=" & Hospital_ID & "'") %> -->
+				<a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&HospitalID=<%= Hospital_ID %>"><%= EDIT_ICON %></a>
+				&nbsp;&nbsp;
+				<%= DELETE_ICON %>
+				<br />
+				
+			</td>
+		</tr>
+		<%
+					ors.MoveNext
+				Loop
+				ors.Close
+			
+			Else
+		%>
+		<tr>
+			<td class="ErrorMessage">No records found.</td>
+		</tr>
+		<% 	
+			End If 
+			Set ors = Nothing
+		%>
+		</table>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("HospitalID", HospitalID) %>
+
+<%= formHidden("Template", Template) %>
+</form>

@@ -1,0 +1,31 @@
+
+		<div class="iconSubNav">
+			<a href="/tiradoonline/tiradoonline.asp?Template=browser_visits"><img src="/images/icons/browser_visits_off.gif" title="" width="105" height="116" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName">Browser Visits</div>
+		</div>	
+
+		<div style="float:left;padding:30px;text-align:center">
+			<a href="/tiradoonline/tiradoonline.asp?Template=filtered_ipaddresses"><img src="/images/icons/filtered_ipaddresses_off.gif" title="" width="105" height="116" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName">Filtered IP Addresses</div>
+		</div>	
+
+		<div style="float:left;padding:30px;text-align:center">
+			<a href="/tiradoonline/tiradoonline.asp?Template=filtered_browsers"><img src="/images/icons/filtered_browsers_off.gif" title="" width="105" height="116" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName">Filtered Browsers</div>
+		</div>	
+
+		<div style="float:left;padding:30px;text-align:center">
+			<a href="/tiradoonline/tiradoonline.asp?Template=downloaded_resumes"><img src="/images/icons/word_off.gif" title="" width="105" height="116" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName">Downloaded Resumes</div>
+		</div>	
+
+		<div style="float:left;padding:30px;text-align:center">
+			<a href="/tiradoonline/tiradoonline.asp?Template=resume_download_type"><img src="/images/icons/resume_type_off.gif" title="" width="105" height="116" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName">Resume Types</div>
+		</div>	
+
+		<div style="float:left;padding:30px;text-align:center">
+			<a href="/tiradoonline/tiradoonline.asp?Template=referenced_by"><img src="/images/icons/referenced_by_off.gif" title="" width="105" height="116" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName">Referenced&nbsp;By</div>
+		</div>	
+	

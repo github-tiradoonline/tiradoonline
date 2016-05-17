@@ -1,0 +1,26 @@
+
+		<div class="iconSubNav">
+			<a href="/jobs/jobs.asp?Template="><img src="/images/icons/companies_off.gif" title="" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName">Companies</div>
+		</div>	
+	
+		<div class="iconSubNav">
+			<a href="/jobs/jobs.asp?Template=cover_letter"><img src="/images/icons/resume_cover_letter_off.gif" title="" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName">Cover&nbsp;Letters<br />Text&nbsp;Resumes</div>
+		</div>	
+	
+		<div class="iconSubNav">
+			<a href="/jobs/jobs.asp?Template=resume"><img src="/images/icons/resume_off.gif" title="" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName">Resumes</div>
+		</div>	
+	
+		<div class="iconSubNav">
+			<a href="/jobs/jobs.asp?Template=phone_call"><img src="/images/icons/phone_calls_off.gif" title="" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName">Phone&nbsp;Calls</div>
+		</div>	
+	
+		<div class="iconSubNav">
+			<a href="/jobs/jobs.asp?Template=interview"><img src="/images/icons/interviews_off.gif" title="" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName">Interviews</div>
+		</div>	
+	

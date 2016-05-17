@@ -1,0 +1,62 @@
+<table bgcolor="<%= bgcolor2 %>" cellspacing=0 cellpadding=5 border=0>
+<% If CreditCardErrorMessage <> "" Then %>
+<tr>
+	<td class="ErrorMessage"><%= CreditCardErrorMessage %></td>
+</tr>
+<% End If %>
+<tr>
+	<td align="left">
+<%
+	sql = "SELECT * FROM CreditCard WHERE UserID = " & Session("UserID") & " ORDER BY CreditCardName"
+	Set ors = oConn.Execute(sql)
+	
+	If NOT ors.EOF Then 
+		Do Until ors.EOF
+			counter = 1
+			CreditCardName = ors("CreditCardName")
+			CreditLimit = ors("CreditLimit")
+			MimimumPayment = ors("MinimumPayment")
+			CreditAvailable = ors("CreditAvailable")
+			DueDate = ors("DueDate")
+			Percentage = ors("Percentage")
+			Payment = ors("Percentage")
+			Banking = O
+			If NOT isNull(CreditAvailable) Then Banking = CDbl(CreditLimit) - CDbl(CreditAvailable)
+								
+			FONT_PAYMENT = "GREEN"
+			If CDbl(Banking) <= 0 Then FONT_PAYMENT = "#ff0000"
+			bgcolor2 = "#ffffff"
+			Banking = FormatNumber(Banking, 2)
+			If CStr(CreditCardID) = CStr(ors("CreditCardID")) Then bgcolor2 = "#eeeeee"
+%>
+		<div class="CreditCardIcon">
+			<a href="/creditcards/creditcards.asp?Template=CreditCards&Action=Edit&CreditCardID=<%= ors("CreditCardID") %>&CurrentDate=<%= CurrentDate %>"
+				onmouseover="document.getElementById('creditcard_<%= ors("CreditCardID") %>_<%= CreditCardImageID %>').src='/images/creditcards/creditcards_on.gif'"
+				onmouseout="document.getElementById('creditcard_<%= ors("CreditCardID") %>_<%= CreditCardImageID %>').src='/images/creditcards/creditcards_off.gif'"
+			>
+			<img id="creditcard_<%= ors("CreditCardID") %>_<%= CreditCardImageID %>" name="creditcard_<%= ors("CreditCardID") %>_<%= CreditCardImageID %>" src="/images/creditcards/creditcards_off.gif" title="<%= ors("CreditCardName") %>" border="0"></a>	
+			<br />
+			<div class="iconName">
+				<%= ors("CreditCardName") %><br />
+				<%= ProfitLoss(Banking) %>
+			</div>
+		</div>
+<%
+			if counter = 3 Then
+				Response.Write "<div style='display:block'></div>"
+				counter = 1
+			End If
+			ors.MoveNext
+		Loop
+		ors.Close
+	Else
+%>
+<tr>
+	<td class="ErrorMessage">No Credit Cards found.</td>
+</tr>
+<% 
+	End If
+	Set ors = Nothing
+%>
+</table>	
+					

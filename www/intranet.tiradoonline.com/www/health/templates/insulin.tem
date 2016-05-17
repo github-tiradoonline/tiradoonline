@@ -1,0 +1,136 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formInsulin" name="formInsulin">
+<% 
+	SubmitButtonValue = "Create Insulin"
+	If InsulinID <> "" Then
+		SubmitButtonValue = "Save Insulin"
+		sql = "SELECT * FROM Insulin WHERE InsulinID = " & InsulinID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		MedicineID = ors("MedicineID")
+		Units = ors("Units")
+		Insulin_Date = ors("InsulinDateTime")
+		InsulinDate = FormatDateTime(Insulin_Date, 2)
+		InsulinTime = FormatDateTime(Insulin_Date, 3)
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<table>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td>
+		<div class="HealthTheme"><h1 class="Header" style="padding: 5px;">Insulin</h1></div>
+		<p>
+		<div class="ErrorMessage" id="HealthErrorMessage" name="HealthErrorMessage"><%= HealthErrorMessage %></div>
+		<table cellpadding="3">
+		<tr>
+			<td align="right">Date:</td>
+			<td>
+				<%= formTextBox("InsulinDate", "10", InsulinDate, "HealthElement", "Date", "Invalid Date") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td align="right">Time:</td>
+			<td>
+				<%= formTextBox("InsulinTime", "10", InsulinTime, "HealthElement", "Time", "Invalid Time") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td align="right">Insulin:</td>
+			<td>
+				<%= SelectBox(oConn, "SELECT a.MedicineID, a.MedicineName FROM Medicine a, Unit b WHERE a.UnitID = b.UnitID AND UPPER(b.UnitName) = 'UNITS' AND a.UserID = " & Session("UserID") & " ORDER BY MedicineName", "MedicineID", MedicineID, "HealthElement", "Insulin") %>
+				<input type="button" id="SubmitButton" name="SubmitButton" value="Add new insulin" onClick="location.href='<%= SCRIPT_NAME %>?Template=medicine'" class="Button" />
+			</td>
+		</tr>
+		<tr>
+			<td align="right">Units:</td>
+			<td>
+				<%= formTextBox("Units", "5", Units, "HealthElement", "Units", "Invalid Units") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+				<input type="button" id="SubmitButton" name="SubmitButton" value="Cancel" onClick="location.href='<%= SCRIPT_NAME %>?Template=<%= Template %>'" class="Button" />
+			</td>
+		</tr>
+		</table>
+		&nbsp;<br />
+		&nbsp;<br />
+		<table cellpadding="3">
+		<%
+			sql = "SELECT * FROM Medicine WHERE UserID = " & Session("UserID")
+			WriteDebugger sql, Debugging, 0
+			Set ordMED = oConn.Execute(sql)
+			
+			If ordMED.EOF Then
+				ordMED.Close
+				Response.Redirect SCRIPT_NAME & "?Template=medicine"
+			End If
+			Set ordMED = Nothing
+
+			sql = "SELECT * FROM Unit WHERE UserID = " & Session("UserID") & " AND UnitName = 'UNITS'"
+			WriteDebugger sql, Debugging, 0
+			Set ordMED = oConn.Execute(sql)
+			
+			If ordMED.EOF Then
+				ordMED.Close
+				Response.Redirect SCRIPT_NAME & "?Template=unit"
+			End If
+			Set ordMED = Nothing
+
+			sql = "SELECT a.*, Insulin = b.MedicineName FROM Insulin a, Medicine b WHERE a.MedicineID = b.MedicineID AND a.UserID = " & Session("UserID") & " ORDER BY a.InsulinDateTime DESC"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+		%>
+		<tr class="HealthTheme">
+			<td align="right"><b>Date</b></td>
+			<td><b>Insulin</b></td>
+			<td align="center"><b>Units</b></td>
+			<td bgcolor="#ffffff">&nbsp;</td>
+		</tr>
+		<%
+				Do Until ors.EOF
+					Insulin_ID = ors("InsulinID")
+					InsulinDateTime = ors("InsulinDateTime")
+					Insulin = ors("Insulin")
+					Units = ors("Units")
+		%>
+		<tr class="GridViewRow">
+			<td align="right"><%= InsulinDateTime %></td>
+			<td><%= Insulin %></td>
+			<td align="center"><%= Units %></td>
+			<td><input type="button" id="SubmitButton" name="SubmitButton" value="Edit" class="Button" onClick="location.href='<%= SCRIPT_NAME %>?Template=<%= Template %>&InsulinID=<%= Insulin_ID %>'" />&nbsp;&nbsp;</td>
+		</tr>
+		<%
+					ors.MoveNext
+				Loop
+				ors.Close
+			
+			Else
+		%>
+		<tr>
+			<td class="ErrorMessage">No records found.</td>
+		</tr>
+		<% 	
+			End If 
+			Set ors = Nothing
+		%>
+		</table>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("InsulinID", InsulinID) %>
+
+<%= formHidden("Template", Template) %>
+
+ <script>
+$(function() {
+$( "#InsulinDate" ).datepicker();
+});
+</script>
+
+</form>

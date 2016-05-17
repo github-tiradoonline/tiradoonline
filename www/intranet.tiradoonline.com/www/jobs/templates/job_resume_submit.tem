@@ -1,0 +1,3 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formJobsResumeSubmit" name="formJobsResumeSubmit">
+ss
+</form>

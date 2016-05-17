@@ -1,0 +1,104 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formResumeDownloadType" name="formResumeDownloadType">
+<%
+	SubmitButtonValue = "Create"
+	
+	If ResumeDownloadTypeID <> "" Then 
+		sql = "SELECT * FROM ResumeDownloadType WHERE ResumeDownloadTypeID = " & ResumeDownloadTypeID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		If NOT ors.EOF Then
+			ResumeDownloadTypeName = ors("ResumeDownloadTypeName")
+			ResumeDownloadTypeFileName = ors("ResumeDownloadTypeFileName")
+			ors.Close
+			SubmitButtonValue = "Save"
+		End If
+		Set ors = Nothing
+	End If 
+%>
+<% If tiradoonlineErrorMessage <> "" Then %>
+&nbsp;<br />
+<div class="ErrorMessage"><%= tiradoonlineErrorMessage %></div>
+<% End If %>
+
+<div class="tiradoonlineTheme"><h1 class="Header" style="padding: 5px;">Resume&nbsp;Type</h1></div>
+<p>
+
+
+<table cellspacing=0 cellpadding=5 border=0>
+<tr>
+	<td align="right"><b>Type&nbsp;Name:</b></td>
+	<td>
+		<%= formTextBox("ResumeDownloadTypeName", "40", ResumeDownloadTypeName, "tiradoonlineElement", "ResumeDownloadTypeName", "Invalid Resume Type") %>
+		<%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr>	
+	<td align="right"><b>File&nbsp;Name:</b></td>
+	<td>
+		<%= formTextBox("ResumeDownloadTypeFileName", "40", ResumeDownloadTypeFileName, "tiradoonlineElement", "ResumeDownloadTypeFileName", "Invalid File Name") %>
+		<%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr>
+	<td align="right">&nbsp;</td>
+	<td>
+		
+		<%= Submit_Button("SubmitButton", SubmitButtonValue & " Resume Type", "Button", "", SubmitButtonValue & " Resume Type") %>&nbsp;&nbsp;
+		<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+	</td>
+</tr>
+</table>
+
+<p>
+ 	
+<%
+	sql = "SELECT * FROM ResumeDownloadType"
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+%>
+
+<table cellspacing=0 cellpadding=5 border=0 width="100%">
+<%
+	If NOT ors.EOF Then
+%>
+<tr bgcolor="<%= tiradoonline_THEME %>" class="tiradoonlineTheme">
+	<td><b>Name</b></td>
+	<td><b>File&nbsp;Name</b></td>
+	<td>
+		<%= Button("Button", "Add New Filtered Resume Type", "Button", "", "Add New Filtered Resume Type", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&Action=Add'") %>
+	</td>
+</tr>
+<%
+		Do Until ors.EOF
+			ResumeDownloadTypeID = ors("ResumeDownloadTypeID")
+			ResumeDownloadTypeName = ors("ResumeDownloadTypeName")
+			ResumeDownloadTypeFileName = ors("ResumeDownloadTypeFileName")
+%>
+<tr valign="middle" valign="center" class="GridViewRow">
+	<td><a href="<%= SCRIPT_NAME %>?ResumeDownloadTypeID=<%= ResumeDownloadTypeID %>&Template=<%= Template %>&Action=Edit"><%= ResumeDownloadTypeName %></a></td>
+	<td><%= ResumeDownloadTypeFileName %></td>
+	<td>
+		<%= Button("Button", "Delete", "DeleteButton", " ", "Delete", "DeleteItem('Are you sure you want to delete this item?', '" & SCRIPT_NAME & "?Template=" & Template & "&SubmitButton=DeleteResumeDownloadType&ResumeDownloadTypeID=" & ResumeDownloadTypeID & "')") %>
+	</td>
+</tr>
+<%
+			ors.MoveNext
+		Loop
+		ors.Close
+		Set ors = Nothing
+	Else
+%>
+<tr class="ErrorMessage">
+	<td>No Resume Types found.</td>
+</tr>
+<%
+	End If
+%>
+</table>
+
+
+<%= formHidden("Template", Template) %>
+
+<%= formHidden("ResumeDownloadTypeID", ResumeDownloadTypeID) %>
+
+</form>

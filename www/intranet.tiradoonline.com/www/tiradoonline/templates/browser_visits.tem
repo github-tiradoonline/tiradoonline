@@ -1,0 +1,49 @@
+<%
+	sql = "SELECT Browser, COUNT(*) AS Total FROM Sessions GROUP BY Browser ORDER BY COUNT(*) DESC"
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+%>
+
+<% If tiradoonlineErrorMessage <> "" Then %>
+&nbsp;<br />
+<div class="ErrorMessage"><%= tiradoonlineErrorMessage %></div>
+<% End If %>
+<div class="tiradoonlineTheme"><h1 class="Header" style="padding: 5px;">Browser&nbsp;Visits</h1></div>
+<p>
+
+
+<table cellspacing=1 cellpadding=5 class="GridView" width="100%">
+<%
+	If NOT ors.EOF Then
+%>
+<tr class="tiradoonlineTheme">
+	<td><b>Browser</b></td>
+	<td><b>Totals</b></td>
+	<td>&nbsp;</td>
+</tr>
+<%
+		Do Until ors.EOF
+			Browser = ors("Browser")
+			Total = ors("Total")
+%>
+<tr valign="top" valign="center" class="GridViewRow">
+	<td><%= Browser %></td>
+	<td><%= Total %></td>
+	<td>
+		<%= Button("Button", "Delete", "DeleteButton", "", "Delete", "DeleteItem('Are you sure you want to delete this item?', '" & SCRIPT_NAME & "?Template=" & Template & "&SubmitButton=DeleteSessionFilter&Browser=" & Server.URLEncode(Browser) & "')") %>
+	</td>
+</tr>
+<%
+			ors.MoveNext
+		Loop
+		ors.Close
+		Set ors = Nothing
+	Else
+%>
+<tr class="ErrorMessage">
+	<td>No Sessions found.</td>
+</tr>
+<%
+	End If
+%>
+</table>

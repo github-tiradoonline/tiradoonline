@@ -1,0 +1,27 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'POP3EmailFolder' AND TYPE = 'U')
+DROP TABLE POP3EmailFolder;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'POP3EmailFolder' AND TYPE = 'U')
+	DROP TABLE POP3EmailFolder;
+GO
+
+CREATE TABLE POP3EmailFolder
+(
+	POP3EmailFolderID		IDENTITY (1001,1) INT  NOT NULL,
+	POP3EmailAccountID		 INT  NOT NULL,
+	POP3EmailFolderName		 VARCHAR(100)  NOT NULL,
+	Active		 BIT DEFAULT ((1)) NOT NULL,
+	create_dt		 DATETIME DEFAULT (getdate()) NOT NULL
+
+);
+GO
+
+
+
+
+GO
+
+
+GO
+

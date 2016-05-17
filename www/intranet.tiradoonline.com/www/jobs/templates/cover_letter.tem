@@ -1,0 +1,154 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formJobCoverLetter" name="formJobCoverLetter">
+<% 
+	SubmitButtonValue = "Create Cover Letter"
+	If JobCoverLetterID <> "" Then
+		SubmitButtonValue = "Save Cover Letter"
+		sql = "SELECT * FROM JobCoverLetter WHERE JobCoverLetterID = " & JobCoverLetterID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		JobCoverLetterName = ors("JobCoverLetterName")
+		JobCoverLetterText = ors("JobCoverLetterText")
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<table>
+<tr valign="top">
+	<td>
+		<table>
+		<tr valign="top">
+			<td>
+				<table cellpadding="3" border="0">
+				<tr>
+					<td colspan="2">
+						<table cellpadding="3" width="100%" border="0">
+						<tr valign="top">
+							<td>
+								<h1>Cover Letters</h1>
+							</td>
+							<td align="right">&nbsp;
+							<% If JobCoverLetterID <> "" Then %>
+								<%= Button("Button", "Create New Cover Letter", "Button", "margin:5px", "Create New Cover Letter", "location.href='" & SCRIPT_NAME & "?Template=cover_letter'") %><br />
+							<% End If %>
+								<%= Button("Button", "Companies", "Button", "margin:5px", "Companies", "location.href='" & SCRIPT_NAME & "'") %><br />
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				<% If JobsErrorMessage <> "" Then %>
+				<tr>
+					<td colspan="2" class="ErrorMessage"><%= JobsErrorMessage %><br />&nbsp;<br /></td>
+				</tr>
+				<% End If %>
+				<tr>
+					<td align="right"><b>Cover Letter&nbsp;Name:</b></td>
+					<td>
+						<%= formTextBox("JobCoverLetterName", "40", JobCoverLetterName, "JobsElement", "Cover Letter Name", "Invalid Cover Letter Name") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr valign="top">
+					<td align="right">
+						<b>Text:</b>
+					</td>
+					<td>
+						<%= REQUIRED_ICON %><br />
+						<%= formTextArea("JobCoverLetterText", JobCoverLetterText, "400", "200", "JobsElement", "Cover Letter Text", "Invalid Cover Letter Text") %>
+					</td>
+				</tr>	
+				<tr>
+					<td>&nbsp;</td>
+					<td>
+						<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+
+						<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "'") %>
+
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("JobCoverLetterID", JobCoverLetterID) %>
+
+<%= formHidden("Template", Template) %>
+</form>
+
+<p />
+<%
+	sql = "SELECT * FROM JobCoverLetter ORDER BY JobCoverLetterName"
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+	
+	If NOT ors.EOF Then
+%>
+<table width="500">
+<tr>
+	<td>
+        <div id="tabs">
+         <ul>
+        <% 
+			x = 1
+			Do Until ors.EOF
+				JobCoverLetterName = ors("JobCoverLetterName")
+			
+		%>
+        	<li><a href="#tabs-<%= x %>" title="<%= JobCoverLetterName %>"><%= JobCoverLetterName %></a></li>
+        <% 	
+				x = x + 1
+				ors.MoveNext
+			Loop
+			ors.MoveFirst
+		%>
+        </ul>
+
+        <% 
+			x = 1
+			Do Until ors.EOF
+				JobCoverLetterID = ors("JobCoverLetterID")
+				JobCoverLetterText = ors("JobCoverLetterText")
+		%>
+        <div id="tabs-<%= x %>">
+        <p>
+		<%= Button("Button", "Edit", "Button", "margin:5px", "Edit", "location.href='" & SCRIPT_NAME & "?Template=cover_letter&JobCoverLetterID=" & JobCoverLetterID & "'") %><br />
+
+		<br />
+		<br />
+		<PRE>
+		<%= JobCoverLetterText %>
+		</PRE>
+
+		</p>
+		</div>
+        <% 	
+				x = x + 1
+				ors.MoveNext
+			Loop
+		%>
+
+	</td>
+</tr>
+</table>
+
+<script>
+	$( "#tabs" ).tabs();
+</script>
+
+<%
+		ors.Close
+	Else
+%>
+<div class="ErrorMessage">No Cover Letters found.</div>
+<%
+	End If
+	
+	Set ors = Nothing
+	
+%>
+
+
+

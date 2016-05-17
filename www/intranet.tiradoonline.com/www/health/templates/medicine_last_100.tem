@@ -1,0 +1,78 @@
+		<table class="GridViewAlteringRows">
+		<%
+			sql = "SELECT * FROM Medicine WHERE UserID = " & Session("UserID")
+			WriteDebugger sql, Debugging, 0
+			Set ordMED = oConn.Execute(sql)
+			
+			If ordMED.EOF Then
+				ordMED.Close
+				Response.Redirect SCRIPT_NAME & "?Template=medicine"
+			End If
+			Set ordMED = Nothing
+			
+			sql = "sp_Health_Last_100_Transactions " & Session("UserID")
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+		%>
+		<tr class="HealthTheme" valign="top">
+			<td align="right"><b>Date</b></td>
+			<td align="right"><b>Time</b></td>
+			<td><b>Transaction</b></td>
+			<td align="right"><b>Amount</b></td>
+			<td><b>Description</b></td>
+		</tr>
+		<%
+				tempHealthTransactionDate = ""
+				Do Until ors.EOF
+					HealthTransactionDate = FormatDateTime(ors("HealthTransactionDateTime"), 2)
+					If tempHealthTransactionDate <> HealthTransactionDate Then 
+						outputHealthTransactionDate = HealthTransactionDate & "<br />"
+						tempHealthTransactionDate = HealthTransactionDate
+					Else
+						outputHealthTransactionDate = ""
+					End If
+					HealthTransactionTime = FormatDateTime(ors("HealthTransactionDateTime"), 3)
+					HealthTransaction = ors("HealthTransaction")
+					Amount = ors("HealthTransactionAmount")
+					'HealthTransactionDescription = ors("HealthTransactionDescription")
+					If HealthTransaction = "Sugar" Then
+						Amount = SugarColor(CInt(Amount))
+					ElseIf HealthTransaction = "Oxygen" Then
+						Amount = OxygenColor(CInt(Amount))
+					ElseIf HealthTransaction = "Blood Pressure" Then
+						BloodPressureArray = Split(Amount, "/")
+						BloodPressureTop = BloodPressureArray(0)
+						BloodPressureBottom = BloodPressureArray(1)
+						Amount = BloodPressureColor(Amount, CInt(BloodPressureBottom))
+					ElseIf HealthTransaction = "Heart Rate" Then
+						Amount = HeartRateColor(CInt(Amount))
+					End If
+			
+		%>
+		<tr class="GridViewRow" valign="top">
+			<td align="right" <% If outputHealthTransactionDate = "" Then Response.Write "bgcolor=""#ffffff"""  %>>
+				<b><%= outputHealthTransactionDate %></b>
+			</td>
+			<td align="right">
+				<%= HTMLFormat(HealthTransactionTime) %>
+			</td>
+			<td><%= HealthTransaction %></td>
+			<td align="right"><b><%= Amount %></b></td>
+			<td><%= HealthTransactionDescription %></td>
+		</tr>
+		<%
+					ors.MoveNext
+				Loop
+				ors.Close
+			
+			Else
+		%>
+		<tr>
+			<td class="ErrorMessage">No records found.</td>
+		</tr>
+		<% 	
+			End If 
+			Set ors = Nothing
+		%>
+		</table>

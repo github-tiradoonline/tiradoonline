@@ -1,0 +1,70 @@
+<form action="<%= SCRIPT_NAME %>" method="post">
+
+<% If BankingErrorMessage <> "" Then %>
+<div class="ErrorMessage"><%= BankingErrorMessage %></div>
+<p />
+<% End If %>
+<table cellpadding="5">
+<tr align="center" valign="middle">
+	<td class="BankingElement SubHeader">
+		Daily Emails&nbsp;Accounts
+		<input type="submit" id="SubmitButton" name="SubmitButton" value="Save Daily Email Accounts" style="float:right" class="Button" />
+	</td>
+</tr>
+<tr valign="top">
+	<!-- ACTIVE ACCOUNTS -->
+	<td>
+	<%
+		sql = "sp_BankingAccount_ReceiveEmail_get " & Session("UserID") & ", " & Session("Administrator")
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		
+		If NOT ors.EOF Then
+	%>
+		<table cellpadding="5" class="GridView">
+		<tr>
+			<% If Session("Administrator") Then %>
+			<td class="BankingTheme">Owner</td>
+			<% End If %>
+			<td class="BankingTheme">Account</td>
+			<td class="BankingTheme" align="right">Banking</td>
+			<td class="BankingTheme" align="right">Daily&nbsp;Emails</td>
+		</tr>
+	<%
+			Do Until ors.EOF
+				UserID = ors("UserID")
+				BankingAccountID = ors("BankingAccountID")
+				Owner = ors("FullName")
+				BankingAccountName = ors("BankingAccountName")
+				Banking = ors("Banking")
+				ReceiveEmails = ors("ReceiveEmails")
+	%>
+		<tr class="GridViewRow">
+			<% If Session("Administrator") Then %>
+			<td><a href="/administration/administration.asp?Template=users&UserID=<%= UserID %>&Action=Edit"><%= HTMLFormat(Owner) %></a></td>
+			<% End If %>
+			<td><a href="<%= SCRIPT_NAME %>?Template=BankingAccount&BankingAccountID=<%= BankingAccountID %>&CurrentDate=<%= CurrentDate %>"><%= HTMLFormat(BankingAccountName) %></a></td>
+			<td align="right"><%= ProfitLoss(Banking) %></td>
+			<td align="center"><input type="checkbox" id="BankingAccount_<%= BankingAccountID %>" name="BankingAccount_<%= BankingAccountID %>" value="1" <% If ReceiveEmails Then Response.Write "CHECKED"  %>/></td>
+		</tr>
+	<%
+				ors.MoveNext
+			Loop
+	%>
+		</table>
+	<%		
+			ors.Close
+		Else
+	%>
+		<div class="ErrorMessage">No Accounts found.</div>
+
+	<%
+		End If 
+		Set ors = Nothing
+	%>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("Template", Template) %>
+</form>

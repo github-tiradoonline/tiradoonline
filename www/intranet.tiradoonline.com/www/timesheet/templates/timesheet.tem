@@ -1,0 +1,213 @@
+<%
+	sql = "SELECT * FROM TimesheetCompany WHERE TimesheetCompanyID = " & TimesheetCompanyID
+	WriteDebugger sql, Debugging, 0
+	
+	Set ors = oConn.Execute(sql)
+	If NOT ors.EOF Then 
+		TimesheetCompanyName = ors("TimesheetCompanyName")
+		ors.Close
+	End If
+	Set ors = Nothing
+	
+	If TimesheetID = "" Then
+		sql = "sp_Timesheet_TimesheetInvoiceNumber_get " & TimesheetCompanyID
+		Set ors = oConn.Execute(sql)
+		If NOT ors.EOF Then 
+			TimesheetInvoiceNumber = ors.Fields(0).Value
+			ors.Close
+		End If
+		Set ors = Nothing
+	End If
+	
+%>
+
+
+<div class="TimesheetTheme" style="text-align:center;">
+	<h1 class="Header" style="padding: 5px;font-size:16px;" style="float:left;">
+		<a href="<%= SCRIPT_NAME %>?Template=company&TimesheetCompanyID=<%= TimesheetCompanyID %>"><%= TimesheetCompanyName %>&nbsp;-&nbsp;Timesheets</a>
+	</h1>
+</div>
+
+<!-- #include virtual="/timesheet/includes/subnav.inc" -->
+
+<form action="<%= SCRIPT_NAME %>" method="post" id="formTimesheet" name="formTimesheet">
+<table>
+<tr valign="top">
+		<%
+			'sql = "SELECT TimesheetCompanyName = (SELECT TimesheetCompanyName FROM TimesheetCompany WHERE TimesheetCompanyID = " & TimesheetCompanyID & "), * FROM TimeSheet WHERE TimesheetCompanyID = " & TimesheetCompanyID & " ORDER BY TimesheetStartDate"
+			sql = "sp_Timesheet_Invoices_get " & TimesheetCompanyID
+			WriteDebugger sql, Debugging, 0
+
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+				TimesheetCompanyName = ors("TimesheetCompanyName")
+		%>
+	<td>
+		<table cellpadding="3" class="GridViewAlteringRows">
+		<tr>
+			<td bgcolor="#dddddd">
+				<b>Timesheets</b>
+			</td>
+		</tr>
+		<%
+				Do Until ors.EOF
+					TotalPay = ors("TotalPay")
+					If isNull(TotalPay) Then TotalPay = 0
+					v_TimeSheetCompanyID = ors("TimeSheetCompanyID")
+					v_TimeSheetInvoiceDate = ors("TimeSheetInvoiceDate")
+					v_TimeSheetInvoiceNumber = ors("TimeSheetInvoiceNumber")
+					v_TimeSheetID = ors("TimeSheetID")
+					v_TimeSheetTypeID = ors("TimeSheetTypeID")
+					v_TimeSheetHourlyRate = ors("TimeSheetHourlyRate")
+					v_TimeSheetStartDate = ors("TimeSheetStartDate")
+					v_TimeSheetEndDate = ors("TimeSheetEndDate")
+					
+					sql = "sp_Timehseet_TimesheetID_Total_get " & v_TimesheetID
+					Set ors2 = oConn.Execute(sql)
+		
+					TotalPay = 0.0
+					If NOT ors2.EOF Then
+						TotalPay = ors2.Fields(0).Value
+						ors2.Close
+					End If
+					Set ors2 = Nothing
+		%>
+		<tr class="GridViewRow">
+			<td style="border-bottom: #000000 1px solid">
+				Invoice#&nbsp;<%= v_TimeSheetInvoiceNumber %>
+				&nbsp;&nbsp;[&nbsp;<a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&TimeSheetCompanyID=<%= v_TimeSheetCompanyID %>&TimesheetID=<%= v_TimeSheetID %>">Edit</a>&nbsp;]<br />
+				<a href="<%= SCRIPT_NAME %>?Template=timesheet_detail&TimesheetCompanyID=<%= TimesheetCompanyID %>&TimesheetID=<%= v_TimeSheetID %>"><%= v_TimeSheetStartDate %>&nbsp;-&nbsp;<%= v_TimeSheetEndDate %></a>
+				<div style="text-align:right;color:<%= BANKING_SUB_THEME %>"><%= FormatCurrency(TotalPay) %></div>
+			</td>
+		</tr>
+		<%
+					ors.MoveNext
+				Loop
+				ors.Close
+		%>
+		</table>
+	</td>
+	<% 
+		End If
+		Set ors = Nothing
+	%>
+	<td>
+		<div class="TimeSheetTheme">
+			<h1 class="Header" style="padding: 5px;">
+				<%= HTMLFormat("Add/Edit Timesheet") %>&nbsp;Invoice&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<% If TimeSheetID <> "" Then %>
+					<span style="float:right;display:inline;">
+						<%= Button("Button", "Create New Timesheet", "Button", "", "Create New Timesheet", "location.href='" & SCRIPT_NAME & "'") %>
+						&nbsp;&nbsp;
+					</span>
+				<% End If %>
+			</h1>	
+		</div>
+		</h1>	
+		<% If TimesheetErrorMessage <> "" Then %>
+		<div class="ErrorMessage"><%= TimesheetErrorMessage %></div>
+		<% End If %>
+		<p>
+		<%
+			SubmitButtonValue = "Create"
+			If TimesheetID <> "" Then
+				sql = "SELECT * FROM TimesheetCompany WHERE TimesheetCompanyID = " & TimesheetCompanyID
+				WriteDebugger sql, Debugging, 0
+				
+				Set ors = oConn.Execute(sql)
+				If NOT ors.EOF Then
+					TimesheetCompanyName = ors("TimesheetCompanyName")
+					SubmitButtonValue = "Save"
+					ors.Close
+				End If
+				Set ors = Nothing
+				
+				sql = "SELECT * FROM Timesheet WHERE TimesheetID = " & TimesheetID
+				WriteDebugger sql, Debugging, 0
+				Set ors = oConn.Execute(sql)
+				If NOT ors.EOF Then
+					TimesheetTypeID = ors("TimesheetTypeID")
+					TimeSheetInvoiceDate = ors("TimeSheetInvoiceDate")
+					TimeSheetInvoiceNumber = ors("TimeSheetInvoiceNumber")
+					TimeSheetHourlyRate = ors("TimeSheetHourlyRate")
+					TimeSheetStartDate = ors("TimeSheetStartDate")
+					TimeSheetEndDate = ors("TimeSheetEndDate")
+					ors.Close
+				End If 
+				Set ors = Nothing
+			End If
+		%>
+		<table cellpadding="10">
+		<tr>
+			<td class="frm_label">Company:</td>
+			<td class="TimesheetTheme" style="font-size: 16px">
+				<a href="<%= SCRIPT_NAME %>?Template=company&TimesheetCompanyID=<%= TimesheetCompanyID %>"><%= TimesheetCompanyName %></a>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Invoice&nbsp;Date:</td>
+			<td>
+				<%= formTextBox("TimeSheetInvoiceDate", "10", TimeSheetInvoiceDate, "TimesheetElement", "Invoice Date", "Invalid Invoice Date") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Invoice#:</td>
+			<td>
+				<%= formTextBox("TimeSheetInvoiceNumber", "10", TimeSheetInvoiceNumber, "TimesheetElement", "Invoice Number", "Invalid Invoice Number") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Rate&nbsp;Type:</td>
+			<td>
+				<% 
+					sql = "SELECT TimesheetTypeID, TimesheetType FROM TimesheetType ORDER BY TimesheetType"
+					'Response.Write sql
+					'Response.End
+				 %>
+				<%= SelectBox(oConn, sql, "TimesheetTypeID", TimesheetTypeID, "TimesheetElement", "RateType") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Rate:</td>
+			<td>
+				<%= formTextBox("TimeSheetHourlyRate", "5", TimeSheetHourlyRate, "TimesheetElement", "Hourly Rate", "Invalid Hourly Rate") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Start&nbsp;Date:</td>
+			<td>
+				<%= formTextBox("TimeSheetStartDate", "10", TimeSheetStartDate, "TimesheetElement", "Start Date", "Invalid Start Date") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">End&nbsp;Date:</td>
+			<td>
+				<%= formTextBox("TimeSheetEndDate", "10", TimeSheetEndDate, "TimesheetElement", "End Date", "Invalid End Date") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<%= Submit_Button("SubmitButton", SubmitButtonValue & " Timesheet", "Button", "", SubmitButtonValue & " Timesheet") %>&nbsp;&nbsp;
+				<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=company'") %>
+			</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+</table>
+<script type="text/javascript">
+
+	$( "#TimeSheetInvoiceDate" ).datepicker();
+	$( "#TimeSheetStartDate" ).datepicker();
+	$( "#TimeSheetEndDate" ).datepicker();
+
+</script>
+
+<%= formHidden("Template", Template) %>
+
+<%= formHidden("TimesheetCompanyID", TimesheetCompanyID) %>
+
+<%= formHidden("TimesheetID", TimesheetID) %>
+
+</form>

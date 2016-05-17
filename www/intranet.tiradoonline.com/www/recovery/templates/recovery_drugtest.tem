@@ -1,0 +1,281 @@
+<%
+		sql = "SELECT MIN(a.RecoveryDrugTestDateTime) FROM RecoveryDrugTest a, RecoveryPrograms b WHERE a.RecoveryProgramID = " & RecoveryProgramID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		MinDate = Date
+		If NOT ors.EOF Then
+			MinDate = ors.Fields(0).Value
+			ors.Close
+		End If
+		Set ors = Nothing
+	
+		sql = "SELECT * FROM RecoveryPrograms WHERE RecoveryProgramID = " & RecoveryProgramID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		If NOT ors.EOF Then
+			RecoveryTypeID = ors("RecoveryTypeID")
+			ProgramName = ors("ProgramName")
+			ors.Close
+		End If
+		Set ors = Nothing
+
+		sql = "SELECT * FROM RecoveryTypes WHERE RecoveryTypeID = " & RecoveryTypeID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		If NOT ors.EOF Then
+			RecoveryTypeName = ors("RecoveryTypeName")
+			ors.Close
+		End If
+		Set ors = Nothing
+		
+	If SubmitButton = "Add Drug Test" Then
+		sql = "INSERT INTO RecoveryDrugTest (RecoveryProgramID, RecoveryDrugTestTypeID, RecoveryDrugTestDateTime, RecoveryDrugTestResult, RecoveryDrugTestDescription) VALUES (" & _
+			RecoveryProgramID & ", " & _
+			RecoveryDrugTestTypeID & ", " & _
+			"'" & SQLEncode(RecoveryDrugTestDateTime) & "', " & _
+			RecoveryDrugTest & ", " & _
+			"'" & SQLEncode(RecoveryDrugTestDescription) & "')"
+		
+		'Response.Write sql
+		'Response.End
+		WriteDebugger sql, Debugging, 0
+		oConn.Execute(sql)
+		RecoveryErrorMessage = Server.URLEncode("Drug Test added.")
+		Response.Redirect SCRIPT_NAME & "?Template=recovery_programs&RecoveryTypeID=" & RecoveryTypeID & "&RecoveryErrorMessage=" & RecoveryErrorMessage & "&RecoveryProgramID=" & Trim(Request("RecoveryProgramID"))
+	ElseIf SubmitButton = "Save Drug Test" Then
+		sql = "UPDATE RecoveryDrugTest SET " & _
+		    "RecoveryDrugTestTypeID = " & RecoveryDrugTestTypeID & ", " & _
+			"RecoveryDrugTestDateTime = '" & SQLEncode(RecoveryDrugTestDateTime) & "', " & _
+			"RecoveryDrugTestResult = " & RecoveryDrugTestResult & ",  " & _
+			"RecoveryDrugTestDescription = '" & SQLEncode(RecoveryDrugTestDescription) & "' " & _
+			"WHERE RecoveryDrugTestID = " & RecoveryDrugTestID
+		
+		WriteDebugger sql, Debugging, 0
+		oConn.Execute(sql)
+		RecoveryErrorMessage = Server.URLEncode("Drug Test saved.")
+		Response.Redirect SCRIPT_NAME & "?Template=recovery_programs&RecoveryTypeID=" & RecoveryTypeID & "&RecoveryErrorMessage=" & RecoveryErrorMessage & "&RecoveryProgramID=" & Trim(Request("RecoveryProgramID"))
+	End If
+
+		SubmitButtonValue = "Add"
+		If RecoveryDrugTestDateTime = "" Then RecoveryDrugTestDateTime = Date
+		If RecoveryDrugTestID <> "" Then
+			SubmitButtonValue = "Save"
+			sql = "SELECT a.*, b.RecoveryDrugTestName FROM RecoveryDrugTest a, RecoveryDrugTestType b WHERE a.RecoveryDrugTestTypeID = b.RecoveryDrugTestTypeId AND a.RecoveryDrugTestID = " & RecoveryDrugTestID
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+				RecoveryProgramID = ors("RecoveryProgramID")
+				RecoveryDrugTestDateTime = ors("RecoveryDrugTestDateTime")
+				RecoveryDrugTestTypeID = ors("RecoveryDrugTestTypeID")
+				ors.Close
+			End If 
+			Set ors = Nothing
+		End If
+
+
+		sql = "SELECT COUNT(*) FROM RecoveryDrugTest WHERE RecoveryProgramID = " & RecoveryProgramID
+		Set orsTotal = oConn.Execute(sql)
+		TotalDrugTests = orsTotal.Fields(0).Value
+		orsTotal.Close
+		Set orsTotal = Nothing 
+	%>
+	&nbsp;
+	<form action="<%= SCRIPT_NAME %>" method="post" id="formRecoveryDrugTest" name="formRecoveryDrugTest">
+	<table border="0" cellspacing="0" cellpadding="10">
+	<tr bgcolor="<%= RECOVERY_THEME %>">
+		<td class="RecoveryTheme" colspan="2">
+			&nbsp;&nbsp;			
+			<% If RecoveryDrugTestID <> "" Then %>
+			&nbsp;&nbsp;&nbsp;
+			<%= Button("Button", "Add New Drug Test", "Button", "float:right", "Add New Drug Test", "location.href='" & SCRIPT_NAME & "?Template=recovery_drugtest&RecoveryProgramID=" & RecoveryProgramID & "&RecoveryTypeID=" & RecoveryTypeID & "'") %>&nbsp;&nbsp;&nbsp;
+			<% End If %>
+			<b><%= HTMLFormat(RecoveryTypeName) %></b>
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<%= Button("Button", "Cancel", "Button", "float:right", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=recovery_programs&RecoveryProgramID=" & RecoveryProgramID & "&RecoveryTypeID=" & RecoveryTypeID & "'") %>
+			&nbsp;&nbsp;&nbsp;
+		</td>
+	</tr>
+	<tr valign="top">
+		<td valign="top">
+			<table cellpadding="0" class="GridViewAlteringRows">
+			<tr>
+				<td class="RecoveryTheme" align="right">Drug&nbsp;Test&nbsp;(<%= TotalDrugTests %>)</td>
+			</tr>
+			<%
+				sql = "SELECT " & _
+						"a.RecoveryDrugTestID, " & _
+						"a.RecoveryDrugTestDateTime, " & _
+						"a.RecoveryDrugTestResult, " & _
+						"a.RecoveryDrugTestDescription, " & _
+						"b.RecoveryDrugTestName " & _
+					"FROM " & _
+						"RecoveryDrugTest a, " & _
+						"RecoveryDrugTestType b " & _
+					"WHERE " & _
+						"a.RecoveryDrugTestTypeID = b.RecoveryDrugTestTypeID AND " & _
+						"RecoveryProgramID =  " & RecoveryProgramID & _
+					" ORDER BY " & _
+						"a.RecoveryDrugTestDateTime DESC" 
+				Set ors = oConn.Execute(sql)
+				
+				If NOT ors.EOF Then 
+					JQueryDates = "" & vbCrLF
+					Counter = 1
+					StartDate = ""
+					EndDate = ""
+					Do Until ors.EOF
+						v_RecoveryDrugTestDescription = ors("RecoveryDrugTestDescription")
+						v_RecoveryDrugTestID = ors("RecoveryDrugTestID")
+						v_RecoveryDrugTestDateTime = FormatDateTime(ors("RecoveryDrugTestDateTime"), 2)
+						v_RecoveryDrugTestName = ors("RecoveryDrugTestName")
+						If Counter = 1 Then EndDate = v_RecoveryDrugTestDateTime
+						StartDate = v_RecoveryDrugTestDateTime
+						v_RecoveryDrugTestResult = ors("RecoveryDrugTestResult")
+						JQueryDates = JQueryDates & "SelectedDates[new Date('" & v_RecoveryDrugTestDateTime & "')] = new Date('" & v_RecoveryDrugTestDateTime & "');" & vbCrLF
+			%>
+			<tr class="GridViewRow" valign="top" onclick="location.href='<%= SCRIPT_NAME %>?Template=<%= Template %>&RecoveryProgramID=<%= RecoveryProgramID %>&RecoveryTypeID=<%= RecoveryTypeID %>&RecoveryDrugTestID=<%= v_RecoveryDrugTestID %>&Action=Edit'">
+				<td align="right">
+					<b><%= DrugTestColor(HTMLFormat(FormatDateTime(v_RecoveryDrugTestDateTime, 1)), v_RecoveryDrugTestResult) %>&nbsp;(<%= v_RecoveryDrugTestName %>)</b>
+				</td>
+			</tr>
+					<% If v_RecoveryDrugTestDescription <> "" Then %>
+					<tr valign="top">
+						<td align="right">
+							<%= v_RecoveryDrugTestDescription %>
+						</td>
+					</tr>
+					<% End If %>
+			<%
+						Counter = Counter + 1
+						ors.MoveNext
+					Loop
+					ors.Close
+			%>
+			<% Else %>
+			<tr>
+				<td class="ErrorMessage">No&nbsp;Drug&nbsp;Test&nbsp;found</td>
+			</tr>
+			<%
+				End If
+				Set ors = Nothing
+			%>
+			</table>
+		</td>
+		<td valign="top">
+			<table border="0" cellspacing="0" cellpadding="10">
+			<tr>
+				<td colspan="2" class="ErrorMessage">
+					<%= RecoveryErrorMessage %>&nbsp;&nbsp;
+				</td>
+			</tr>
+			<tr>
+				<td align="right">
+					<b>Program&nbsp;Name:</b>&nbsp;
+				</td>
+				<td class="RecoveryTheme">
+					<b><%= ProgramName %></b>
+				</td>
+			</tr>
+			<tr>
+				<td align="right">
+					<b>Date:</b>&nbsp;
+				</td>
+				<td>
+					<%= formTextBox("RecoveryDrugTestDateTime", "10", RecoveryDrugTestDateTime, "RecoveryElement", "Drug Test Date", "Invalid Date") %><%= REQUIRED_ICON %>
+				</td>
+			</tr>
+			<tr>
+				<td align="right">
+					<b>Drug&nbsp;Test&nbsp;Type:</b>&nbsp;
+				</td>
+				<td>
+					<%= SelectBox(oConn, "sp_RecoveryDrugTestType_get", "RecoveryDrugTestTypeID", RecoveryDrugTestTypeID, "RecoveryElement", "Drug Test Type") %>
+				</td>
+			</tr>
+			<tr>
+				<td align="right">
+					<b>Result:</b>&nbsp;
+				</td>
+				<td>
+					<select id="RecoveryDrugTestResult" name="RecoveryDrugTestResult" class="RecoveryElement">
+						<option value="0"<% If CStr(RecoveryDrugTestResult) = "0" Then Response.Write " SELECTED" %>>NEGATIVE</option>
+						<option value="1"<% If CStr(RecoveryDrugTestResult) = "1" Then Response.Write " SELECTED" %>>POSITIVE</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td class="frm_label" valign="top">Comments:</td>
+				<td>
+					<%= formTextArea("RecoveryDrugTestDescription", RecoveryDrugTestDescription, "400", "100", "RecoveryElement", "Description", "Invalid Description") %>
+				</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+				<td>
+					<%= Submit_Button("SubmitButton", SubmitButtonValue & " Drug Test", "Button", "", SubmitButtonValue & " Drug Test") %>&nbsp;&nbsp;&nbsp;&nbsp;
+				</td>
+			</tr>
+			</table>
+			
+			<p />
+			
+		</td>
+		<% If RecoveryDrugTestID <> "" Then %>
+		<td valign="top">
+		<style type="text/css">
+		
+
+.ui-datepicker 
+{ 
+	margin-top: 0px;
+	margin-left: 0px;
+}
+		</style>
+									
+			<div id="datepickerRecoveryDrugTests" name="datepickerRecoveryDrugTests"></div>
+
+		</td>
+		<% End If %>
+	</tr>
+	</table>
+	<%= formHidden("Template", Template) %>
+	
+	<%= formHidden("RecoveryProgramID", RecoveryProgramID) %>
+	
+	<%= formHidden("RecoveryTypeID", RecoveryTypeID) %>
+
+	<%= formHidden("RecoveryDrugTestID", RecoveryDrugTestID) %>
+
+	</form>	
+	
+<script type="text/javascript">
+
+	$('#RecoveryDrugTestDateTime').datepicker();
+
+	var SelectedDates = {};
+	<%= JQueryDates %>
+<%
+	DiffMonths = DateDiff("m", StartDate, EndDate)
+%>
+	var diffMonths = <%= DiffMonths + 1 %>;
+	var endDate = '<%= EndDate %>';
+
+	$("#datepickerRecoveryDrugTests").datepicker({
+	    minDate: '<%= MinDate %>',
+	    numberOfMonths: diffMonths,
+		disabled: true,
+		beforeShowDay: function(date)
+		{
+	     	var Highlight = SelectedDates[date];
+	      	if (Highlight) {
+	        	return [true, "Highlighted", Highlight];
+	      	}
+	      	else {
+	         	return [true, '', ''];
+	      	}
+	   	}	
+	});
+
+	$("#datepickerRecoveryDrugTests").datepicker( "setDate" , "<%= MinDate %>" );	
+	$("#datepickerRecoveryDrugTests").datepicker( "option", "disabled", true );
+
+</script>

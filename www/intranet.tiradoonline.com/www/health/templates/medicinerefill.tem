@@ -1,0 +1,233 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formMedicineRefill" name="formMedicineRefill">
+<% 
+	SubmitButtonValue = "Create Medicine Refill"
+	If MedicineRefillID <> "" Then
+		SubmitButtonValue = "Save Medicine Refill"
+		sql = "SELECT * FROM MedicineRefill WHERE MedicineRefillID = " & MedicineRefillID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		MedicineRefillID = ors("MedicineRefillID")
+		MedicineID = ors("MedicineID")
+		DoctorID = ors("DoctorID")
+		PharmacyID = ors("PharmacyID")
+		RefillOrderDate = ors("RefillOrderDate")
+		RefillOrderPickupDate = ors("RefillOrderPickupDate")
+		RefillDateFilled = ors("RefillDateFilled")
+		RefillAmount = ors("RefillAmount")
+		DailyAmount = ors("DailyAmount")
+		RefillTimes = ors("RefillTimes")
+		RefillUntilDate = ors("RefillUntilDate")
+		RefillDiscardDate = ors("RefillDiscardDate")
+		RefillDescription = ors("RefillDescription")
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+
+<div class="HealthTheme"><h1 class="Header" style="padding: 5px;">Add/Edit&nbsp;Medicine Refill</h1></div>
+<p>
+<% If HealthErrorMessage <> "" Then %>
+<div class="ErrorMessage" id="HealthErrorMessage" name="HealthErrorMessage"><%= HealthErrorMessage %></div>
+<% End If %>
+<div>
+<div style="float:right">
+	<% If MedicineRefillID <> "" Then %>
+		<%= Button("Button", "Create New MedicineRefill", "Button", "location.href='" & SCRIPT_NAME & "?Template=MedicineRefill'", "Create New MedicineRefill", "") %>&nbsp;&nbsp;
+	<% End If %>
+		<%= Button("Button", "Add Medicine Refill", "Button", "", "Add Medicine Refill", "location.href='" & SCRIPT_NAME & "?Template=MedicineRefill'") %>&nbsp;&nbsp;
+</div>
+&nbsp;<br />
+&nbsp;<br />
+<table cellpadding="3">
+<tr>
+	<td class="frm_label">Doctor:</td>
+	<td>
+		<%= SelectBox(oConn, "sp_Doctor_UserID_get " & Session("UserID"), "DoctorID", DoctorID, "HealthElement", "Doctor") %>
+		&nbsp;
+		<%= Button("Button", "Add/Edit Doctor(s)", "Button", "", "Add/Edit Doctor(s)", "location.href='" & SCRIPT_NAME & "?Template=doctor'") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Pharmacy:</td>
+	<td>
+		<%= SelectBox(oConn, "sp_Pharmacy_UserID_get " & Session("UserID"), "PharmacyID", PharmacyID, "HealthElement", "Pharmacy") %>
+		&nbsp;
+		<%= Button("Button", "Add/Edit Pharmacy(s)", "Button", "", "Add/Edit Pharmacy(s)", "location.href='" & SCRIPT_NAME & "?Template=pharmacy'") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Order&nbsp;Date:</td>
+	<td>
+		<%= formTextBox("RefillOrderDate", "10", RefillOrderDate, "HealthElement", "Order Date", "Invalid Order Date") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Pickup&nbsp;Date:</td>
+	<td>
+		<%= formTextBox("RefillOrderPickupDate", "10", RefillOrderPickupDate, "HealthElement", "Order Pickup Date", "Invalid Pickup Date") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Medicine:</td>
+	<td>
+		<%= SelectBox(oConn, "sp_Medicine_UserID_get " & Session("UserID"), "MedicineID", MedicineID, "HealthElement", "Medicine") %>
+		&nbsp;
+		<%= Button("Button", "Add/Edit Medicine(s)", "Button", "", "Add/Edit Medicine(s)", "location.href='" & SCRIPT_NAME & "?Template=medicine'") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Date&nbsp;Filled:</td>
+	<td>
+		<%= formTextBox("RefillDateFilled", "10", RefillDateFilled, "HealthElement", "Refill Date", "Invalid Refill Date") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Refill&nbsp;Amount:</td>
+	<td>
+		<%= formTextBox("RefillAmount", "5", RefillAmount, "HealthElement", "RefillAmount", "Invalid Amount") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Daily&nbsp;Amount:</td>
+	<td>
+		<%= formTextBox("DailyAmount", "5", DailyAmount, "HealthElement", "DailyAmount", "Invalid Amount") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Refill&nbsp;Times:</td>
+	<td>
+		<%= formTextBox("RefillTimes", "5", RefillTimes, "HealthElement", "Refill Times", "Invalid Times") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Refill&nbsp;Until&nbsp;Date:</td>
+	<td>
+		<%= formTextBox("RefillUntilDate", "10", RefillUntilDate, "HealthElement", "Refill Until Date", "Invalid Refill Until Date") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Refill&nbsp;Discard&nbsp;Date:</td>
+	<td>
+		<%= formTextBox("RefillDiscardDate", "10", RefillDiscardDate, "HealthElement", "Refill Discard Date", "Invalid Refill Discard Date") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label" valign="top">Description:</td>
+	<td>
+		<%= formTextArea("RefillDescription", RefillDescription, "600", "200", "HealthElement", "Description", "Invalid Description") %>
+	</td>
+</tr>
+<tr>
+	<td>&nbsp;</td>
+	<td>
+		<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+		
+
+		<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+	</td>
+</tr>
+</table>
+&nbsp;<br />
+&nbsp;<br />
+
+<table class="GridViewAlteringRows" cellspacing=0 width="<%= mainContentWidth %>">
+<%
+	sql = "sp_MedicineRefill_UserID_get " & Session("UserID")
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+	If NOT ors.EOF Then
+%>
+<tr class="HealthTheme" valign="top">
+	<td>Medicine</td>
+	<td>Next&nbsp;Refill</td>
+	<td>Doctor</td>
+	<td>Pharmacy#</td>
+	<td>Prescription#</td>
+	<td>Order&nbsp;Date</td>
+	<td>Pickup&nbsp;Date</td>
+	<td align="right">Date&nbsp;Filled</td>
+	<td align="right">Amount</td>
+	<td align="center">Times</td>
+	<td align="right">Until&nbsp;Date</td>
+	<td align="right">Discard&nbsp;Date</td>
+	<td>&nbsp;</td>
+</tr>
+<%
+		tempMedicineRefillDate = ""
+		Do Until ors.EOF
+			MedicineRefill_ID = ors("MedicineRefillID")
+			MedicineID = ors("MedicineID")
+			Medicine = ors("Medicine")
+			DoctorName = ors("DoctorName")
+			PharmacyName = ors("PharmacyName")
+			PrescriptionNumber = ors("PrescriptionNumber")
+			NextRefillDate = ors("NextRefillDate")
+			RefillOrderDate = ors("RefillOrderDate")
+			RefillOrderPickupDate = ors("RefillOrderPickupDate")
+			RefillDateFilled = ors("RefillDateFilled")
+			RefillAmount = ors("RefillAmount")
+			RefillTimes = ors("RefillTimes")
+			RefillUntilDate = ors("RefillUntilDate")
+			RefillDiscardDate = ors("RefillDiscardDate")
+			RefillDescription = ors("RefillDescription")
+			style = "  style=""border-top: #000000 3px solid"""
+%>
+<tr class="GridViewRow" valign="top" valign="middle">
+	<td<%= style %>><%= HTMLFormat(Medicine) %>&nbsp;</td>
+	<td<%= style %>><%= NextRefillDate %>&nbsp;</td>
+	<td<%= style %>><%= HTMLFormat(DoctorName) %>&nbsp;</td>
+	<td<%= style %>><%= HTMLFormat(PharmacyName) %>&nbsp;</td>
+	<td<%= style %>><%= HTMLFormat(PrescriptionNumber) %>&nbsp;</td>
+	<td<%= style %>><%= RefillOrderDate %>&nbsp;</td>
+	<td<%= style %>><%= RefillOrderPickupDate %>&nbsp;</td>
+	<td<%= style %> align="right"><%= RefillDateFilled %>&nbsp;</td>
+	<td<%= style %> align="center"><%= RefillAmount %>&nbsp;</td>
+	<td<%= style %> align="center"><%= RefillTimes %>&nbsp;</td>
+	<td<%= style %> align="right"><%= RefillUntilDate %>&nbsp;</td>
+	<td<%= style %> align="right"><%= RefillDiscardDate %>&nbsp;</td>
+	<td<%= style %>>
+		<%= Button("Button", "Edit", "Button", "", "Edit", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&MedicineRefillID=" & MedicineRefill_ID & "'") %>
+		<p />
+		<%= Button("Button", "Add New Medicine Refill", "Button", "", "Add New Medicine Refill", "location.href='" & SCRIPT_NAME & "?Template=medicinerefill&MedicineID=" & MedicineID & "'") %>
+	</td>
+</tr>
+<% If RefillDescription <> "" Then %>
+<tr class="GridViewRow" valign="top">
+ 	<td colspan="9"><%= RefillDescription %></td>
+</tr>
+<% End If %>
+<%
+			ors.MoveNext
+		Loop
+		ors.Close
+	
+	Else
+%>
+<tr>
+	<td class="ErrorMessage" align="center">
+		No Medicine Refills found.
+		<p />
+		<%= Button("Button", "Add New Medicine Refill", "Button", "", "Add New Medicine Refill", "location.href='" & SCRIPT_NAME & "?Template=medicinerefill'") %>
+	</td>
+</tr>
+<% 	
+	End If 
+	Set ors = Nothing
+%>
+</table>
+
+
+<%= formHidden("MedicineRefillID", MedicineRefillID) %>
+
+<%= formHidden("Template", Template) %>
+</form>
+
+<script type="text/javascript">
+
+	$("#RefillOrderDate").datepicker();
+	$("#RefillOrderPickupDate").datepicker();
+	$("#RefillDateFilled").datepicker();
+	$("#RefillUntilDate").datepicker();
+	$("#RefillDiscardDate").datepicker();
+
+</script>

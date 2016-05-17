@@ -1,0 +1,243 @@
+<form action="<%= SCRIPT_NAME %>" enctype="multipart/form-data" method="post" accept-charset="utf-8" id="formBanking" name="formBanking">
+<%
+	Title = UCase(Session("UserName"))
+	BankingDate = Trim(Request("BankingDate"))
+	If BankingDate = "" Then BankingDate = CurrentDate
+	
+	BankingID = Trim(Request("BankingID"))
+	SubBankingAccountID = Trim(Request("SubBankingAccountID"))
+	If SubBankingAccountID = "" Then SubBankingAccountID = 0
+	Comment = Trim(Request("Comment"))
+	TransactionID = Trim(Request("TransactionID"))
+	TransactionStatus = Trim(Request("TransactionStatus"))
+	TransactionText = Trim(Request("TransactionText"))
+	Payment = Trim(Request("Payment"))
+	SubmitButton = Trim(Request("SubmitButton"))
+	PreviousPage = Trim(Request("PreviousPage"))
+	If PreviousPage = "" Then PreviousPage = Request.ServerVariables("HTTP_REFERER")
+	UserID = Trim(Request("UserID"))
+
+	If SubmitButton = "Delete" Then
+		sql = "sp_Banking_delete " & BankingID
+		WriteDebugger sql, Debugging, 0
+		oConn.Execute sql
+		Response.Redirect Request("PreviousPage")
+	ElseIf SubmitButton = "Cancel" Then
+		Response.Redirect Request("PreviousPage")
+	End If
+
+	If BankingID <> "" Then
+		sql = "sp_Banking_BankingID " & BankingID
+		WriteDebugger sql, Debugging, 0
+		'Response.Write sql
+		Set Banking = oConn.Execute(sql)
+		If Banking.EOF Then
+			Response.Redirect SCRIPT_NAME
+		Else
+			BankingAccountID = Banking("BankingAccountID")
+			SubBankingAccountID = Banking("SubBankingAccountID")
+			If isNull(SubBankingAccountID) Then SubBankingAccountID = BankingAccountID
+			BankingDate = Banking("BankingDate")
+			Comment = Banking("Comment")
+			'If Trim(Request("TransactionID")) <> "" Then
+			TransactionID = Banking("TransactionID")
+			'End If
+			Payment = Banking("Payment")
+			BankingFile = Banking("BankingFile")
+			BankingFileName = Banking("BankingFileName")
+			Banking.Close
+		End If
+		If Payment = "" then Payment =  0
+		Payment = FormatNumber(Payment, 2)
+		Set Banking = Nothing
+	End If	
+%>
+
+<table cellpadding=5 width="100%" border=0>
+		<%
+			If Trim(Request("BankingAccountID")) <> "" Then BankingAccountID = Trim(Request("BankingAccountID"))
+			sql = "sp_BankingAccount_BankingAccountID_get " & BankingAccountID
+			WriteDebugger sql, Debugging, 0
+			Set rs = oConn.Execute(sql)
+			BankingAccountName = rs("BankingAccountName")
+			TotalBanking = rs("TotalBanking")
+			If isNull(TotalBanking) Then TotalBanking = 0.0
+			rs.Close
+			Set rs = Nothing
+		%>
+<tr class="BankingSubTheme">
+	<td align=center class="SubHeader"><%= Template %>&nbsp;Transaction</td>
+</tr>
+<tr>
+	<td>
+						<table cellspacing=0 cellpadding=2 border=0 width="100%">
+						<tr>
+							<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+							<td>
+								<table cellpadding=5>
+								<% If BankingErrorMessage <> "" Then %>
+								<tr>
+									<td colspan=3 class="ErrorMessage"><%= BankingErrorMessage %>&nbsp;</td>
+								</tr>
+								<% End If %>
+								<tr>
+									<td class="frm_Label">Account:&nbsp;&nbsp;</td>
+									<td class="BankingSubElement">
+										<table width="100%">
+										<tr class="BankingElement">
+											<td>
+												<a href="<%= SCRIPT_NAME %>?BankingAccountID=<%= BankingAccountID %>&CurrentDate=&Template=View"><%= BankingAccountName %></a>&nbsp;-&nbsp;$<%= FormatNumber(TotalBanking, 2) %>
+											</td>
+<!-- 											<td align="right">
+												<%= Button("Button", "View Banking Transactions", "Button", "", "View  Banking Transactions", "location.href='" & SCRIPT_NAME & "?CurrentDate=" & CurrentDate & "&BankingAccountID=" & BankingAccountID & "&Template=View'") %>&nbsp;&nbsp;
+											</td>
+ -->										</tr>
+										</table>
+									</td>
+								</tr>
+								<%
+									sql = "sp_BankingAccount_SubBankingAccountID_get " & Session("UserID") & ", " & BankingAccountID
+									If IsNull(SubBankingAccountID) AND Trim(SubBankingAccountID) = "" then SubBankingAccountID = 0
+									WriteDebugger sql, Debugging, 0
+									'Response.Write "SubBankingAccountID:" & SubBankingAccountID
+									totalLinkedAccount = 0
+									Set orsLinkedAccount = oConn.Execute(sql)
+									If NOT orsLinkedAccount.EOF Then
+										totalLinkedAccount = 0
+										orsLinkedAccount.Close
+									End If
+									Set orsLinkedAccount = Nothing
+								%>
+								<% If totalLinkedAccount > 0 Then %>
+								<tr>
+									<td align="right" class="frm_Label">Linked&nbsp;Account:&nbsp;&nbsp;</td>
+									<td><%= SelectBoxNA(oConn, sql, "SubBankingAccountID", SubBankingAccountID, "BankingElement", "Linked Account") %></td>
+								</tr>
+								<% End If %>
+								<tr>
+									<td class="frm_Label">Date:&nbsp;&nbsp;</td>
+									<td>
+										<%= formTextBox("BankingDate", "10", BankingDate, "BankingElement", "Date", "Invalid Date") %>
+									</td>
+								</tr>
+								<tr>
+									<td class="frm_Label">Transaction:</td>
+									<td>
+									<!-- <%= SelectBox(oConn, "sp_Transactions_UserID_get " & Session("UserID"), "TransactionID", Trim(Request("TransactionID")), "BankingElement", "Transaction") %>&nbsp; -->
+										<%= SelectBox(oConn, "sp_Transactions_UserID_get " & Session("UserID"), "TransactionID", TransactionID, "BankingElement", "Transaction") %>&nbsp;
+										<%= Button("buttonAddNewTransaction", "Add New Banking Transaction", "Button", "", "Add New Banking Transaction", "") %>
+										
+									</td>
+								</tr>
+								<tr>
+									<td class="frm_Label">Amount:</td>
+									<td>
+										<%= formTextBox("Payment", "8", Payment, "BankingElement", "Amount", "Invalid Payment") %>
+									</td>
+								</tr>
+								<tr>
+									<td class="frm_Label">File:</td>
+									<td>
+										<%= formFileUpload("BankingFileName", "500", BankingFileName, "BankingElement", "Upload File", "Invalid File") %>
+									</td>
+								</tr>
+								<% If BankingFile Then %>
+								<tr>
+									<td>&nbsp;</td>
+									<td>
+										<%= X_ICON %>&nbsp;&nbsp;<a href="uploads/<%= BankingAccountID %>/<%= BankingID %>/<%= BankingFileName %>"><%= BankingFileName %></a>
+									</td>
+								</tr>
+								<% End If %>
+								<tr valign="top">
+									<td class="frm_Label">Comment:</td>
+									<td>
+										<%= formTextArea("Comment", Comment, "350", "100", "BankingElement", "Comment", "Invalid Comment") %>
+									</td>
+								</tr>
+								<tr>
+									<td>&nbsp;</td>
+									<td>
+										<%
+											SubmitButtonValue = "Save"
+											If BankingID = "" Then SubmitButtonValue = "Add"
+										%>
+											<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+											<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" &SCRIPT_NAME & "?CurrentDate=" & CurrentDate & "&BankingAccountID=" & BankingAccountID & "&Template=View'") %>&nbsp;&nbsp;
+										<% If BankingID <> "" Then %>
+											<%= Button("Button", "Delete", "DeleteButton", "", "Delete", "DeleteItem('Are you sure you want to delete this transaction?', '" & SCRIPT_NAME & "?Template=" & Template & "&SubmitButton=Delete&BankingID=" & BankingID & "&BankingAccountID=" & BankingAccountID & "&CurrentDate=" & Server.URLEncode(BankingDate) & "&PreviousPage=" & Server.URLEncode(PreviousPage) & "')") %>
+										<% End If %>
+										
+									</td>
+								</tr>
+								</table>
+							</td>
+							<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						</tr>
+						</table>
+			</td>
+		</tr>
+		</table>
+<script type="text/javascript">
+
+	$('#BankingDate').datepicker();
+	
+	$('#buttonAddNewTransaction').click
+	(
+		function()
+		{
+			var transactionsArray = [];
+			<%
+				sql = "sp_Transactions_UserID_get " & Session("UserID")
+				Set ors = oConn.Execute(sql)
+				
+				If NOT ors.EOF Then				
+					Do Until ors.EOF
+							TransactionName = ors("Description")
+			%>
+			transactionsArray.push( "<%= TransactionName %>" );
+			<%
+						ors.MoveNext
+					Loop
+					ors.Close
+				End If 
+				Set ors = Nothing
+			%>
+			redirectURL = "<%= SCRIPT_NAME %>?BankingAccountID=<%= BankingAccountID %>&BankingID=<%= BankingID %>&CurrentDate=<%= Server.URLEncode(CurrentDate) %>&Template=<%= Template %>&SubmitButton=<%= Server.URLEncode("Add New Transaction") %>";
+			var $newTransaction = prompt("Add New Transaction");
+			
+			if($newTransaction != null && $newTransaction != '')
+			{
+				var $transactionExists = false;
+				for ( var i = 0; i < transactionsArray.length; i = i + 1 )
+				{
+					if(transactionsArray[i].toUpperCase() == $newTransaction.toUpperCase())
+						$transactionExists = true;
+				}
+				
+				if(!$transactionExists)
+				{
+					$BankingDate = $('#BankingDate').val()
+					$Payment = $('#Payment').val()
+					$Comment = $('#Comment').val()
+					redirectURL += "&TransactionText=" + escape($newTransaction) + "&BankingDate=" + escape($BankingDate) + "&Payment=" + escape($Payment) + "&Comment=" + escape($Comment)
+					location.href = redirectURL;
+				}
+				else
+					alert("Transaction: '" + $newTransaction + "' already exists");
+				
+			}
+		}
+	)
+</script>
+
+<%= formHidden("BankingID", BankingID) %>
+<%= formHidden("CurrentDate", CurrentDate) %>
+<%= formHidden("PreviousPage", PreviousPage) %>
+<%= formHidden("Template", Template) %>
+<%= formHidden("BankingAccountID", BankingAccountID) %>
+<%= formHidden("BankingUploadsDirectory", BankingUploadsDirectory) %>
+<%= formHidden("BankingOldFile", BankingFile) %>
+<%= formHidden("BankingOldFileName", BankingFileName) %>
+
+</form>

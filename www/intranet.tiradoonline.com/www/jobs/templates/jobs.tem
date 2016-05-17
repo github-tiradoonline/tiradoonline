@@ -1,0 +1,189 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formJobs" name="formJobs">
+<% 
+	sql = "SELECT JobCompanyName, JobCompanyWebsite FROM JobCompany WHERE JobCompanyID = " & JobCompanyID
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+	JobCompanyName = ors("JobCompanyName")
+	JobCompanyWebsite = ors("JobCompanyWebsite")
+	ors.Close
+	Set ors = Nothing
+
+	SubmitButtonValue = "Create Job"
+	If JobID <> "" Then
+		sql = "SELECT a.JobQueueID FROM JobQueue a, Jobs b WHERE a.JobID = b.JobID AND b.JobID = " & JobID
+		WriteDebugger sql, Debugging, 0
+		Set ors2 = oConn.Execute(sql)
+		If NOT ors2.EOF Then
+			JobQueueID = ors2("JobQueueID")
+			QueueButtonValue = "Remove from Queue"
+			ors2.Close
+		Else
+			JobQueueID = 0
+			QueueButtonValue = "Add to Job Queue"
+		End If
+		Set ors2 = Nothing
+
+		SubmitButtonValue = "Save Job"
+		sql = "SELECT * FROM Jobs WHERE JobID = " & JobID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		JobCompanyContactID = ors("JobCompanyContactID")
+		JobSalaryTypeID = ors("JobSalaryTypeID")
+		JobDate = ors("JobDate")
+		JobDate = FormatDateTime(JobDate, 2)
+		JobPosition = ors("JobPosition")
+		JobSalary = ors("JobSalary")
+		JobClient = ors("JobClient")
+		JobCity = ors("JobCity")
+		JobStateID = ors("JobStateID")
+		JobRequirements = ors("JobRequirements")
+		JobNotes = ors("JobNotes")
+		ors.Close
+		Set ors = Nothing
+	Else
+		'Response.Redirect "/jobs/jobs.asp?JobsErrorMessage=" & Server.URLEncode("Company not found")
+	End If
+	
+	If JobDate = "" Then JobDate = FormatDateTime(Date	, 2)
+%>
+<div class="JobsTheme" style="text-align:center;">
+	<h1 class="Header" style="padding: 5px;" style="float:left;">
+		<%= JobCompanyName %>&nbsp;-&nbsp;Jobs
+	</h1>
+</div>
+<table>
+<tr valign="top">
+			<td>
+				<table cellpadding="3" border="0">
+				<tr valign="top">
+					<td colspan="2">
+						<!-- #include virtual="/jobs/includes/company.inc" -->
+					</td>
+				</tr>
+				<tr valign="top">
+					<td>
+						<!-- #include virtual="/jobs/includes/addresses.inc" -->
+					</td>
+					<td>
+						<!-- #include virtual="/jobs/includes/contacts.inc" -->
+					</td>
+				</tr>
+				<tr valign="top">
+					<td>
+						<!-- #include virtual="/jobs/includes/interviews.inc" -->
+					</td>
+					<td>
+						<!-- #include virtual="/jobs/includes/phonecalls.inc" -->
+					</td>
+				</tr>
+				<tr valign="top">
+					<td colspan="2">
+						<!-- #include virtual="/jobs/includes/jobs.inc" -->
+					</td>
+				</tr>
+				</table>
+			</td>
+				<td>
+
+				<div class="JobsTheme">
+					<% 	If JobID <> "" Then %>
+					<div style="float:right">
+						<%= Button("Button", QueueButtonValue, "Button", "margin:5px", QueueButtonValue, "location.href='" & SCRIPT_NAME & "?Template=company_contact&SubmitButton=" & Server.URLEncode(QueueButtonValue) & "&JobID=" & JobID & "&JobCompanyID=" & JobCompanyID & "'") %><br />
+					</div>
+					<% End If %>
+				</div>
+				<% If JobsErrorMessage <> "" Then %>
+				<div class="ErrorMessage"><%= JobsErrorMessage %></div>
+				<% End If %>
+				<p>
+				<table cellpadding="3">
+				<tr>
+					<td align="right"><b>Posted&nbsp;Date:</b></td>
+					<td>
+						<%= formTextBox("JobDate", "10", JobDate, "JobsElement", "JobDate", "Invalid Posted Date") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>	
+					<td align="right">
+						<b>Contact:</b>
+					</td>
+					<td>
+						<%= SelectBox(oConn, "sp_JobCompanyContact_JobCompanyID_get " & JobCompanyID, "JobCompanyContactID", JobCompanyContactID, "JobsElement", "Contact") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Client:</b></td>
+					<td>
+						<%= formTextBox("JobClient", "40", JobClient, "JobsTheme", "Client", "Invalid Client") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Position:</b></td>
+					<td>
+						<%= formTextBox("JobPosition", "50", JobPosition, "JobsElement", "Position", "Invalid Position") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Salary:</b></td>
+					<td>
+						<%= formTextBox("JobSalary", "4", JobSalary, "JobsElement", "Salary", "Invalid Salary") %>
+						<%= SelectBox(oConn, "sp_JobSalaryType_get", "JobSalaryTypeID", JobSalaryType, "JobsTheme", "Salary Type") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>City:</b></td>
+					<td>
+						<%= formTextBox("JobCity", "20", JobCity, "JobsTheme", "City", "Invalid City") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>State:</b></td>
+					<td>
+						<%= SelectBox(oConn, "SELECT * FROM States ORDER by State", "JobStateID", JobStateID, "JobsTheme", "State") %>
+					</td>
+				</tr>
+				<tr valign="top">
+					<td align="right"><b>Requirements:</b></td>
+					<td>
+						<%= formTextArea("JobRequirements", JobRequirements, "450", "150", "JobsElement", "Requirements", "Invalid Requirements") %>
+					</td>
+				</tr>
+				<tr valign="top">
+					<td align="right"><b>Notes:</b></td>
+					<td>
+						<%= formTextArea("JobNotes", JobNotes, "450", "150", "JobsElement", "Notes", "Invalid Notes") %>
+					</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>
+						<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+
+						<% If JobID = "" Then %>
+							<%= Submit_Button("SubmitButton", SubmitButtonValue & " and add to queue", "Button", "", SubmitButtonValue & "and add to queue") %>&nbsp;&nbsp;
+						<% End If %>
+
+
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("JobID", JobID) %>
+<%= formHidden("JobQueueID", JobQueueID) %>
+<%= formHidden("JobCompanyID", JobCompanyID) %>
+
+<%= formHidden("Template", Template) %>
+</form>
+
+<script type="text/javascript">
+
+	$('#JobDate').datepicker();
+	$('#JobPosition').focus();
+
+</script>

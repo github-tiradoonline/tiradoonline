@@ -1,0 +1,121 @@
+<%= formOpen("frm_PhoneBillAccount", SCRIPT_NAME, "POST") %>
+
+<%= Header("PhoneBillTheme", "Phone Bill Accounts") %>
+
+<table width="100%">
+<tr>
+	<td>
+		<%= Button("Button", "Phone Bills", "Button", "", "Phone Bill Accounts", "location.href='" & SCRIPT_NAME & "'") %>
+	</td>
+	<td align="right">
+		<div style="text-align:right"><a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&Action=Create"><%= ADD_ICON %></a></div>
+	</td>
+</tr>
+</table>
+
+<% If PhoneBillAccountID = "" AND Action = "" Then %>
+
+<% If PhoneBillErrorMessage <> "" Then %>
+&nbsp;<br />
+<div class="ErrorMessage"><%= PhoneBillErrorMessage %></div>
+<% End If %>
+
+
+<%
+	sql = "sp_PhoneBillAccount_get " & Session("UserID")
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+	If NOT ors.EOF Then
+%>
+<table class="GridViewAlteringRows" width="100%">
+<tr class="PhoneBillTheme">
+	<td><b>Account</b></td>
+	<td><b>Device</b></td>
+	<td><b>Phone#</b></td>
+	<td>&nbsp;</td>
+</tr>
+<%
+		Do Until ors.EOF
+			PhoneBillAccountID = ors("PhoneBillAccountID")
+			Device = ors("Device")
+			PhoneBillAccountName = ors("PhoneBillAccountName")
+			PhoneBillAccountPhoneNumber = ors("PhoneBillAccountPhoneNumber")
+%>
+<tr valign="top" valign="center" class="GridViewRow">
+	<td><b><a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&PhoneBillAccountID=<%= PhoneBillAccountID %>"><%= PhoneBillAccountName %></a></b></td>
+	<td><%= Device %></td>
+	<td><%= PhoneBillAccountPhoneNumber %></td>
+	<td>
+		<a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&PhoneBillAccountID=<%= PhoneBillAccountID %>"><%= EDIT_ICON %></A>&nbsp;&nbsp;<%= DELETE_ICON %>
+	</td>
+</tr>
+<%
+			ors.MoveNext
+		Loop
+		ors.Close
+		Set ors = Nothing
+%>
+</table>
+<%
+	Else
+%>
+<tr class="ErrorMessage">
+	<td>No Phone Accounts found.</td>
+</tr>
+<%
+	End If
+	
+	
+	Else
+		SubmitButtonValue = "CREATE"
+		
+		If Action = "" Then
+			sql = "sp_PhoneBillAccount_PhoneBillAccountID_get " & PhoneBillAccountID
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			PhoneDeviceID = ors("PhoneDeviceID")
+			PhoneBillAccountName = ors("PhoneBillAccountName")
+			PhoneBillAccountPhoneNumber = ors("PhoneBillAccountPhoneNumber")
+			ors.Close
+			Set ors = Nothing
+			SubmitButtonValue = "SAVE"
+		End If
+%>
+<table cellpadding="3">
+<tr>
+	<td class="frm_label">Account:</td>
+	<td>
+		<%= formTextBox("PhoneBillAccountName", "30", PhoneBillAccountName, "PhoneBillElement", "Account Name", "Invalid Account Name") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Device:</td>
+	<td>
+		<%
+			sql = "sp_PhoneDevice_get " & Session("UserID")
+		%>
+		<%= SelectBox(oConn, sql, "PhoneDeviceID", PhoneDeviceID, "PhoneBillElement", "Device") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Phone#:</td>
+	<td>
+		<%= formTextBox("PhoneBillAccountPhoneNumber", "20", PhoneBillAccountPhoneNumber, "PhoneBillElement", "Phone Number", "Phone Number") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">&nbsp;</td>
+	<td>
+		<%= Submit_Button("SubmitButton", SubmitButtonValue & " Phone Bill Account", "Button", "", SubmitButtonValue & " Phone Bill Account") %>
+		&nbsp;&nbsp;
+		<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+	</td>
+</tr>
+</table>
+<%
+	End If
+%>
+<%= formHidden("Template", Template) %>
+<%= formHidden("PhoneBillID", PhoneBillID) %>
+<%= formHidden("PhoneBillAccountID", PhoneBillAccountID) %>
+</form>

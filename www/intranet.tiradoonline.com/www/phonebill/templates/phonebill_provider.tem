@@ -1,0 +1,183 @@
+<%= formOpen("frm_PhoneBillProvider", SCRIPT_NAME, "POST") %>
+
+<%= Header("PhoneBillProvider", "Phone Bills") %>
+
+<table width="100%">
+<tr>
+	<td>
+		<%= Button("Button", "Phone Bill Accounts", "Button", "", "Phone Bill Providers", "location.href='" & SCRIPT_NAME & "?Template=phonebill_provider'") %>
+	</td>
+	<td align="right">
+		<div style="text-align:right"><a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&Action=Create"><%= ADD_ICON %></a></div>
+	</td>
+</tr>
+</table>
+
+<% If PhoneBillProviderID = "" AND Action = "" Then %>
+
+<% If PhoneBillProviderErrorMessage <> "" Then %>
+&nbsp;<br />
+<div class="ErrorMessage"><%= PhoneBillProviderErrorMessage %></div>
+<% End If %>
+
+
+<%
+	sql = "sp_PhoneBillProvider_get " & Session("UserID")
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+	If NOT ors.EOF Then
+%>
+<table class="GridViewAlteringRows" width="100%">
+<tr class="PhoneBillProvider">
+	<td><b>Name</b></td>
+	<td><b>Opening&nbsp;Date</b></td>
+	<td><b>Closing&nbsp;Date</b></td>
+	<td align="right"><b>Amount</b></td>
+	<td>&nbsp;</td>
+</tr>
+<%
+		Do Until ors.EOF
+			PhoneBillProviderID = ors("PhoneBillProviderID")
+			PhoneBillProviderName = ors("PhoneBillProviderName")
+%>
+<tr valign="top" valign="center" class="GridViewRow">
+	<td>
+		<a onclick="ShowHideBill('div<%= PhoneBillProviderID %>')"><%= ADD_SMALL_ICON %></a>
+		<b><a href="<%= SCRIPT_NAME %>?PhoneBillProviderID=<%= PhoneBillProviderID %>" style="font-size:20px"><%= PhoneBillProviderName %></a></b>
+		<%
+			sql = "sp_PhoneBillProviderPhoneBillProviderAccount_PhoneBillProviderID_get " & PhoneBillProviderID
+			Response.Write sql & "<br />"
+			Set orsPhoneBillProviderAccount = oConn.Execute(sql)
+			If NOT orsPhoneBillProviderAccount.EOF Then
+		%>
+				<div id="div<%= PhoneBillProviderID %>" name="div<%= PhoneBillProviderID %>">
+				<table class="GridViewAlteringRows" width="100%">
+				<tr class="PhoneBillProvider">
+					<td><b>Account</b></td>
+					<td><b>Device</b></td>
+					<td><b>Phone#</b></td>
+					<td align="right"><b>Amount</b></td>
+					<td>&nbsp;</td>
+				</tr>
+				<%
+						Do Until orsPhoneBillProviderAccount.EOF
+							PhoneBillProviderPhoneBillProviderAccountID = orsPhoneBillProviderAccount("PhoneBillProviderPhoneBillProviderAccountID")
+							PhoneBillProviderAccountID = orsPhoneBillProviderAccount("PhoneBillProviderAccountID")
+							Device = orsPhoneBillProviderAccount("PhoneDeviceName")
+							Device = HTMLFormat(Device)
+							PhoneBillProviderAccountName = orsPhoneBillProviderAccount("PhoneBillProviderAccountName")
+							PhoneBillProviderAccountName = HTMLFormat(PhoneBillProviderAccountName)
+							PhoneBillProviderAccountPhoneNumber = orsPhoneBillProviderAccount("PhoneBillProviderAccountPhoneNumber")
+							PhoneBillProviderAccountPhoneNumber = HTMLFormat(PhoneBillProviderAccountPhoneNumber)
+							PhoneBillProviderTotal = orsPhoneBillProviderAccount("PhoneBillProviderTotal")
+							If isNull(PhoneBillProviderTotal) Then PhoneBillProviderTotal = 0.00
+							PhoneBillProviderTotal = FormatCurrency(PhoneBillProviderTotal)
+				%>
+				<tr valign="top" valign="center" class="GridViewRow">
+					<td><b><a href="<%= SCRIPT_NAME %>?Template=PhoneBillProvider_monthlycharges&PhoneBillProviderID=<%= PhoneBillProviderID %>&PhoneBillProviderPhoneBillProviderAccountID=<%= orsPhoneBillProviderAccount("PhoneBillProviderPhoneBillProviderAccountID") %>"><%= PhoneBillProviderAccountName %>-<%= orsPhoneBillProviderAccount("PhoneBillProviderPhoneBillProviderAccountID") %></a></b></td>
+					<td><%= Device %></td>
+					<td><%= PhoneBillProviderAccountPhoneNumber %></td>
+					<td align="right"><%= PhoneBillProviderTotal %></td>
+					<td><a href="<%= SCRIPT_NAME %>?Template=PhoneBillProvider_account&PhoneBillProviderAccountID=<%= PhoneBillProviderAccountID %>"><%= EDIT_ICON %></a></td>
+				</tr>
+				<%
+							orsPhoneBillProviderAccount.MoveNext
+						Loop
+						orsPhoneBillProviderAccount.Close
+				%>
+				</table>
+				</div>
+		<%
+			End If
+			Set orsPhoneBillProviderAccount = Nothing
+		%>
+	</td>
+	<td><%= PhoneBillProviderStartDate %></td>
+	<td><%= PhoneBillProviderEndDate %></td>
+	<td align="right"><%= PhoneBillProviderAmount %></td>
+	<td>
+		<a href="<%= SCRIPT_NAME %>?PhoneBillProviderID=<%= PhoneBillProviderID %>"><%= EDIT_ICON %></A>&nbsp;&nbsp;<%= DELETE_ICON %>
+	</td>
+</tr>
+<%
+			ors.MoveNext
+		Loop
+		ors.Close
+		Set ors = Nothing
+%>
+</table>
+<%
+	Else
+%>
+<tr class="ErrorMessage">
+	<td>No Phone Bills found.</td>
+</tr>
+<%
+	End If
+	
+	
+	Else
+		SubmitButtonValue = "CREATE"
+		
+		If Action = "" Then
+			sql = "sp_PhoneBillProvider_PhoneBillProviderID_get " & PhoneBillProviderID
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			PhoneBillProviderName = ors("PhoneBillProviderName")
+			PhoneBillProviderStartDate = ors("PhoneBillProviderStartDate")
+			PhoneBillProviderStartDate = FormatDateTime(PhoneBillProviderStartDate, 2)
+			PhoneBillProviderEndDate = ors("PhoneBillProviderEndDate")
+			PhoneBillProviderEndDate = FormatDateTime(PhoneBillProviderEndDate, 2)
+			ors.Close
+			Set ors = Nothing
+			SubmitButtonValue = "SAVE"
+		End If
+%>
+<table cellpadding="3">
+<tr>
+	<td class="frm_label">Phone&nbsp;Bill&nbsp;Name:</td>
+	<td>
+		<%= formTextBox("PhoneBillProviderName", "30", PhoneBillProviderName, "PhoneBillProviderElement", " Name", "Invalid  Name") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Opening Date:</td>
+	<td>
+		<%= formTextBox("PhoneBillProviderStartDate", "10", PhoneBillProviderStartDate, "PhoneBillProviderElement", "Opening Date", "Opening Date") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr>  
+	<td class="frm_label">Closing Date:</td>
+	<td>
+		<%= formTextBox("PhoneBillProviderEndDate", "10", PhoneBillProviderEndDate , "PhoneBillProviderElement", "Closing Date", "Closing Date") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">&nbsp;</td>
+	<td>
+		<%= Submit_Button("SubmitButton", SubmitButtonValue & " Phone Bill", "Button", "", SubmitButtonValue & " Phone Bill") %>
+		&nbsp;&nbsp;
+		<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("Template", Template) %>
+<%= formHidden("PhoneBillProviderID", PhoneBillProviderID) %>
+</form>
+<%
+	End If
+%>
+
+
+<script type="text/javascript">
+
+	$('#PhoneBillProviderStartDate').datepicker();
+	$('#PhoneBillProviderEndDate').datepicker();
+
+	function ShowHideBill(divObj)
+	{
+		alert(divObj);
+		$(divObj).toggle();
+	}
+</script>

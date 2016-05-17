@@ -1,0 +1,275 @@
+<% 
+	sql = "sp_Medicine_UserID_get " & Session("UserID")
+	Set orsMedicine = oConn.Execute(sql)
+	If orsMedicine.EOF Then 
+		Set orsMedicine = Nothing
+		Response.Redirect SCRIPT_NAME & "?Template=medicine"
+	End If
+
+	SubmitButtonValue = "Create"
+	If MedicineDosePackageID <> "" Then
+		SubmitButtonValue = "Save"
+		sql = "SELECT MedicineID FROM MedicineDosePackageItem WHERE MedicineDosePackageID = " & MedicineDosePackageID
+		WriteDebugger sql, Debugging, 0
+		set ors = Server.CreateObject("ADODB.recordset")
+		ors.Open sql, oConn
+		If NOT ors.EOF Then
+			MedicineArray = ors.GetRows()
+			ors.Close
+		End If
+		Set ors = Nothing
+		
+		sql = "SELECT * FROM MedicineDosePackage WHERE MedicineDosePackageID = " & MedicineDosePackageID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		MedicineDosePackageName = ors("MedicineDosePackageName")
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<form action="<%= SCRIPT_NAME %>" method="post">
+
+<table>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td>
+		<div class="HealthTheme">
+			<h1 class="Header" style="padding: 5px;">Add/Edit&nbsp;Medicine&nbsp;Package
+			<%= Button("Button", "Add Medicine Dose", "Button", "float:right", "Add Medicine Dose", "location.href='" & SCRIPT_NAME & "?Template=medicine_dose'") %>
+			</h1>
+		</div>
+		<p>
+		<% If HealthErrorMessage <> "" Then %>
+		<div class="ErrorMessage" id="HealthErrorMessage" name="HealthErrorMessage"><%= HealthErrorMessage %></div>
+		&nbsp;<br />
+		<% End If %>
+		<div style="float:right">
+			<%= Button("Button", "Create New Medicine", "Button", "", "Create New Medicine", "location.href='" & SCRIPT_NAME & "?Template=medicine'") %>&nbsp;&nbsp;
+			<%= Button("Button", "Create New Medicine Package", "Button", "", "Create New Medicine Dose Package", "location.href='" & SCRIPT_NAME & "?Template=medicine_dose_package") %>
+		</div>
+		<br />&nbsp;<br />
+		<form action="<%= SCRIPT_NAME %>" method="post" id="formMedicineDosePackage" name="formMedicineDosePackage">
+		<table cellpadding="3">
+		<tr>
+			<td class="frm_label">Package&nbsp;Name:</td>
+			<td>
+				<%= formTextBox("MedicineDosePackageName", "40", MedicineDosePackageName, "HealthElement", "Package Name", "Invalid Package Name") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td class="frm_label">Medicine:</td>
+			<td>
+				<!-- <select id="MedicineID" name="MedicineID" size="<%= orsMedicine("TotalMedicine") %>" class="HealthTheme" multiple> -->
+				<select id="MedicineID" name="MedicineID" size="10" class="HealthTheme" multiple>
+				<%
+					Do Until orsMedicine.EOF
+						MedicineID = orsMedicine("MedicineID")
+						Response.Write "MedicineID:" & MedicineID
+						MedicineName = orsMedicine("Medicine")
+						MedicineSelected = false
+						If isArray(MedicineArray) Then
+							For x = 0 To UBound(MedicineArray, 2)
+								If CInt(MedicineID) = CInt(MedicineArray(0, x)) Then
+									MedicineSelected = true
+								End If 
+							Next
+						End If
+				%>
+				<option value="<%= MedicineID %>"<% If MedicineSelected Then Response.Write " selected='on'"  %>><%= MedicineName %></option>
+				<%
+						orsMedicine.MoveNext
+					Loop
+					
+					orsMedicine.Close
+					Set orsMedicine = Nothing
+				%>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<%= Submit_Button("SubmitButton", SubmitButtonValue & " Medicine Dose Package", "Button", "", SubmitButtonValue & " Medicine Dose Package") %>&nbsp;&nbsp;
+				<% If MedicineDosePackageID <> "" Then %>
+
+				<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+
+				<% End If %>
+			</td>
+		</tr>
+		</table>
+		
+		<%= formHidden("MedicineDosePackageID", MedicineDosePackageID) %>
+
+		<%= formHidden("Template", Template) %>
+		</form>
+		&nbsp;<br />
+		&nbsp;<br />
+		
+		<table class="GridViewAlteringRows">
+		<%
+			sql = "SELECT * FROM MedicineDosePackage WHERE UserID = " & Session("UserID") & " ORDER BY MedicineDosePackageName"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+
+			If NOT ors.EOF Then
+		%>
+		<tr class="HealthTheme" valign="top">
+			<td align="right">Package</td>
+			<td>Medicine(s)</td>
+			<td bgcolor="#ffffff">&nbsp;</td>
+		</tr>
+		<%
+				Counter = 0
+				Do Until ors.EOF
+					MedicineDosePackageID = ors("MedicineDosePackageID")
+					MedicineDosePackageName = ors("MedicineDosePackageName")
+		%>
+		<form action="<%= SCRIPT_NAME %>" method="post">
+		<%
+					If Counter > 0 Then
+		%>
+		<tr>
+			<td colspan="3"><hr width="100%" size="10" noshade /></td>
+		</tr>
+		<%
+					End If
+		%>
+		<tr valign="top">
+			<td class="frm_label">
+				<%= HTMLFormat(MedicineDosePackageName) %>
+				<p />
+				<a href="javascript:void(null)" onclick="DeleteItem('Are you sure you want to delete this item?', '<%= SCRIPT_NAME %>?Template=<%= Template %>&SubmitButton=DeleteMedicineDosePackage&MedicineDosePackageID=<%= MedicineDosePackageID %>&MedicineDosePackageItemID=<%= MedicineDosePackageItemID %>')"><%= DELETE_ICON %></a>
+				<p />
+				<a href="javascript:void(null)" onclick="OpenMap('WindowMedicineDosePackage<%= MedicineDosePackageID %>', '/health/medicine_does)package_preview.asp?MedicineDosePackageID=<%= MedicineDosePackageID %>')"><%= PREVIEW_ICON %></a>
+			</td>
+			<td>
+				<table>
+				<tr valign="top">
+					<td>
+						<b>Medicine Package Name:</b><br />
+						<%= formTextBox("MedicineDosePackageName", "50", MedicineDosePackageName, "PersonalInformationElement", "Medicine Dose Package Name", "Medicine Dose Package Name") %>
+					</td>
+				</tr>
+				<tr valign="top">
+					<td>
+						<%
+							sql = "sp_MedicinePackageItems_NotUsed_get " & MedicineDosePackageID
+						%>
+						<b>Medicine:</b><br />
+						<%= SelectBox(oConn, sql, "MedicineID", "", "PersonalInformationElement", "Medicine") %>&nbsp;&nbsp;
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<b>Amount:</b><br />
+						<%= formTextBox("NewAmount", "5", "", "PersonalInformationElement", "Amount", "Invalid Amount") %>
+					</td>
+				</tr>
+				<tr>
+					</td>
+					<td>
+						<b>Description:</b><br />
+						<%= formTextArea("NewDescription", "", "200", "50", "PersonalInformationElement", "Description", "Invalid Description") %>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<%= Submit_Button("SubmitButton", "Add Medicine to Package", "Button", "", "Add Medicine to Package") %>
+					</td>
+				</tr>
+				</table>
+				<table class="GridViewAlteringRows">
+		<%
+					sql = "sp_MedicineDosePackage_MedicineDosePackageID_get " & MedicineDosePackageID
+					WriteDebugger sql, Debugging, 0
+					Set ors2 = oConn.Execute(sql)
+					If NOT ors2.EOF Then
+		%>
+		<tr>
+			<td bgcolor="#ffffff" colspan="4">
+			</td>
+		</tr>
+				<tr class="HealthTheme" valign="top">
+					<td width="100%">Medicine</td>
+					<td align="center">Amount</td>
+					<td>Description</td>
+					<td>&nbsp;</td>
+				</tr>
+		<%
+						Do Until ors2.EOF 
+							MedicineDosePackageItemID = ors2("MedicineDosePackageItemID")
+							Medicine = ors2("Medicine")
+							Amount = ors2("Amount")
+							Description = ors2("Description")
+		%>
+				<tr valign="top" class="GridViewRow">
+					<td><%= Medicine %></td>
+					<td align="center">
+						<%= formTextBox("Amount_" & MedicineDosePackageItemID, "5", Amount, "HealthElement", "Amount", "Invalid Amount") %>
+					</td>
+					<td>
+						<%= formTextArea("Description_" & MedicineDosePackageItemID, Description, "200", "50", "HealthElement", "Description", "Invalid Description") %>
+					</td>
+					<td valign="middle">
+						<a href="javascript:void(null)" onclick="DeleteItem('Are you sure you want to delete this item?', '<%= SCRIPT_NAME %>?Template=<%= Template %>&SubmitButton=DeleteMedicineDosePackageItem&MedicineDosePackageID=<%= MedicineDosePackageID %>&MedicineDosePackageItemID=<%= MedicineDosePackageItemID %>')"><%= DELETE_ICON %></a>
+						
+					</td>
+				</tr>
+		<%
+							ors2.Movenext
+						Loop
+						ors2.Close
+					
+					Else
+		%>
+				<tr>
+					<td class="ErrorMessage">No Medicine found.</td>
+				</tr>
+
+		<%
+					End If
+					Set ors2 = Nothing
+		%>
+				</table>
+			</td>
+			<td>
+				<%= Button("Button", "Add/Remove Medicine", "Button", "", "Add/Remove Medicine", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&MedicineDosePackageID=" & MedicineDosePackageID & "'") %>
+				&nbsp;<br />
+				&nbsp;<br />
+				<%= Submit_Button("SubmitButton", SubmitButtonValue & " Medicine Package", "Button", "", SubmitButtonValue & " Save Medicine Package") %>
+				&nbsp;<br />
+				&nbsp;<br />
+				<%= Submit_Button("SubmitButton", "Save Medicine Package", "Button", "", "Save Medicine Package") %>
+			</td>
+		</tr>
+		
+		<%= formHidden("MedicineDosePackageID", MedicineDosePackageID) %>
+
+		<%= formHidden("Template", Template) %>
+		</form>
+		
+		<%
+					Counter = Counter + 1
+					ors.MoveNext
+				Loop
+				ors.Close
+		%>
+		<%
+			Else
+		%>
+		<tr>
+			<td class="ErrorMessage" align="center">No packages found.</td>
+		</tr>
+		<% 	
+			End If 
+			Set ors = Nothing
+		%>
+		</table>
+		&nbsp;<br />
+		&nbsp;<br />
+		&nbsp;<br />
+	</td>
+</tr>
+</table>
+

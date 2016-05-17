@@ -1,0 +1,214 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="frmRehabProgram" name="frmRehabProgram">
+
+<%
+	RecoveryProgramID = Trim(Request("RecoveryProgramID"))
+	RecoveryTypeID = Trim(Request("RecoveryTypeID"))
+	ProgramName = Trim(Request("ProgramName"))
+	StartDate = Trim(Request("StartDate"))
+	EndDate = Trim(Request("EndDate"))
+	SoberDate = Trim(Request("SoberDate"))
+	
+	If SubmitButton = "Create" Then
+		If StartDate = "" Then
+			StartDate = "null"
+		Else
+			StartDate = "'" & SQLEncode(StartDate) & "'"
+		End If
+		If EndDate = "" Then
+			EndDate = "null"
+		Else
+			EndDate = "'" & SQLEncode(EndDate) & "'"
+		End If
+		If SoberDate = "" Then
+			SoberDate = "null"
+		Else
+			SoberDate = "'" & SQLEncode(SoberDate) & "'"
+		End If
+		
+		sql = "sp_RecoveryPrograms_insert " & _
+			Session("UserID") & ", " & _
+			RecoveryTypeID & ", " & _
+			"'" & SQLEncode(ProgramName) & "', " & _
+			StartDate & ", " & _
+			EndDate & ", " & _
+			SoberDate
+		WriteDebugger sql, Debugging, 0
+		oConn.Execute sql
+		'Response.Write sql
+		'Response.End
+		RecoveryErrorMessage = Server.URLEncode("Program created")
+		redirectURL = SCRIPT_NAME & "?Template=" & Template & "&RecoveryTypeID=" & RecoveryTypeID & "&RecoveryErrorMessage=" & RecoveryErrorMessage
+		Response.Redirect redirectURL
+	ElseIf SubmitButton = "Save" Then
+		If StartDate = "" Then
+			StartDate = "null"
+		Else
+			StartDate = "'" & SQLEncode(StartDate) & "'"
+		End If
+		If EndDate = "" Then
+			EndDate = "null"
+		Else
+			EndDate = "'" & SQLEncode(EndDate) & "'"
+		End If
+		If SoberDate = "" Then
+			SoberDate = "null"
+		Else
+			SoberDate = "'" & SQLEncode(SoberDate) & "'"
+		End If
+		sql = "sp_RecoveryPrograms_update " & _
+			RecoveryProgramID & ", " & _
+			"'" & SQLEncode(ProgramName) & "', " & _
+			StartDate & ", " & _
+			EndDate & ", " & _
+			SoberDate
+		WriteDebugger sql, Debugging, 0
+		'Response.Write sql
+		'Response.End
+		oConn.Execute sql
+		'Response.End
+		RecoveryErrorMessage = Server.URLEncode("Program Saved")
+		redirectURL = SCRIPT_NAME & "?Template=" & Template & "&RecoveryTypeID=" & RecoveryTypeID & "&RecoveryErrorMessage=" & RecoveryErrorMessage
+		Response.Redirect redirectURL
+	End If
+	
+	
+	sql = "sp_RecoveryTypes_get " & RecoveryTypeID
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+	
+	If NOT ors.EOF Then
+		RecoveryTypeName = ors("RecoveryTypeName")
+		ors.Close
+	End If
+	Set ors = Nothing
+	
+	SubmitButtonValue = "Create"
+	If RecoveryProgramID <> "" Then
+		sql = "sp_RecoveryPrograms_get " & RecoveryProgramID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		If NOT ors.EOF Then
+			RecoveryProgramID = ors("RecoveryProgramID")
+			ProgramName = ors("ProgramName")
+			StartDate = ors("StartDate")
+			EndDate = ors("EndDate")
+			SoberDate = ors("SoberDate")
+		End If
+		Set ors = Nothing
+		SubmitButtonValue = "Save"
+	End If
+	
+%>
+
+
+
+<div class="RecoveryTheme"><h1 class="Header" style="padding: 5px;"><%= RecoveryTypeName %></h1></div>
+	<% If RecoveryErrorMessage <> "" Then %>
+	<tr>
+		<td colspan="2" class="ErrorMessage"><%= RecoveryErrorMessage %></td>
+	</tr>
+	<% End If %>
+
+&nbsp;<br />
+&nbsp;<br />
+<table cellpadding="3">
+<tr>
+	<td class="frm_label">Program&nbsp;Name:</td>
+	<td>
+		<%= formTextBox("ProgramName", "30", ProgramName, "RecoveryElement",  "Program Name", "Invalid Program Name") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Start&nbsp;Date:</td>
+	<td>
+		<%= formTextBox("StartDate", "10", StartDate, "RecoveryElement",  "Start Date", "Invalid Date") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">End&nbsp;Date:</td>
+	<td>
+		<%= formTextBox("EndDate", "10", EndDate, "RecoveryElement",  "End Date", "Invalid Date") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Sober&nbsp;Date:</td>
+	<td>
+		<%= formTextBox("SoberDate", "10", SoberDate, "RecoveryElement",  "Sober Date", "Invalid Date") %>
+	</td>
+</tr>
+<tr>
+	<td>&nbsp;</td>
+	<td>
+		<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+		
+		<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&RecoveryTypeID=" & RecoveryTypeID & "&RecoveryProgramID=" & RecoveryProgramID & "'") %>
+
+	</td>
+</tr>
+</table>
+
+<p />
+
+<%
+	sql = "sp_RecoveryPrograms_UserID_get " & Session("UserID")
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+	
+	If NOT ors.EOF Then
+%>
+<table class="GridViewAlteringRows">
+<tr valign="top" class="RecoveryTheme">
+	<td>Program</td>
+	<td>Start&nbsp;Date</td>
+	<td>End&nbsp;Date</td>
+	<td>&nbsp;</td>
+</tr>
+<%
+		Do Until ors.EOF
+			RecoveryProgramID = ors("RecoveryProgramID")
+			StartDate = ors("StartDate")
+			If StartDate = "" Then StartDate = FormatDateTime(StartDate, 2)
+			EndDate = ors("EndDate")
+			If EndDate = "" Then EndDate = FormatDateTime(EndDate, 2)
+			ProgramName = ors("ProgramName")
+%>
+<tr>
+	<td><a href="<%= SCRIPT_NAME %>?Template=<%= Server.URLEncode("recovery_programs") %>&RecoveryProgramID=<%= RecoveryProgramID %>&RecoveryTypeID=<%= RecoveryTypeID %>"><%= ProgramName %></a></td>
+	<td><%= StartDate %></td>
+	<td><%= EndDate %></td>
+	<td>
+		<%= Button("Button", "Edit", "Button", "", "Edit", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&RecoveryProgramID=" & RecoveryProgramID & "&RecoveryTypeID=" & RecoveryTypeID & "'") %>
+	</td>
+
+</tr>
+<%
+			ors.MoveNext
+		Loop
+		ors.Close
+%>
+</table>
+<%
+	Set ors = Nothing
+	
+	Else
+%>
+
+<div class="ErrorMessage">No records found.</div> 
+<% End If %>
+
+<script type="text/javascript">
+
+	$('#StartDate').datepicker();
+	$('#EndDate').datepicker();
+	$('#SoberDate').datepicker();
+
+</script>
+
+
+<%= formHidden("RecoveryTypeID", RecoveryTypeID) %>
+
+<%= formHidden("RecoveryProgramID", RecoveryProgramID) %>
+
+<%= formHidden("Template", Template) %>
+
+</form>

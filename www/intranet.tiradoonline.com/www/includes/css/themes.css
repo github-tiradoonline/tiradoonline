@@ -1,0 +1,540 @@
+<style type="text/css">
+/*********************************
+	THEMES 
+*********************************/
+
+.AdministrationTheme {
+	font-weight: bold;
+	background: <%= ADMINISTRATION_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+}
+
+.AdministrationTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.BankingTheme {
+	font-weight: bold;
+	background: <%= BANKING_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+}
+
+.BankingTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.BankingSubTheme {
+	font-weight: bold;
+	background: <%= BANKING_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+
+.BankingMonthlyExpensesTheme {
+	font-weight: bold;
+	background: <%= BANKING_MONTHLY_EXPENSES_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+}
+
+.BankingMonthlyExpensesTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.BankingTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.CalendarTheme {
+	font-weight: bold;
+	background: <%= CALENDAR_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.CalendarTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.CollectionAgencyTheme {
+	font-weight: bold;
+	background: <%= COLLECTION_AGENCY_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.CollectionAgencyTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.ContactsTheme {
+	font-weight: bold;
+	background: <%= CONTACTS_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.ContactsTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.CreditCardsTheme {
+	font-weight: bold;
+	background: <%= CREDITCARDS_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+.CreditCardsTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.DocumentsTheme {
+	font-weight: bold;
+	background: <%= DOCUMENTS_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.DocumentsTheme a {
+	fon-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.EmailTheme {
+	font-weight: bold;
+	background: <%= EMAIL_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.EmailTheme a {
+	fon-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.FacebookTheme {
+	font-weight: bold;
+	background: <%= FACEBOOK_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+}
+
+.FacebookTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.HomeTheme {
+	font-weight: bold;
+	background: <%= HOME_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+}
+
+.HomeTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.JobsTheme {
+	font-weight: bold;
+	background: <%= JOBS_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.JobsTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.LogOutTheme {
+	font-weight: bold;
+	background: <%= LOGOUT_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.LogOutTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.HealthTheme {
+	font-weight: bold;
+	background: <%= HEALTH_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.HealthTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.logoutTheme {
+	font-weight: bold;
+	background: <%= LOGOUT_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.logoutTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.MetroCardTheme {
+	font-weight: bold;
+	background: <%= METROCARD_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.MetroCardTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.MonthlyExpensesTheme {
+	font-weight: bold;
+	background: <%= BANKING_MONTHLY_EXPENSES_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.MonthlyExpensesTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.MovieCollectionTheme {
+	font-weight: bold;
+	background: <%= MOVIE_COLLECTION_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.MovieCollectionTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.MoviesTheme {
+	font-weight: bold;
+	background: <%= MOVIES_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.MoviesTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.MusicTheme {
+	font-weight: bold;
+	background: <%= MUSIC_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.MusicTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.NotesTheme {
+	font-weight: bold;
+	background: <%= NOTES_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.NotesTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.PersonalInformationTheme {
+	font-weight: bold;
+	background: <%= PERSONAL_INFORMATION_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.PersonalInformationTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.PhoneBillTheme {
+	font-weight: bold;
+	background: <%= PHONEBILL_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.PhoneBillTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.PhotosTheme {
+	font-weight: bold;
+	background: <%= PHOTOS_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.PhotosTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.RecoveryTheme {
+	font-weight: bold;
+	background: <%= RECOVERY_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.RecoveryTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.RemindersTheme {
+	font-weight: bold;
+	background: <%= REMINDERS_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.RemindersTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.ServerTheme {
+	font-weight: bold;
+	background: <%= SERVER_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+}
+
+.ServerTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.SettingsTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.SnippetsTheme {
+	font-weight: bold;
+	background: <%= SNIPPETS_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.SnippetsTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+#SnippetMenu {
+	font-size: 12px;
+}
+
+.SettingsTheme {
+	font-weight: bold;
+	background: <%= SETTINGS_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+#tabs  { 
+    padding: 0px; 
+    background: none; 
+    border-width: 0px; 
+	height: 350px;
+	font-size: 12px;
+} 
+
+#tabs li a {
+	color: <%= HOME_THEME %>;
+	font-weight: bold;
+	font-size: 12px;
+}
+
+#tabs li, {
+	color: <%= HOME_THEME %>;
+	font-weight: bold;
+	font-size: 12px;
+}
+
+#tabs .ui-tabs-nav { 
+    padding-left: 0px; 
+    background: transparent; 
+    border-width: 0px 0px 1px 0px; 
+    -moz-border-radius: 0px; 
+    -webkit-border-radius: 0px; 
+    border-radius: 0px; 
+	font-size: 12px;
+} 
+
+#tabs .ui-tabs-panel { 
+    border-width: 0px 0px 0px 0px;
+	height: 300px;
+	font-size: 12px;
+}
+
+.TimesheetTheme {
+	font-weight: bold;
+	background: <%= TIMESHEET_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.TimesheetTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.tiradoonlineTheme {
+	font-weight: bold;
+	background: <%= TIRADOONLINE_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.tiradoonlineTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.UploadsTheme {
+	font-weight: bold;
+	background: <%= UPLOADS_THEME %>;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+.UploadsTheme a {
+	font-weight: bold;
+	color: #ffffff;
+	text-shadow: 1px 1px #000000;
+	text-decoration: none;
+}
+
+/*********************************
+	END OF THEMES 
+*********************************/
+
+</style>
+

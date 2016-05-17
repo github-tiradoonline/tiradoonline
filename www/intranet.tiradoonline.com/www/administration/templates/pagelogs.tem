@@ -1,0 +1,275 @@
+<!-- <form action="<%= SCRIPT_NAME %>" method="post" onSubmit="return ValidatePageLogsSearch(this)"> -->
+<form action="<%= SCRIPT_NAME %>" method="post" id="formPageLogs" name="formPageLogs">
+<%
+	SearchDate = Trim(Request("SearchDate"))
+	If SearchDate = "" Then SearchDate = Date
+	PageLogID = Trim(Request("PageLogID"))
+	UserID = Trim(Request("UserID"))
+	Keyword = Trim(Request("Keyword"))
+	SearchSubmitButton = Trim(Request("SearchSubmitButton"))
+
+	If SubmitButton = "Previous Day" Then 
+		SearchDate = DateAdd("d", -1, SearchDate)
+		Response.Redirect SCRIPT_NAME & "?Template=" & Template & "&SearchDate=" & Server.URLEncode(SearchDate)
+	End If
+	If SubmitButton = "Next Day" Then 
+		SearchDate = DateAdd("d", 1, SearchDate)
+		Response.Redirect SCRIPT_NAME & "?Template=" & Template & "&SearchDate=" & Server.URLEncode(SearchDate)
+	End If		
+%>
+	<script language="JavaScript">
+	<!--
+		function ValidatePageLogsSearch(this_form)
+		{
+			if (this_form.SearchSubmitButton.value == "SEARCH")
+				if(this_form.Keyword.value.length < 5)
+				{
+					alert("Please enter a minimum of 5 characters.")
+					this_form.Keyword.focus();
+					return false;
+				}
+				else
+					return true;
+			else
+				return true;
+		}
+	//-->
+	</script>
+</head>
+
+<table border="0" width="100%" cellspacing="0" cellpadding="<%= Application("TableCellPadding") %>">
+<tr class="AdministrationTheme">
+	<td colspan="3" align="center" class="SubHeader" valign="middle">
+		Page Logs
+		<%= Submit_Button("SubmitButton", "CHANGE DATE", "Button", "float:right", "CHANGE DATE") %>
+	</td>
+</tr>
+</table>
+<p />
+<%
+	sql = "sp_PageLogs_UserID_get"
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+%>
+	<select name="UserID" class="AdministrationElement">
+		<%
+			If NOT ors.EOF then
+		%>
+		<%
+					Do While NOT ors.EOF
+						If ors("UserID") = "" Then
+							FullName = "ALL USERS`"
+						Else
+							FullName = ors("FullName")
+						End If
+							
+						If Trim(ors("UserID")) = Trim(UserID) Then
+	  		%>
+            <option value="<%= ors("UserID") %>" SELECTED><%= FullName %></option>
+			<% Else %>
+            <option value="<%= ors("UserID") %>"><%= FullName %></option>
+			<% End If %>
+            <%
+	 					ors.MoveNext
+					Loop
+					ors.Close
+		%>
+		<% Else %>
+            <option>No Logins</option><u></u>
+		<%
+				End If
+				Set ors = Nothing
+  		%>
+    	</select> 
+		&nbsp;&nbsp;&nbsp;
+		<%= Submit_Button("SubmitButton", "View", "Button", "", "View") %>
+
+<table border="0" cellspacing="0" cellpadding="<%= Application("TableCellPadding") %>">
+<tr>
+	<td align="right"><b>Keyword:</b></td>
+	<td>
+		<%= formTextBox("Keyword", "20",  Keyword, "AdministrationElement", "Keyword", "Invalid Keyword") %>&nbsp;
+		<%= Submit_Button("SearchSubmitButton", "Search", "Button", "", "Search") %>
+	</td>
+</tr>
+<tr>
+	<td>&nbsp;</td>
+	<td>
+		<div class="ErrorMessage">
+			***&nbsp;NOTE: ***
+		</div>
+		<b>
+			<LI>minumum of 5 characters...</LI>
+			<LI>Give some time for results to show up...</LI>
+		</b>
+		<br />
+	</td>
+</tr>
+</table>
+
+
+<table border="0" width="100%" cellspacing="0" cellpadding="<%= Application("TableCellPadding") %>">
+<tr>
+	<td><br />
+		<%= Submit_Button("SubmitButton", "PreviousDate", "Button", "", "Previous Day") %>
+	</td>
+	<td align="center">
+		<%= formTextBox("SearchDate", "10", SearchDate, "AdministrationElement", "Search Date", "Invalid Date") %>
+	</td>
+	<td align="right">
+		<%= Submit_Button("SubmitButton", "Next Day", "Button", "", "Next Day") %>
+	</td>
+</tr>
+</table>
+<table class="GridView" cellpadding="5">
+<% If PageLogID = "" Then 
+	UserID_txt = ""
+	If UserID <> "" Then UserID_txt = ", " & UserID
+	
+	If SearchSubmitButton = "SEARCH" Then
+		sql = "sp_PageLogs_search '" & SQLEncode(Keyword) & "'" 
+	Else
+		sql = "sp_PageLogs_create_dt_get '" & SearchDate & "'" & UserID_txt
+	End If
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+%>
+
+<% If NOT ors.EOF Then %>
+<tr class="AdministrationTheme">
+	<td>Created</td>
+	<td>Time</td>
+	<td>User</td>
+	<td>Page</td>
+	<td>Template</td>
+	<td>Action</td>
+</tr>
+<%
+		Do Until ors.EOF
+			PageLogID = ors("PageLogID")
+			create_dt = ors("create_dt")
+			xTime = FormatDateTime(create_dt, 3)
+			Full_Name = ors("FullName")
+			vPageName = ShowDBField(ors("PageName"))
+			create_dt = FormatDateTime(create_dt, 2)
+			vTemplate = ors("Template")
+			vAction = ors("Action")
+%>
+<tr class="GridViewRow" onclick="location.href='<%= SCRIPT_NAME %>?Template=<%= Template %>&PageLogID=<%= PageLogID %>'"> 
+	<td><%= create_dt %></td>
+	<td><%= xTime %></td>
+	<td><%= ShowDBField(Full_Name) %></td>
+	<td><%= ShowDBField(vPageName) %></td>
+	<td><%= ShowDBField(vTemplate) %></td>
+	<td><%= ShowDBField(vAction) %></td>
+</tr>
+<%
+			ors.MoveNext
+		Loop
+		ors.Close
+%>
+</table>
+<%
+   Else
+ %>
+<div class="ErrorMessage">No Page Logs found on <%= SearchDate %></div> 
+<%	End If 
+	Set ors = Nothing
+%>
+<% Else %>
+<%
+	sql = "SELECT * FROM PageLogs WHERE PageLogID = " & PageLogID
+	WriteDebugger sql, Debugging, 0
+	Set orsRecordset = oConn.Execute(sql)
+	If NOT orsRecordset.EOF Then
+		create_dt = orsRecordset("create_dt")
+		If create_dt = "" Then create_dt = "<div class='AdministrationErrorMessage'>No Date found.</div>"
+
+		PageName = orsRecordset("SCRIPT_NAME")
+		If PageName = "" Then PageName = "<div class='AdministrationErrorMessage'>No Page found.</div>"
+		
+		vTemplate = ShowDBField(orsRecordset("Template"))
+		If vTemplate = "" Then vTemplate = "<div class='AdministrationErrorMessage'>No Template found.</div>"
+
+		vAction = ShowDBField(orsRecordset("Action"))
+		If vAction = "" Then vAction = "<div class='AdministrationErrorMessage'>No Action found.</div>"
+
+		QueryText = ShowDBField(orsRecordset("QUERY_STRING"))
+		If QueryText = "" Then QueryText = "<div class='AdministrationErrorMessage'>No Query String variables found.</div>"
+
+		FormText = ShowDBField(orsRecordset("FORM"))
+		If FormText = "" Then FormText = "<div class='AdministrationErrorMessage'>No Form variables found.</div>"
+		
+		orsRecordset.Close
+	End If
+	
+	Set orsRecordset = Nothing
+%>
+
+
+<%= Button("Button", "Back", "Button", "", "Back", "history.back(-1)") %>
+
+<p />
+
+<table width="100%" cellpadding="5">
+<tr class="AdministrationTheme">
+	<td class="SubHeader">DATE</td>
+</tr>
+<tr>
+	<td><%= create_dt %></td>
+</tr>
+<tr>
+	<td>&nbsp;</td>
+</tr>
+<tr class="AdministrationTheme">
+	<td class="SubHeader">PAGE</td>
+</tr>
+<tr>
+	<td><%= PageName %></td>
+</tr>
+<tr>
+	<td>&nbsp;</td>
+</tr>
+<tr class="AdministrationTheme">
+	<td class="SubHeader">TEMPLATE</td>
+</tr>
+<tr>
+	<td><%= vTemplate %></td>
+</tr>
+<tr>
+	<td>&nbsp;</td>
+</tr>
+<tr class="AdministrationTheme">
+	<td class="SubHeader">ACTION</td>
+</tr>
+<tr>
+	<td><%= vAction %></td>
+</tr>
+<tr>
+	<td>&nbsp;</td>
+</tr>
+<tr class="AdministrationTheme">
+	<td class="SubHeader">QUERY&nbsp;STRING</td>
+</tr>
+<tr>
+	<td><%= PageLogText(QueryText) %></td>
+</tr>
+<tr>
+	<td>&nbsp;</td>
+</tr>
+<tr class="AdministrationTheme">
+	<td class="SubHeader">FORM</td>
+</tr>
+<tr>
+	<td><%= PageLogText(FormText) %></td>
+</tr>
+<% End If %>
+</table>
+<%= formHidden("Template", Template) %>
+
+<script>
+ $('#SearchDate').datepicker();
+</script>
+
+</form>
+

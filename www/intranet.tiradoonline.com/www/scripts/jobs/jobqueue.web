@@ -1,0 +1,14 @@
+<!-- #include virtual="/includes/globals.inc" -->
+<!-- #include virtual="/includes/open_connection.inc" -->
+<!-- #include virtual="/includes/functions.inc" -->
+<%
+	UserName = Trim(Request("UserName"))
+	Password = Trim(Request("Password"))
+	
+	sql = "sp_JobQueue_count_get " & Session("UserID")
+	Set ors = oConn.Execute(sql)
+	Response.Write ors.Fields(0).Value
+	ors.Close
+	Set ors = Nothing
+%>
+<!-- #include virtual="/includes/close_connection.inc" -->

@@ -1,0 +1,78 @@
+<style type="text/css">
+
+form {
+	padding : 0px;
+	margin : 0px;
+}
+
+form table tr td {
+	padding : 5px;
+	margin : 5px;
+}
+
+.frm_label {
+	text-align: right;
+	font-weight: bold;
+	font-size: 15px;
+}
+
+legend
+{
+	font-size: 20px;
+	font-weight: bold;
+}
+
+
+.GridView {
+	background-color: #000000;
+	padding: 0px;
+	margin: 5px;
+}
+
+.GridViewAlteringRows {
+}
+
+.GridViewAlteringRows TR:nth-child(even) {
+	background-color: #dddddd;
+}
+
+.GridViewAlteringRows TR TD A:nth-child(even) {
+	color: #000000;
+}
+
+.GridViewAlteringRows TR TD A:nth-child(odd) {
+	color: #000000;
+}
+
+.GridViewAlteringRows TR TD {
+	padding: 5px;
+}
+
+.GridViewRow {
+	background-color: #ffffff;
+}
+
+.GridView TR:nth-child(even) {
+	color: #ffffff;
+	background-color: #dddddd;
+}
+
+.GridView TR:nth-child(even) A {
+	color: #ffffff;
+	background-color: #dddddd;
+}
+
+.GridView TR TD {
+	padding: 5px;
+}
+
+.GridViewRowHover {
+	background-color: <%= Application("ThemeColor") %>;
+}
+
+.GridViewRowHover A {
+	color: #ffffff;
+	text-decoration: none;
+}
+
+</style>

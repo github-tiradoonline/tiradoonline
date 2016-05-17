@@ -1,0 +1,498 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formMedicine" name="formMedicine">
+<%
+	sql = "SELECT 1 FROM Medicine WHERE UserID = " & Session("UserID")
+	recordsFound = false
+	Set ors = oConn.Execute(sql)
+	If NOT ors.EOF Then 
+		recordsFound = true
+		ors.Close
+	End If
+	Set ors = Nothing
+	
+	SubmitButtonValue = "Create Medicine"
+	If MedicineID <> "" Then
+		SubmitButtonValue = "Save Medicine"
+		sql = "SELECT * FROM Medicine WHERE MedicineID = " & MedicineID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		MedicineName = ors("MedicineName")
+		GenericName = ors("GenericName")
+		UnitID = ors("UnitID")
+		PrescriptionNumber = ors("PrescriptionNumber")
+		MedicineDescription = ors("MedicineDescription")
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<table>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td valign="top">
+		<div class="HealthTheme"><h1 class="Header" style="padding: 5px;">Add/Edit&nbsp;Medicine</h1></div>
+		<p>
+		<div class="ErrorMessage" id="HealthErrorMessage" name="HealthErrorMessage"><%= HealthErrorMessage %></div>
+		<div>
+		<div style="float:right">
+			<% If MedicineID <> "" Then %>
+				<%= Button("Button", "Create New Medicine", "Button", "", "Create New Medicine", "location.href='" & SCRIPT_NAME & "?Template=medicine&MedicineID=" & MedicineID & "'") %>
+				<p />				
+			<% End If %>
+			
+			<% If recordsFound Then %>
+			<%= Button("Button", "Add/Edit Medicine Dose(s)", "Button", "", "Add/Edit Medicine Dose(s)", "location.href='" & SCRIPT_NAME & "?Template=medicine_dose&MedicineID=" & MedicineID & "'") %>
+			<p />
+			<%= Button("Button", "Add/Edit Medicine Dose Package(s)", "Button", "", "Add/Edit Medicine Dose Package(s)", "location.href='" & SCRIPT_NAME & "?Template=medicine_dose_package&MedicineID=" & MedicineID & "'") %>
+			<p />
+			<%= Button("Button", "Add/Edit Medicine Refill(s)", "Button", "", "Add/Edit Medicine Refill(s)", "location.href='" & SCRIPT_NAME & "?Template=medicinerefill&MedicineID=" & MedicineID & "'") %>&nbsp;&nbsp;
+			<% End If %>
+		</div>
+		&nbsp;<br />
+		&nbsp;<br />
+		<table cellpadding="3">
+		<tr>
+			<td class="frm_label">Medicine:</td>
+			<td>
+				<%= formTextBox("MedicineName", "30", MedicineName, "HealthElement", "Medicine", "Invalid Medicine Name") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Generic:</td>
+			<td>
+				<%= formTextBox("GenericName", "30", GenericName, "HealthElement", "Generic Name", "Invalid Generic Name") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Units:</td>
+			<td>
+				<%= SelectBox(oConn, "SELECT UnitID, UnitName FROM Unit WHERE UserID = " & Session("UserID") & " ORDER BY UnitName", "UnitID", UnitID, "HealthElement", "Units") %>&nbsp;&nbsp;
+				<%= Button("Button", "Add/Edit Units", "Button", "", "Add/Edit Units", "location.href='" & SCRIPT_NAME & "?Template=unit'") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Prescription&nbsp;Number:</td>
+			<td>
+				<%= formTextBox("PrescriptionNumber", "30", PrescriptionNumber, "HealthElement", "Prescription Number", "Invalid Prescription Number") %>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td class="frm_label">Description:</td>
+			<td>
+				<%= formTextArea("MedicineDescription", MedicineDescription, "600", "200", "HealthElement", "Description", "Invalid Description") %>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+
+				<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+			</td>
+		</tr>
+		</table>
+		
+		<%= formHidden("MedicineID", Trim(Request("MedicineID"))) %>
+
+		<%= formHidden("Template", Template) %>
+		</form>
+	</td>
+</tr>
+</table>
+
+		<form action="<%= SCRIPT_NAME %>" method="post">
+		&nbsp;<br />
+		&nbsp;<br />
+		<!-- SEARCH -->
+		<div class="PersonalInformationTheme"><h1 class="Header" style="padding: 5px;">
+		Search:&nbsp;<%= formTextBox("SearchMedicineName", "30", SearchMedicineName, "HealthElement", "Search Medicine", "Enter Medicine Name") %>&nbsp;&nbsp;
+		<%= Submit_Button("SubmitButton", "Search", "Button", "", "Search") %>&nbsp;&nbsp;
+		<%= Button("Button", "View All", "Button", "", "View All", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+		</div>
+		<!-- END OF SEARCH -->
+		<%= formHidden("Template", Template) %>
+		</form>
+		
+		<form action="<%= SCRIPT_NAME %>" method="post">
+				
+		<div id="tabs">
+			<ul>
+				<% If MedicineID <> "" Then %>
+				<li><a href="#tabs-1">Doses</a></li>
+				<% End If %>
+				<li><a href="#tabs-2">Edit Medicine(s)</a></li>
+				<li><a href="#tabs-3">Medicine Dose Packages</a></li>
+				<li><a href="#tabs-4">Medicine Refills</a></li>
+			</ul>
+			
+			<!--
+			**********************************
+			DOSES
+			**********************************
+			-->
+
+			<% If MedicineID <> "" Then %>
+			<div id="tabs-1" name="tabs-1">
+			<p>
+			
+				<table class="GridViewAlteringRows">
+				<%
+					sql = "SELECT a.*, b.GenericName, MedicineDose = b.MedicineName, MedicineDoseAmount = CONVERT(VARCHAR, a.Amount) + ' ' + c.UnitName  FROM MedicineDose a, Medicine b, Unit c WHERE b.UserID = " & Session("UserID") & " AND a.MedicineID = b.MedicineID AND b.UnitID = c.UnitID AND b.MedicineID = " & MedicineID & " ORDER BY a.MedicineDoseDateTime DESC"
+					WriteDebugger sql, Debugging, 0
+					Set ors = oConn.Execute(sql)
+					If NOT ors.EOF Then
+				%>
+				<tr class="HealthTheme" valign="top">
+					<td align="right"><b>Date</b></td>
+					<td align="right"><b>Time</b></td>
+					<td><b>Medicine</b></td>
+					<td align="center"><b>Amount</b></td>
+					<td><b>Description</b></td>
+					<td bgcolor="#ffffff">&nbsp;</td>
+				</tr>
+				<%
+						tempMedicineDoseDate = ""
+						Do Until ors.EOF
+							Medicine_ID = ors("MedicineID")
+							MedicineDose_ID = ors("MedicineDoseID")
+							MedicineDoseDate = FormatDateTime(ors("MedicineDoseDateTime"), 2)
+							If tempMedicineDoseDate <> MedicineDoseDate Then 
+								outputMedicineDoseDate = MedicineDoseDate & "<br />"
+								tempMedicineDoseDate = MedicineDoseDate
+							Else
+								outputMedicineDoseDate = ""
+							End If
+							MedicineDoseTime = FormatDateTime(ors("MedicineDoseDateTime"), 3)
+							MedicineDose = ors("MedicineDose")
+							GenericName = ors("GenericName")
+							If GenericName <> "" Then MedicineDose = MedicineDose & "&nbsp;(" & GenericName & ")"
+							Amount = ors("MedicineDoseAmount")
+							MedicineDoseDescription = ors("MedicineDoseDescription")
+				%>
+				<tr class="GridViewRow" valign="top">
+					<td align="right" <% If outputMedicineDoseDate = "" Then Response.Write "bgcolor=""#ffffff"""  %>>
+						<b><%= outputMedicineDoseDate %></b>
+					</td>
+					<td align="right">
+						<%= HTMLFormat(MedicineDoseTime) %>
+					</td>
+					<td><a href="<%= SCRIPT_NAME %>?Template=medicine&MedicineID=<%= Medicine_ID %>"><%= MedicineDose %></a></td>
+					<td align="center"><%= HTMLFormat(Amount) %></td>
+					<td><%= MedicineDoseDescription %></td>
+					<td>
+						<%= Button("Button", "Edit", "Button", "", "Edit", "location.href='" & SCRIPT_NAME & "?Template=medicine_dose&MedicineDoseID=" & MedicineDose_ID & "'") %>
+						&nbsp;&nbsp;
+					</td>
+				</tr>
+				<%
+							ors.MoveNext
+						Loop
+						ors.Close
+					
+					Else
+				%>
+				<tr>
+					<td class="ErrorMessage">No records found.</td>
+				</tr>
+				<% 	
+					End If 
+					Set ors = Nothing
+				%>
+				</table>
+
+			</p>
+			</div>
+			<% End If %>
+
+
+			<!--
+			**********************************
+			EDIT MEDICINE
+			**********************************
+			-->
+
+			<div id="tabs-2" name="tabs-2">
+			<p>
+				<table cellpadding="3" class="GridView">
+				<%
+					sql = "SELECT * FROM Unit WHERE UserID = " & Session("UserID")
+					WriteDebugger sql, Debugging, 0
+					Set ordMED = oConn.Execute(sql)
+					
+					If ordMED.EOF Then
+						ordMED.Close
+						Response.Redirect SCRIPT_NAME & "?Template=unit"
+					End If
+					Set ordMED = Nothing
+		
+					If SubmitButton = "Search" Then 
+						sql = "SELECT a.*, b.UnitName FROM Medicine a, Unit b WHERE a.UserID = " & Session("UserID") & " AND a.UnitID = b.UnitID AND (a.MedicineName LIKE '" & SQLEncode(SearchMedicineName) & "%' OR a.GenericName LIKE '" & SQLEncode(SearchMedicineName) & "%') ORDER BY a.MedicineName"
+					Else
+						sql = "SELECT a.*, b.UnitName FROM Medicine a, Unit b WHERE a.UserID = " & Session("UserID") & " AND a.UnitID = b.UnitID ORDER BY a.MedicineName"
+					End If
+					'Response.Write sql
+					WriteDebugger sql, Debugging, 0
+					Set ors = oConn.Execute(sql)
+					recordsFound = false
+					If NOT ors.EOF Then
+						recordsFound = true
+				%>
+				<tr class="HealthTheme" valign="top">
+					<td align="center"><b>Medicine</b></td>
+					<td align="center"><b>Generic</b></td>
+					<td align="center"><b>Unit</b></td>
+					<td align="center"><b>Prescription#</b></td>
+					<td bgcolor="#ffffff">&nbsp;</td>
+				</tr>
+				<%
+						Do Until ors.EOF
+							MedicineID = ors("MedicineID")
+							MedicineDate = ors("create_dt")
+							MedicineName = ors("MedicineName")
+							GenericName = ors("GenericName")
+							PrescriptionNumber = ors("PrescriptionNumber")
+							UnitName = ors("UnitName")
+				%>
+				<tr class="GridViewRow" valign="middle">
+					<td align="center" style="color:#000"><a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&MedicineID=<%= MedicineID %>" style="color:#000"><%= HTMLFormat(MedicineName) %></a></td>
+					<td align="center" style="color:#000"><%= HTMLFormat(GenericName) %></td>
+					<td align="center" style="color:#000"><%= UnitName %></td>
+					<td align="center" style="color:#000"><%= HTMLFormat(PrescriptionNumber) %></td>
+					<td>
+ 						<% If recordsFound Then %>
+						<!-- <%= Button("Button", "Add/Edit Medicine Refill(s)", "Button", "", "Add/Edit Medicine Refill(s)", "location.href='" & SCRIPT_NAME & "?Template=medicinerefill&MedicineID=" & MedicineID & "'") %> -->
+						<a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&MedicineID=<%= MedicineID %>"><%= EDIT_ICON %></a>
+						&nbsp;&nbsp;
+						<%= DELETE_ICON %>
+
+						<% End If %>
+					</td>
+				</tr>
+				<%
+							ors.MoveNext
+						Loop
+						ors.Close
+				%>
+				</table>
+				<%
+					Else
+				%>
+				<div class="ErrorMessage">No records found.</div>
+				<% 	
+					End If 
+					Set ors = Nothing
+				%>
+				</table>
+
+			</p>
+			</div>
+			
+
+			<!--
+			**********************************
+			Medicine Dose Packages
+			**********************************
+			-->
+
+			<div id="tabs-3" name="tabs-3">
+			<p>
+
+				<table class="GridViewAlteringRows">
+				<%
+					sql = "SELECT * FROM MedicineDosePackage WHERE UserID = " & Session("UserID") & " ORDER BY MedicineDosePackageName"
+					WriteDebugger sql, Debugging, 0
+					Set ors = oConn.Execute(sql)
+		
+					If NOT ors.EOF Then
+				%>
+				<tr class="HealthTheme" valign="top">
+					<td>Package</td>
+					<td>Medicine(s)</td>
+					<td bgcolor="#ffffff">&nbsp;</td>
+				</tr>
+				<%
+						Do Until ors.EOF
+							MedicineDosePackageID = ors("MedicineDosePackageID")
+							MedicineDosePackageName = ors("MedicineDosePackageName")
+				%>
+				<tr class="GridViewRow" valign="top">
+					<td>
+						<%= HTMLFormat(MedicineDosePackageName) %>
+					</td>
+					<td>
+						<table class="GridViewAlteringRows">
+				<%
+							sql = "sp_MedicineDosePackage_MedicineDosePackageID_get " & MedicineDosePackageID
+							WriteDebugger sql, Debugging, 0
+							Set ors2 = oConn.Execute(sql)
+							If NOT ors2.EOF Then
+				%>
+						<tr class="HealthTheme" valign="top">
+							<td>Medicine</td>
+							<td align="center">Amount</td>
+							<td>Description</td>
+						</tr>
+				<%
+								Do Until ors2.EOF 
+									Medicine = ors2("Medicine")
+									Amount = ors2("Amount")
+									Description = ors2("Description")
+				%>
+						<tr valign="top" class="GridViewRow">
+							<td><%= HTMLFormat(Medicine) %></td>
+							<td align="center"><%= Amount %></td>
+							<td><%= Description %></td>
+						</tr>
+				<%
+									ors2.Movenext
+								Loop
+								ors2.Close
+							
+							Else
+				%>
+						<tr>
+							<td class="ErrorMessage">No records found.</td>
+						</tr>
+		
+				<%
+							End If
+							Set ors2 = Nothing
+				%>
+						</table>
+					</td>
+					<td>
+						<!-- <%= Button("Button", "Edit", "Button", "", "Edit", "location.href='" & SCRIPT_NAME & "?Template=medicine_dose_package&MedicineDosePackageID=" & MedicineDosePackageID & "'") %> -->
+						<%= EDIT_ICON %>
+						&nbsp;&nbsp;
+						<%= DELETE_ICON %>
+					</td>
+				</tr>
+				<%
+							ors.MoveNext
+						Loop
+						ors.Close
+					
+					Else
+				%>
+				<tr>
+					<td class="ErrorMessage">No records found.</td>
+				</tr>
+				<% 	
+					End If 
+					Set ors = Nothing
+				%>
+				</table>
+
+			
+			</p>
+			</div>			
+
+
+			<!--
+			**********************************
+			MEDICINE REFILLS
+			**********************************
+			-->
+
+
+			<div id="tabs-4" name="tabs-4">
+			<p>
+				<table class="GridViewAlteringRows" cellspacing=0 width="<%= mainContentWidth %>">
+				<%
+					sql = "sp_MedicineRefill_UserID_get " & Session("UserID")
+					Response.Write sql
+					WriteDebugger sql, Debugging, 0
+					Set ors = oConn.Execute(sql)
+					recordsFounds = false
+					If NOT ors.EOF Then
+						recordsFounds = true
+				%>
+				<tr class="HealthTheme" valign="top">
+					<td>Medicine</td>
+					<td>Doctor</td>
+					<td>Pharmacy#</td>
+					<td>Prescription#</td>
+					<td>Order&nbsp;Date</td>
+					<td>Pickup&nbsp;Date</td>
+					<td align="right">Date&nbsp;Filled</td>
+					<td align="right">Amount</td>
+					<td align="center">Times</td>
+					<td align="right">Until&nbsp;Date</td>
+					<td align="right">Discard&nbsp;Date</td>
+					<td>&nbsp;</td>
+				</tr>
+				<%
+						tempMedicineRefillDate = ""
+						Do Until ors.EOF
+							MedicineRefill_ID = ors("MedicineRefillID")
+							Medicine = ors("Medicine")
+							DoctorName = ors("DoctorName")
+							PharmacyName = ors("PharmacyName")
+							PrescriptionNumber = ors("PrescriptionNumber")
+							RefillOrderDate = ors("RefillOrderDate")
+							RefillOrderPickupDate = ors("RefillOrderPickupDate")
+							RefillDateFilled = ors("RefillDateFilled")
+							RefillAmount = ors("RefillAmount")
+							RefillTimes = ors("RefillTimes")
+							RefillUntilDate = ors("RefillUntilDate")
+							RefillDiscardDate = ors("RefillDiscardDate")
+							If isNull(RefillDiscardDate) Then RefillDiscardDate = ""
+							RefillDescription = ors("RefillDescription")
+							style = "  style=""border-top: #000000 3px solid"""
+				%>
+				<tr class="GridViewRow" valign="top" valign="middle">
+					<td<%= style %>><%= HTMLFormat(Medicine) %>&nbsp;</td>
+					<td<%= style %>><%= HTMLFormat(DoctorName) %>&nbsp;</td>
+					<td<%= style %>><%= HTMLFormat(PharmacyName) %>&nbsp;</td>
+					<td<%= style %>><%= HTMLFormat(PrescriptionNumber) %>&nbsp;</td>
+					<td<%= style %>><%= RefillOrderDate %>&nbsp;</td>
+					<td<%= style %>><%= RefillOrderPickupDate %>&nbsp;</td>
+					<td<%= style %> align="right"><%= RefillDateFilled %>&nbsp;</td>
+					<td<%= style %> align="center"><%= RefillAmount %>&nbsp;</td>
+					<td<%= style %> align="center"><%= RefillTimes %>&nbsp;</td>
+					<td<%= style %> align="right"><%= RefillUntilDate %>&nbsp;</td>
+					<td<%= style %> align="right"><%= RefillDiscardDate %>&nbsp;</td>
+					<td<%= style %>>
+						<%= Button("Button", "Edit", "Button", "", "Edit", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&MedicineRefillID=" & MedicineRefill_ID & "'") %>
+						&nbsp;&nbsp;
+					</td>
+				</tr>
+				<% If RefillDescription <> "" Then %>
+				<tr class="GridViewRow" valign="top">
+				 	<td colspan="9"><%= RefillDescription %></td>
+				</tr>
+				<% End If %>
+				<%
+							ors.MoveNext
+						Loop
+						ors.Close
+					
+					Else
+				%>
+				<tr>
+					<td class="ErrorMessage">
+						No Medicine Refills found.
+						<p />
+						<% If recordsFound Then %>
+						<%= Button("Button", "Add New Medicine Refill", "Button", "", "Add New Medicine Refill", "location.href='" & SCRIPT_NAME & "?Template=medicinerefill'") %>
+						<% End If %>
+					</td>
+				</tr>
+				<% 	
+					End If 
+					Set ors = Nothing
+				%>
+				</table>
+			</p>
+			</div>
+		</div>			
+
+		
+		
+<%= formHidden("Template", Template) %>
+
+<script type="text/javascript">
+
+	$('#tabs').tabs();
+</script>
+
+</form>
+

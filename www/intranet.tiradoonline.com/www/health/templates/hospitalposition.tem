@@ -1,0 +1,91 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formHospitalPosition" name="formHospitalPosition">
+<% 
+	SubmitButtonValue = "Create Hospital Position"
+	If HospitalPositionID <> "" Then
+		SubmitButtonValue = "Save Hospital Position"
+		sql = "SELECT * FROM HospitalPosition WHERE HospitalPositionID = " & HospitalPositionID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		HospitalPositionName = ors("HospitalPositionName")
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<table>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td>
+		<div style="text-align:right">
+			<%= Button("Button", "Hospitals", "Button", "", "Hospitals", "location.href='" & SCRIPT_NAME & "?Template=hospital'") %>&nbsp;&nbsp;
+			<%= Button("Button", "Staff", "Button", "", "Staff", "location.href='" & SCRIPT_NAME & "?Template=hospitalstaff'") %>
+		</div>
+		<div class="HealthTheme"><h1 class="Header" style="padding: 5px;">Hospital&nbsp;Positions</h1></div>
+		<p>
+		<p>
+		<div class="ErrorMessage" id="HealthErrorMessage" name="HealthErrorMessage"><%= HealthErrorMessage %></div>
+		<table cellpadding="3">
+		<tr>
+			<td class="frm_label">Hospital&nbsp;Position:</td>
+			<td>
+				<%= formTextBox("HospitalPositionName", "50", HospitalPositionName, "HealthElement", "HospitalPosition", "Invalid Hospital Position") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+
+				<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+				
+			</td>
+		</tr>
+		</table>
+		&nbsp;<br />
+		&nbsp;<br />
+		<table cellpadding="3" class="GridViewAlteringRows">
+		<%
+			sql = "SELECT * FROM HospitalPosition WHERE UserID = " & Session("UserID") & " ORDER BY HospitalPositionName"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+		%>
+		<tr class="HealthTheme">
+			<td align="center"><b>HospitalPosition</b></td>
+			<td bgcolor="#ffffff">&nbsp;</td>
+		</tr>
+		<%
+				Do Until ors.EOF
+					HospitalPosition_ID = ors("HospitalPositionID")
+					HospitalPositionName = ors("HospitalPositionName")
+		%>
+		<tr class="GridViewRow">
+			<td align="center"><%= HospitalPositionName %></td>
+			<td>
+				<!-- <%= Button("Button", "Edit", "Button", "", "Edit", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&HospitalPositionID=" & HospitalPosition_ID & "'") %> -->
+				<a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&HospitalPositionID=<%= HospitalPosition_ID %>"><%= EDIT_ICON %></a>
+			</td>
+		</tr>
+		<%
+					ors.MoveNext
+				Loop
+				ors.Close
+			
+			Else
+		%>
+		<tr>
+			<td class="ErrorMessage">No records found.</td>
+		</tr>
+		<% 	
+			End If 
+			Set ors = Nothing
+		%>
+		</table>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("HospitalPositionID", HospitalPositionID) %>
+
+
+<%= formHidden("Template", Template) %>
+</form>

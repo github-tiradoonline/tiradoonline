@@ -1,0 +1,102 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formFilteredIPAddress" name="formFilteredIPAddress">
+<%
+	sql = "SELECT * FROM FilteredIPAddresses ORDER BY IPAddress"
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+%>
+
+<% If tiradoonlineErrorMessage <> "" Then %>
+&nbsp;<br />
+<div class="ErrorMessage"><%= tiradoonlineErrorMessage %></div>
+<% End If %>
+
+<div class="tiradoonlineTheme"><h1 class="Header" style="padding: 5px;">Filtered&nbsp;IPAddresses</h1></div>
+<p>
+
+<% If Action = "" Then %>
+<table cellspacing=0 cellpadding=5 border=0 width="100%">
+<%
+	If NOT ors.EOF Then
+%>
+<tr bgcolor="<%= tiradoonline_THEME %>" class="tiradoonlineTheme">
+	<td><b>Alias</b></td>
+	<td><b>IPAddress</b></td>
+	<td>
+		<%= Button("Button", "Add New Filtered IPAddress", "Button", "", "Add New Filtered IPAddress", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&Action=Add'") %>
+	</td>
+</tr>
+<%
+		Do Until ors.EOF
+			FilteredIPAddressID = ors("FilteredIPAddressID")
+			Alias = ors("Alias")
+			IPAddress = ors("IPAddress")
+%>
+<tr valign="middle" valign="center" class="GridViewRow">
+	<td><a href="<%= SCRIPT_NAME %>?FilteredIPAddressID=<%= FilteredIPAddressID %>&Template=<%= Template %>&Action=Edit"><%= Alias %></a></td>
+	<td><%= IPAddress %></td>
+	<td>
+		<%= Button("Button", "Delete", "DeleteButton", "", "Delete", "DeleteItem('Are you sure you want to delete this item?', '" & SCRIPT_NAME & "?Template=" & Template & "&SubmitButton=DeleteFilteredIPAddress&FilteredIPAddressID=" & FilteredIPAddressID & "')") %>
+	</td>
+</tr>
+<%
+			ors.MoveNext
+		Loop
+		ors.Close
+		Set ors = Nothing
+	Else
+%>
+<tr class="ErrorMessage">
+	<td>No Sessions found.</td>
+</tr>
+<%
+	End If
+%>
+</table>
+
+<% Else %>
+
+<%
+	SubmitButtonValue = "Create"
+	
+	If FilteredIPAddressID <> "" Then 
+		sql = "SELECT * FROM FilteredIPAddresses WHERE FilteredIPAddressID = " & FilteredIPAddressID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		If NOT ors.EOF Then
+			Alias = ors("Alias")
+			IPAddress = ors("IPAddress")
+			ors.Close
+			SubmitButtonValue = "Save"
+		End If
+		Set ors = Nothing
+	End If 
+%>
+<table cellspacing=0 cellpadding=5 border=0>
+<tr>
+	<td align="right"><b>Alias:</b></td>
+	<td>
+		<%= formTextBox("Alias", "20", Alias, "tiradoonlineElement", "Alias", "Invalid Alias") %>
+	</td>
+</tr>
+<tr>
+	<td align="right"><b>IPAddress:</b></td>
+	<td>
+		<%= formTextBox("IPAddress", "40", IPAddress, "tiradoonlineElement", "IPAddress", "Invalid IPAddress") %>
+	</td>
+</tr>
+<tr>
+	<td align="right">&nbsp;</td>
+	<td>
+		
+		<%= Submit_Button("SubmitButton", SubmitButtonValue & " Filtered IPAddress", "Button", "", SubmitButtonValue & " Filtered IPAddress") %>&nbsp;&nbsp;
+		<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+	</td>
+</tr>
+</table>
+<% End If %>
+
+<%= formHidden("Template", Template) %>
+
+<%= formHidden("FilteredIPAddressID", FilteredIPAddressID) %>
+
+</form>

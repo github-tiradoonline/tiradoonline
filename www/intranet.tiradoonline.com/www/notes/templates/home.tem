@@ -1,0 +1,151 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formNotes" name="formNotes">
+<% 
+	SubmitButtonValue = "Create Note"
+	If NoteID <> "" Then
+		SubmitButtonValue = "Save Note"
+		sql = "SELECT * FROM Notes WHERE NoteID = " & NoteID
+		Set ors = oConn.Execute(sql)
+		NoteName = ors("NoteName")
+		NoteText = ors("NoteText")
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<table>
+<tr valign="top">
+	<td>
+		<table>
+		<tr valign="top">
+			<td>
+				<table cellpadding="3" border="0">
+				<tr>
+					<td colspan="2">
+						<table cellpadding="3" width="100%" border="0">
+						<tr valign="top">
+							<td>
+								<h1>Notes</h1>
+							</td>
+							<td align="right">&nbsp;
+							<% If NoteID <> "" Then %>
+								<%= Button("Button", "Create New Note", "Button", "margin:5px", "Create New Note", "location.href='" & SCRIPT_NAME & "?Template='") %><br />
+							<% End If %>
+								<%= Button("Button", "Companies", "Button", "margin:5px", "Companies", "location.href='" & SCRIPT_NAME & "'") %><br />
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				<% If NotesErrorMessage <> "" Then %>
+				<tr>
+					<td colspan="2" class="ErrorMessage"><%= NotesErrorMessage %><br />&nbsp;<br /></td>
+				</tr>
+				<% End If %>
+				<tr>
+					<td align="right"><b>Note&nbsp;Name:</b></td>
+					<td>
+						<%= formTextBox("NoteName", "40", NoteName, "NotesElement", "Note Name", "Invalid Note Name") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr valign="top">
+					<td align="right">
+						<b>Text:</b>
+					</td>
+					<td>
+						<%= REQUIRED_ICON %><br />
+						<%= formTextArea("NoteText", NoteText, "400", "200", "NotesElement", "Note Text", "Invalid Note Text") %>
+					</td>
+				</tr>	
+				<tr>
+					<td>&nbsp;</td>
+					<td>
+						<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+
+						<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "'") %>
+
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("NoteID", NoteID) %>
+
+<%= formHidden("Template", Template) %>
+</form>
+
+<p />
+<%
+	sql = "SELECT * FROM Notes ORDER BY NoteName"
+	Set ors = oConn.Execute(sql)
+	
+	If NOT ors.EOF Then
+%>
+<table width="500">
+<tr>
+	<td>
+        <div id="tabs">
+         <ul>
+        <% 
+			x = 1
+			Do Until ors.EOF
+				NoteName = ors("NoteName")
+			
+		%>
+        	<li><a href="#tabs-<%= x %>" title="<%= NoteName %>"><%= NoteName %></a></li>
+        <% 	
+				x = x + 1
+				ors.MoveNext
+			Loop
+			ors.MoveFirst
+		%>
+        </ul>
+
+        <% 
+			x = 1
+			Do Until ors.EOF
+				NoteID = ors("NoteID")
+				NoteText = ors("NoteText")
+		%>
+        <div id="tabs-<%= x %>">
+        <p>
+		<%= Button("Button", "Edit", "Button", "margin:5px", "Edit", "location.href='" & SCRIPT_NAME & "?Template=&NoteID=" & NoteID & "'") %><br />
+
+		<br />
+		<br />
+		<%= HTMLFormat2(NoteText) %>
+
+
+		</p>
+		</div>
+        <% 	
+				x = x + 1
+				ors.MoveNext
+			Loop
+		%>
+
+	</td>
+</tr>
+</table>
+
+<script>
+	$( "#tabs" ).tabs();
+</script>
+
+<%
+		ors.Close
+	Else
+%>
+<div class="ErrorMessage">No Notes found.</div>
+<%
+	End If
+	
+	Set ors = Nothing
+	
+%>
+
+
+

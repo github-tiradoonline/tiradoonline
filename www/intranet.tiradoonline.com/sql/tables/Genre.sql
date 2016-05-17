@@ -1,0 +1,24 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Genre' AND TYPE = 'U')
+DROP TABLE Genre;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Genre' AND TYPE = 'U')
+	DROP TABLE Genre;
+GO
+
+CREATE TABLE Genre
+(
+	GenreID		IDENTITY (1001,1) INT  NOT NULL,
+	Genre		 VARCHAR(50)  NOT NULL,
+	create_dt		 DATETIME  NOT NULL
+
+);
+GO
+
+
+
+
+GO
+
+GO
+

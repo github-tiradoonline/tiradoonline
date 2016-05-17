@@ -1,0 +1,132 @@
+<%	
+	sql = "sp_Timehseet_Paychecks_info_get"
+	
+	Set ors = oConn.Execute(sql)
+	
+	If NOT ors.EOF Then
+		MinYear = ors("MinPaycheckYear")
+		MaxYear = ors("MaxPaycheckYear")
+		ors.Close
+	End If
+	Set ors = Nothing
+%>
+<table width="800">
+<tr>
+	<td>
+	
+					<div id="tabs">
+						<ul>
+							<% For x = MinYear to MaxYear %>
+							<li><a href="#tabs-<%= x %>" title="Paychecks&nbsp;(<%= x %>)">Paychecks&nbsp;(<%= x %>)</a></li>
+							<% Next %>
+						</ul>
+					
+						<% For x = MinYear to MaxYear %>
+						<div id="tabs-<%= x %>" name="tabs-<%= x %>">
+							<p>
+							<table class="GridViewAlteringRows" width="<%= mainContentWidth %>">
+							<tr class="TimesheetTheme" valign="top" align="right">
+								<td><strong>Company</strong></td>
+								<td><strong>Date</strong></td>
+								<td><strong>Hourly<br />Rate</strong></td>
+								<td><strong>Gross</strong></td>
+								<td><strong>Federal</strong></td>
+								<td><strong>Social<br />Security</strong></td>
+								<td><strong>Medicare</strong></td>
+								<td><strong>Withholding</strong></td>
+								<td><strong>City</strong></td>
+								<td><strong>Disability</strong></td>
+								<td><strong>Net</strong></td>
+							</tr>
+						<%
+								sql = "sp_Timehseet_Paychecks_Year_get " & Session("UserID") & ", " & x
+								Set ors = oConn.Execute(sql)
+								If NOT ors.EOF Then
+									TotalHourlyRate = 0
+									TotalGross = 0
+									TotalFederal = 0
+									TotalSocialSecurity = 0
+									TotalMedicare = 0
+									TotalWithholding = 0
+									TotalCity = 0
+									TotalDisability = 0
+									TotalNet = 0
+									Do Until ors.EOF
+										TimesheetCompanyName = ors("TimesheetCompanyName")
+										PaycheckDate = ors("PaymentDate")
+										HourlyRate = FormatNumber(ors("HourlyRate"), 2)
+										TotalHourlyRate = TotalHourlyRate + HourlyRate
+										Gross = FormatNumber(ors("Gross"), 2)
+										TotalGross = TotalGross + Gross
+										Federal = FormatNumber(ors("Federal"), 2)
+										TotalFederal = TotalFederal + Federal
+										SocialSecurity = FormatNumber(ors("SocialSecurity"), 2)
+										TotalSocialSecurity = TotalSocialSecurity + SocialSecurity
+										Medicare = FormatNumber(ors("Medicare"), 2)
+										TotalMedicare = TotalMedicare + Medicare
+										Withholding = FormatNumber(ors("NY_Withholding"), 2)
+										TotalWithholding = TotalWithholding + TWithholding
+										City = FormatNumber(ors("NY_City"), 2)
+										TotalCity = TotalCity + City
+										Disability = FormatNumber(ors("NY_Disability"), 2)
+										TotalDisability = TotalDisability + Disability
+										Net = CDbl(Gross) - CDbl(Federal) - CDbl(SocialSecurity) - CDbl(Medicare) - CDbl(Withholding)- CDbl(Disability) - CDbl(City)
+										TotalNet = CDbl(TotalGross) - CDbl(TotalFederal) - CDbl(TotalSocialSecurity) - CDbl(TotalMedicare) - CDbl(TotalWithholding)- CDbl(TotalDisability) - CDbl(TotalCity)
+							%>
+							<tr class="GridViewRow" valign="top" align="right">
+								<td><%= HTMLFormat(TimesheetCompanyName) %></td>
+								<td><%= PaycheckDate %></td>
+								<td><%= HourlyRate %></td>
+								<td><%= Gross %></td>
+								<td><%= Federal %></td>
+								<td><%= SocialSecurity %></td>
+								<td><%= Medicare %></td>
+								<td><%= Withholding %></td>
+								<td><%= City %></td>
+								<td><%= Disability %></td>
+								<td><%= Net %></td>
+							</tr>
+							<%
+										ors.MoveNext
+									Loop
+									ors.Close
+							%>
+							<tr class="GridViewRow" valign="top" align="right">
+								<td align="right" colspan="2" class="ErrorMessage"><strong>Totals:</strong></td>
+								<td class="ErrorMessage"><%= FormatNumber(TotalHourlyRate, 2) %></td>
+								<td class="ErrorMessage"><%= FormatNumber(TotalGross, 2) %></td>
+								<td class="ErrorMessage"><%= FormatNumber(TotalFederal, 2) %></td>
+								<td class="ErrorMessage"><%= FormatNumber(TotalSocialSecurity, 2) %></td>
+								<td class="ErrorMessage"><%= FormatNumber(TotalMedicare, 2) %></td>
+								<td class="ErrorMessage"><%= FormatNumber(TotalWithholding, 2) %></td>
+								<td class="ErrorMessage"><%= FormatNumber(TotalCity, 2) %></td>
+								<td class="ErrorMessage"><%= FormatNumber(TotalDisability, 2) %></td>
+								<td class="ErrorMessage"><%= FormatNumber(TotalNet, 2) %></td>
+							</tr>
+							<%
+								Else
+							%>
+								<div class="ErrorMessage">No Paychecks found.</div>
+							<%
+								End If
+								Set ors = Nothing
+							%>	
+						</table>
+							</p>
+						</div>
+						<% Next %>
+
+					</div>	
+	</td>
+</tr>
+</table>
+					
+					
+					
+					
+<script type="text/javascript">
+
+	$("#tabs").tabs();
+
+
+</script>

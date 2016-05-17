@@ -1,0 +1,67 @@
+<form action="<%= SCRIPT_NAME %>" enctype="multipart/form-data" method="post" accept-charset="utf-8" id="formResume" name="formResume">
+
+
+<div class="JobsTheme"><h1 class="Header" style="padding: 5px;">Resumes</h1>	</div>
+<p>
+<table cellpadding=5>
+<% If JobsErrorMessage <> "" Then %>
+<tr>
+	<td colspan=3 class="ErrorMessage"><%= JobsErrorMessage %>&nbsp;</td>
+</tr>
+<% End If %>
+<tr valign="middle">
+	<td class="frm_Label">Resume&nbsp;File:</td>
+	<td>
+		<%= formFileUpload("ResumeFileName", "500", ResumeFileName, "JobsElement", "Upload Resume", "Invalid File") %>
+	</td>
+</tr>
+<tr>
+	<td>&nbsp;</td>
+	<td>
+		<%
+		
+			Set objFolder = objFSO.GetFolder(Session("ResumeUploadsDirectory"))
+			Set objFiles = objFolder.Files
+			
+			If objFiles.Count > 0 Then
+		%>
+		<table cellpadding=5>
+		<%		
+				For Each objFile in objFiles
+					vResumeFileName = objFile.Name
+    	%>
+		<tr>
+			<td><a href="/jobs/uploads/resumes/<%= Session("UserID") %>/<%= vResumeFileName %>" target="_blank"><%= vResumeFileName %></a></td>
+			<td><a href="javascript:void(null)" onclick="DeleteItem('Are you sure you want to delete this resume?', '<%= SCRIPT_NAME %>?SubmitButton=DeleteResume&Template=<%= Template %>&ResumeFileName=<%= Server.URLEncode(vResumeFileName) %>')"><%= X_ICON %></a></td>
+		</tr>
+		<%
+				Next
+		%>
+		</table>
+		<% Else %>
+		<div class="ErrorMessage">No resumes found.</div>
+		<%
+			End If
+			
+			Set objFiles = Nothing
+			Set objFolder = Nothing
+		%>
+	</td>
+</tr>
+<tr>
+	<td>&nbsp;</td>
+	<td>
+		
+		<%= Submit_Button("SubmitButton", "Upload Resume", "Button", "", "Upload Resume") %>&nbsp;&nbsp;
+	
+	</td>
+</tr>
+
+</table>
+
+
+<%= formHidden("Template", Template) %>
+
+
+</form>
+

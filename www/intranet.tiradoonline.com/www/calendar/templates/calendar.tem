@@ -1,0 +1,394 @@
+<%
+	CurrentMonth = Trim(Request("CurrentMonth"))
+	If CurrentMonth = "" Then CurrentMonth = Month(Date)
+	CurrentYear = Trim(Request("CurrentYear"))
+	If CurrentYear = "" Then CurrentYear = Year(Date)
+	
+	checkboxBanking = Trim(Request.QueryString("checkboxBanking"))
+	If checkboxBanking <> "" Then
+		Response.Cookies("checkboxBanking") = checkboxBanking
+		Response.Cookies("checkboxBanking").Expires = Date + 30
+	End If
+	checkboxCreditCards = Trim(Request.QueryString("checkboxCreditCards"))
+	If checkboxCreditCards <> "" Then
+		Response.Cookies("checkboxCreditCards") = checkboxCreditCards
+		Response.Cookies("checkboxCreditCards").Expires = Date + 30
+	End If
+	checkboxMonthlyExpenses = Trim(Request.QueryString("checkboxMonthlyExpenses"))
+	If checkboxMonthlyExpenses <> "" Then
+		Response.Cookies("checkboxMonthlyExpenses") = checkboxMonthlyExpenses
+		Response.Cookies("checkboxMonthlyExpenses").Expires = Date + 30
+	End If
+	
+	checkboxReminders = Trim(Request.QueryString("checkboxReminders"))
+	If checkboxReminders <> "" Then
+		Response.Cookies("checkboxReminders") = checkboxReminders
+		Response.Cookies("checkboxReminders").Expires = Date + 30
+	End If
+
+	checkboxRecovery = Trim(Request.QueryString("checkboxRecovery"))
+	If Session("Recovery") Then
+		If checkboxRecovery <> "" Then
+			Response.Cookies("checkboxRecovery") = checkboxRecovery
+			Response.Cookies("checkboxRecovery").Expires = Date + 30
+		End If
+	End If
+
+	checkboxInterviews = Trim(Request.QueryString("checkboxInterviews"))
+	If checkboxInterviews <> "" Then
+		Response.Cookies("checkboxInterviews") = checkboxInterviews
+		Response.Cookies("checkboxInterviews").Expires = Date + 30
+	End If
+
+	If SubmitButton <> "" Then
+		redirectURL = SCRIPT_NAME & "?CurrentMonth=" & CurrentMonth & "&CurrentYear=" & CurrentYear
+		'Response.End
+		Response.Redirect redirectURL
+	End If
+	
+	Function GetLastDay(intMonthNum, intYearNum)
+		Dim dNextStart
+		If CInt(intMonthNum) = 12 Then
+			dNextStart = CDate( "1/1/" & intYearNum)
+		Else
+			dNextStart = CDate(intMonthNum + 1 & "/1/" & intYearNum)
+		End If
+		GetLastDay = Day(dNextStart - 1)
+	End Function
+	
+	'-------------------------------------------------------------------------
+	' This routine prints the individual table divisions for days of the month
+	'-------------------------------------------------------------------------
+	Sub Write_TD(sValue, sClass, bgcolor)
+		If bgcolor = "" Then
+			Response.Write "		<td valign=""top"" class=""DayRollerOver"">" & sValue & "</td>" & vbCrLf
+		Else
+			Response.Write "		<td valign=""top"" class=""DayRollerOver"" bgcolor=""" & bgcolor & """>" & sValue & "</td>" & vbCrLf
+		End If
+	End Sub
+
+
+	' Constants for the days of the week
+	cSUN = 1
+	cMON = 2
+	cTUE = 3
+	cWED = 4
+	cTHU = 5
+	cFRI = 6
+	cSAT = 7
+	
+	' Get the name of this file
+	sScript = Request.ServerVariables("SCRIPT_NAME")
+	
+
+	If IsEmpty(CurrentMonth) OR NOT IsNumeric(CurrentMonth) Then
+	  datToday = Date()
+	  intThisMonth = Month(datToday)
+	ElseIf CInt(CurrentMonth) < 1 OR CInt(CurrentMonth) > 12 Then
+	  datToday = Date()
+	  intThisMonth = Month(datToday)
+	Else
+	  intThisMonth = CInt(CurrentMonth)
+	End If
+	
+	' Check for valid year input
+	If IsEmpty(CurrentYear) OR NOT IsNumeric(CurrentYear) Then
+	  datToday = Date()
+	  intThisYear = Year(datToday)
+	Else
+	  intThisYear = CInt(CurrentYear)
+	End If
+
+	strMonthName = MonthName(intThisMonth)
+	datFirstDay = DateSerial(intThisYear, intThisMonth, 1)
+	intFirstWeekDay = WeekDay(datFirstDay, vbSunday)
+	intLastDay = GetLastDay(intThisMonth, intThisYear)
+	
+	' Get the previous month and year
+	intPrevMonth = intThisMonth - 1
+	If intPrevMonth = 0 Then
+		intPrevMonth = 12
+		intPrevYear = intThisYear - 1
+	Else
+		intPrevYear = intThisYear	
+	End If
+	
+	' Get the next month and year
+	intNextMonth = intThisMonth + 1
+	If intNextMonth > 12 Then
+		intNextMonth = 1
+		intNextYear = intThisYear + 1
+	Else
+		intNextYear = intThisYear
+	End If
+
+	' Get the last day of previous month. Using this, find the sunday of
+	' last week of last month
+	LastMonthDate = GetLastDay(intLastMonth, intPrevYear) - intFirstWeekDay + 2
+	NextMonthDate = 1
+
+	' Initialize the print day to 1  
+	intPrintDay = 1
+
+	' These dates are used in the SQL
+	dFirstDay = intThisMonth & "/1/" & intThisYear
+	dLastDay 	= intThisMonth & "/" & intLastDay & "/" & intThisYear
+
+
+	ReDim CalendarArray(31)
+
+	'sql = "sp_Paychecks_UserID_PaycheckDate " & Session("UserID") & ", '" & DateSerial(CurrentYear, CurrentMonth, 1) & "'"
+	'Set ors = oConn.Execute(sql)
+	
+	'Do Until ors.EOF
+	'	CalendarArray(Datepart("d", ors("PaycheckDate"))) = CalendarArray(Datepart("d", ors("PaycheckDate"))) & "<nobr><a href=""../employment/employment.asp?Template=Paychecks&PaycheckID=" & ors("PaycheckID") & "&Action=Edit&PaymentYear=" & CurrentYear & """><font face=""Verdana,Arial"" size=1 color=""#639a63"">Paycheck</a></font></nobr><br /><b><font face=""Verdana,Arial"" size=1 color=""#639a63"">" & FormatCurrency(ors("Gross")) & "</font></b><br />"
+	'	ors.MoveNext
+	'Loop
+	'ors.Close
+	'Set ors = Nothing
+
+
+	If Session("Recovery") Then	
+		If Request.Cookies("checkboxRecovery") = "true" Then 
+			sql = "sp_Recovery_ALL_RecoveryDate_get " & Session("UserID") & ", '" & DateSerial(CurrentYear, CurrentMonth, 1) & "'"
+			Set ors = oConn.Execute(sql)
+			Do Until ors.EOF
+				ProgramName = ors("ProgramName")
+				RecoveryDate = ors("RecoveryDate")
+				CalendarArray(Datepart("d", RecoveryDate)) = CalendarArray(Datepart("d", RecoveryDate)) & _
+						"<div class=""RecoveryTheme"" style=""text-align:right;padding:3px""><b>" & HTMLFormat(ProgramName) & "</b></div>"
+				ors.MoveNext
+			Loop
+			ors.Close
+			Set ors = Nothing
+		End If
+	End If
+
+	If Request.Cookies("checkboxBanking") = "true" Then 
+		sql = "sp_Banking_ALL_BankingDate_get " & Session("UserID") & ", '" & DateSerial(CurrentYear, CurrentMonth, 1) & "'"
+		Set ors = oConn.Execute(sql)
+		Do Until ors.EOF
+			BankingID = ors("BankingID")
+			BankingDate = ors("BankingDate")
+			Description = ors("Description")
+			Payment = FormatNumber(ors("Payment"), 2)
+			CalendarArray(Datepart("d", BankingDate)) = CalendarArray(Datepart("d", BankingDate)) & _
+					"<div class=""BankingTheme"" style=""text-align:right;padding:3px""><a href=""/banking/banking.asp?Template=Edit&BankingID=" & BankingID & """>" & _
+					HTMLFormat(Description) & "</a></nobr><br /><b>$" & Abs(Payment) & "</b></div>"
+			ors.MoveNext
+		Loop
+		ors.Close
+		Set ors = Nothing
+	End If
+	
+	If Request.Cookies("checkboxMonthlyExpenses") = "true" Then 
+		sql = "SELECT * FROM BankingMonthlyExpense WHERE UserID = " & Session("UserID") & " ORDER BY BankingMonthlyExpenseBillDate"
+		Set ors = oConn.Execute(sql)
+		Do Until ors.EOF
+			BankingMonthlyExpenseID = ors("BankingMonthlyExpenseID")
+			BankingMonthlyExpenseName = ors("BankingMonthlyExpenseName")
+			BankingMonthlyExpenseAmount = FormatNumber(ors("BankingMonthlyExpenseAmount"), 2)
+			BankingMonthlyExpenseBillDate = ors("BankingMonthlyExpenseBillDate")
+			CalendarArray(BankingMonthlyExpenseBillDate) = CalendarArray(BankingMonthlyExpenseBillDate) & _
+					"<div class=""MonthlyExpensesTheme"" style=""text-align:right;padding:3px""><a href=""/monthly_expenses/monthly_expenses.asp?BankingMonthlyExpenseID=" & BankingMonthlyExpenseID &"&Template=MonthlyExpenses&Action=Edit"">" & _
+					HTMLFormat(BankingMonthlyExpenseName) & "</a><br /><b>$" & BankingMonthlyExpenseAmount & "</b></div>"
+			ors.MoveNext
+		Loop
+		ors.Close
+		Set ors = Nothing
+	End If
+	
+	
+	If Request.Cookies("checkboxCreditCards") = "true" Then 
+		sql = "SELECT * FROM CreditCard WHERE UserID = " & Session("UserID") & " ORDER BY DueDate"
+		Set ors = oConn.Execute(sql)
+		Do Until ors.EOF
+			CreditCardID = ors("CreditCardID")
+			CreditCardName = ors("CreditCardName")
+			MinimumPayment = FormatNumber(ors("MinimumPayment"), 2)
+			DueDate = ors("DueDate")
+			CalendarArray(DueDate) = CalendarArray(DueDate) & _
+					"<div class=""CreditCardsTheme"" style=""text-align:right;padding:3px""><a href=""/creditcards/creditcards.asp?Template=CreditCards&Action=Edit&CreditCardID=" & CreditCardID & """>" & _
+					HTMLFormat(CreditCardName) & "</a><br /><b>$" & MinimumPayment & "</b></div>"
+			ors.MoveNext
+		Loop
+		ors.Close
+		Set ors = Nothing
+	End If
+	
+	If Request.Cookies("checkboxReminders") = "true" Then 
+		sql = "sp_Reminders_ALL_RemindersDate_get " & Session("UserID") & ", '" & DateSerial(CurrentYear, CurrentMonth, 1) & "'"
+		Set ors = oConn.Execute(sql)
+		Do Until ors.EOF
+			ReminderID = ors("ReminderID")
+			ReminderDateTime = ors("ReminderDateTime")
+			ReminderDate = FormatDateTime(ReminderDateTime, 2)
+			ReminderTime = FormatDateTime(ReminderDateTime, 3)
+			ReminderName = ors("ReminderName")
+			ReminderDescription = ors("ReminderDescription")
+			CalendarArray(Datepart("d", ReminderDate)) = CalendarArray(Datepart("d", ReminderDate)) & _
+					"<div class=""RemindersTheme"" style=""text-align:right;padding:3px""><b>" & ReminderTime & "</b><br /><a href=""/reminders/reminders.asp?Template=Edit&ReminderID=" & ReminderID & "&Action=Edit"" title=""" & ReminderDescription & """>" & _
+					HTMLFormat(ReminderName) & "</a></nobr></div>"
+			ors.MoveNext
+		Loop
+		ors.Close
+		Set ors = Nothing
+	End If
+	
+	If Request.Cookies("checkboxInterviews") = "true" Then 
+		sql = "sp_JobInterview_ALL_JobInterviewDate_get " & Session("UserID") & ", '" & DateSerial(CurrentYear, CurrentMonth, 1) & "'"
+		Set ors = oConn.Execute(sql)
+		Do Until ors.EOF
+			JobInterviewID = ors("JobInterviewID")
+			JobInterviewDateTime = ors("JobInterviewDateTime")
+			JobInterviewDate = FormatDateTime(JobInterviewDateTime, 2)
+			JobInterviewTime = FormatDateTime(JobInterviewDateTime, 3)
+			JobCompanyName = ors("JobCompanyName")
+			JobInterviewType = ors("JobInterviewType")
+			JobInterviewContact = ors("JobInterviewContact")
+			JobInterviewAddress1 = ors("JobInterviewAddress1")
+			JobInterviewAddress2 = ors("JobInterviewAddress2")
+			JobInterviewCity = ors("JobInterviewCity")
+			JobInterviewState = ors("JobInterviewState")
+			JobInterviewZipCode = ors("JobInterviewZipCode")
+			JobInterviewBody = JobCompanyName
+			JobCompanyID = ors("JobCompanyID")
+			CalendarArray(Datepart("d", JobInterviewDate)) = CalendarArray(Datepart("d", JobInterviewDate)) & _
+					"<div class=""JobsTheme"" style=""text-align:right;padding:3px""><b>" & JobInterviewTime & "</b><br /><a href=""/jobs/jobs.asp?job_interview&JobInterviewID=" & JobInterviewID & "&JobCompanyID=" & JobCompanyID & """>" & _
+					HTMLFormat(JobInterviewBody) & "</a></nobr></div>"
+			ors.MoveNext
+		Loop
+		ors.Close
+		Set ors = Nothing
+	End If
+
+	'sql = "sp_Reminders_UserID_ReminderDate " & Session("UserID") & ", '" & DateSerial(CurrentYear, CurrentMonth, 1) & "'"
+	'Set Reminders = oConn.Execute(sql)
+	'Do Until Reminders.EOF
+	'	If Trim(Reminders("ReminderDesc")) <> "" Then CalendarArray(Day(Reminders("ReminderDate"))) = CalendarArray(Day(Reminders("ReminderDate"))) & "<nobr><a href=""../calendar/calendar.asp?Template=Reminders&CurrentMonth=" & CurrentMonth & "&CurrentYear=" & CurrentYear & """><font face=""Verdana,Arial"" size=1 color=""#000000"">Reminder</a><br /><b>" & Replace(Reminders("ReminderDesc"), " ", "&nbsp;") & "</b></font></b><br />"
+	'	Reminders.MoveNext
+	'Loop
+	'Reminders.Close
+	'Set Reminders = Nothing
+	
+	
+	Function DisplayDay(current_day)
+		If Trim(CalendarArray(current_day)) <> "" Then
+			DisplayDay = "<a href=""/banking/banking.asp?BankingDay=" & current_day & "&BankingMonth=" & CurrentMonth & "&CurrentYear=" & CurrentYear & "&Template=Add"" style=""text-decoration:none;""><font face=""Verdana,Arial"" size=3 color=""#313031"">" & current_day & "</a></font></b><font face=""Verdana,Arial"" size=1 color=""#313031""><p align=right>" & CalendarArray(current_day)
+		Else
+			DisplayDay = "<a href=""/banking/banking.asp?BankingDay=" & current_day & "&BankingMonth=" & CurrentMonth & "&CurrentYear=" & CurrentYear & "&Template=Add"" style=""text-decoration:none;""><font face=""Verdana,Arial"" size=3 color=""#313031"">" & current_day & "</font></a>&nbsp;<br />&nbsp;<br />&nbsp;<br />&nbsp;<br />"
+		End If
+	End Function
+%>
+<style type="text/css">
+	.DayRollerOverHover
+	{
+		color: #fff;
+		background-color: <%= CALENDAR_THEME %>;
+	}
+</style>
+<table border="0" cellspacing="0" cellpadding="0" width="700">
+<tr>
+	<td align=center>
+		<table cellspacing=0 cellpadding=10 width="100%" border=0>
+		<tr class="CalendarTheme">
+			<td>&nbsp;&nbsp;&nbsp;</td>
+			<td><a href="<%= Request.ServerVariables("SCRIPT_NAME") %>?CurrentMonth=<%= PreviousMonth %>&CurrentYear=<%= PreviousYear %>"><img src="/images/icons/previous.gif" hspace=0 vspace=0 border=0></a></td>
+			<td align=center width="100%" style="font-size:30px;text-transform:uppercase"><b><%= MonthName(CurrentMonth) %>&nbsp;<%= CurrentYear %></b></td>
+			<td><a href="<%= Request.ServerVariables("SCRIPT_NAME") %>?CurrentMonth=<%= NextMonth %>&CurrentYear=<%= NextYear %>"><img src="/images/icons/next.gif" hspace=0 vspace=0 border=0></a></td>
+			<td>&nbsp;&nbsp;&nbsp;</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+<tr>
+	<td>
+		<table width="100%" border="0" cellpadding="5" cellspacing="1" bgcolor="#c6ba9c">
+	  	<tr bgcolor="#9c927b" style="color:#fff;font-size:20px">
+			<td align="center" style="font-size:20px"><b>SUN</b></td>
+			<td align="center" style="font-size:20px"><b>MON</b></td>
+			<td align="center" style="font-size:20px"><b>TUE</b></td>
+			<td align="center" style="font-size:20px"><b>WED</b></td>
+			<td align="center" style="font-size:20px"><b>THU</b></td>
+			<td align="center" style="font-size:20px"><b>FRI</b></td>
+			<td align="center" style="font-size:20px"><b>SAT</b></td>
+	  	</tr>
+	  <%
+			' Initialize the end of rows flag to false
+			EndRows = False
+			Response.Write vbCrLf
+			
+			' Loop until all the rows are exhausted
+		 	Do While EndRows = False
+				' Start a table row
+				Response.Write "	<TR bgcolor=""#ffffff"">" & vbCrLf
+				' This is the loop for the days in the week
+				For intLoopDay = cSUN To cSAT
+					' If the first day is not sunday then print the last days of previous month in grayed font
+					If intFirstWeekDay > cSUN Then
+						'ValidDate = 0
+							'If CInt(LastMonthDate) = CInt(Day(DateSerial(CurrentYear, CInt(CurrentMonth - 1), LastMonthDate))) Then
+								Write_TD "<font face=""Verdana,Arial"" size=1 color=""gray"">" & LastMonthDate & "<br />&nbsp;<br />", "NON", "#F7EBD6"
+							'Else
+								'Write_TD "<font face=""Verdana,Arial"" size=1 color=""gray"">" & intFirstWeekDay & "-" & LastMonthDate & "-" & intFirstWeekDay & "N" & LastMonthDate & "<br />&nbsp;<br />", "NON", "#F7EBD6"
+							'End If
+								'Write_TD "<font face=""Verdana,Arial"" size=1 color=""gray"">" & LastMonthDate & "=" & Day(DateSerial(CurrentYear, CInt(CurrentMonth - 1), LastMonthDate)) & "<br />" & DateSerial(CurrentYear, CInt(CurrentMonth - 1), LastMonthDate) & "<br />" & LastMonthDate & "<br />&nbsp;<br />", "NON", "#F7EBD6"
+								LastMonthDate = LastMonthDate + 1
+								'ValidDate = 1
+							'End If
+							intFirstWeekDay = intFirstWeekDay - 1
+						'Loop
+					' The month starts on a sunday	
+					Else
+						' If the dates for the month are exhausted, start printing next month's dates
+						' in grayed font
+						If intPrintDay > intLastDay Then
+							Write_TD "<font face=""Verdana,Arial"" size=1 color=""gray""><b>" & NextMonthDate & "&nbsp;<br />&nbsp;<br />&nbsp;<br />&nbsp;<br />", "NON", "#F7EBD6"
+							NextMonthDate = NextMonthDate + 1
+							EndRows = True 
+						Else
+							' If last day of the month, flag the end of the row
+							If intPrintDay = intLastDay Then
+								EndRows = True
+							End If
+							
+							dToday = CDate(intThisMonth & "/" & intPrintDay & "/" & intThisYear)  
+							' If the event flag is not raise for that day, print it in a plain font
+							If bEvents = False Then
+								If Month(Date) = intThisMonth AND Year(Date) = intThisYear AND Day(Date) = intPrintDay Then
+									Write_TD "<font face=""Verdana,Arial"" size=1 color=""#ff0000""><b>" & DisplayDay(intPrintDay), "SOME", CALENDAR_THEME
+								Else
+									Write_TD DisplayDay(intPrintDay), "SOME", ""
+								End If
+							End If
+						End If 
+						
+						' Increment the date. Done once in the loop.
+						intPrintDay = intPrintDay + 1
+					End If
+				
+				' Move to the next day in the week
+				Next
+				Response.Write "	</TR>" & vbCrLf
+			Loop 
+		%>
+		</tr>
+		</table>
+	</td>
+</tr>
+</table>
+<script type="text/javascript">
+
+	$(".DayRollerOver").hover
+	(
+		function()
+		{
+			$(this).addClass("DayRollerOverHover");
+		},
+		function()
+		{
+			$(this).removeClass("DayRollerOverHover");
+		}
+	)
+
+</script>

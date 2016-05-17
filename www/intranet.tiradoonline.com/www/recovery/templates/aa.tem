@@ -1,0 +1,152 @@
+<%
+	If SubmitButton = "Create Meeting Location" Then
+		sql = "sp_AA_MeetingLocation_insert " & _
+			AA_MeetingBoroughID & ", " & _
+			AA_Zone & ", " & _
+			"'" & SQLEncode(AA_MeetingName) & "', " & _
+			"'" & SQLEncode(AA_Address1) & "', " & _
+			"'" & SQLEncode(AA_Address2) & "', " & _
+			"'" & SQLEncode(AA_Address3) & "', " & _
+			"'" & SQLEncode(AA_ZipCode) & "', " & _
+			"'" & SQLEncode(AA_Comments) & "'"
+		'Response.Write sql
+		'Response.End
+		Set ors = oConn.Execute(sql)
+		AA_MeetingLocationID = ors.Fields(0).Value
+		ors.Close
+		Set ors = Nothing
+		redirectURL =  SCRIPT_NAME & "?Template=" & Template & "&RecoveryType=" & RecoveryType & "&AA_MeetingLocationID=" & AA_MeetingLocationID & "&RecoveryErrorMessage=" & Server.URLEncode("Meeting Location added.")
+		Response.Redirect redirectURL
+		
+	ElseIf SubmitButton = "Save Meeting Location" Then
+	
+	End If
+	
+	LocationSubmitButtonValue = "Create"
+	If AA_MeetingLocationID <> "" Then 
+		sql = "SELECT * FROM WHERE AA_MeetingLocationID = " & AA_MeetingLocationID
+		Set ors = oConn.Execute(sql)
+		If NOT ors.EOF Then
+			AA_MeetingBoroughID = ors("AA_MeetingBoroughID")
+			AA_Zone = ors("AA_Zone")
+			AA_MeetingName = ors("AA_MeetingName")
+			AA_Address1 = ors("AA_Address1")
+			AA_Address2 = ors("AA_Address2")
+			AA_Address3 = ors("AA_Address3")
+			AA_ZipCode = ors("AA_ZipCode")
+			AA_Comments = ors("AA_Comments")
+			ors.Close
+		End If
+		Set ors = Nothing
+		LocationSubmitButtonValue = "Save"
+		
+	
+	End If 
+%>
+<form action="<%= SCRIPT_NAME %>" method="post" id="frm_AA_Location" name="frm_AA_Location">
+
+<table cellpadding="3">
+<tr valign="middle">
+	<td class="frm_label">Meeting&nbsp;Name:</td>
+	<td>
+		<%= formTextBox("AA_MeetingName", "40", AA_MeetingName, "RecoveryElement", "Meeting Name", "Invalid Meeting Name") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr valign="middle">
+	<td class="frm_label">Zone:</td>
+	<td>
+		<select id="AA_Zone" name="AA_Zone" class="RecoveryElement">
+		<% For x = 1 to 7 %>
+			<option value="<%= x %>"<% If CStr(x) = CStr(AA_Zone) Then Ressponse.Write " SELECTED" %> ><%= x %></option>
+		<% Next %>
+		</select><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr valign="middle">
+	<td class="frm_label">Address1:</td>
+	<td>
+		<%= formTextBox("AA_Address1", "40", AA_Address1, "RecoveryElement", "Address1", "Invalid Address1") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr valign="middle">
+	<td class="frm_label">Address2:</td>
+	<td>
+		<%= formTextBox("AA_Address2", "40", AA_Address2, "RecoveryElement", "Address2", "Invalid Address2") %>
+	</td>
+</tr>
+<tr valign="middle">
+	<td class="frm_label">Address3:</td>
+	<td>
+		<%= formTextBox("AA_Address3", "40", AA_Address3, "RecoveryElement", "Address3", "Invalid Address3") %>
+	</td>
+</tr>
+<tr valign="middle">
+	<td class="frm_label">City:</td>
+	<td>
+		<%
+			sql = "SELECT AA_MeetingBoroughID, AA_MeetingBoroughName FROM AA_MeetingBorough ORDER BY AA_MeetingBoroughName"
+			WriteDebugger sql, Debugging, 0
+		%>
+		<%= SelectBox(oConn, sql, "AA_MeetingBoroughID", AA_MeetingBoroughID, "RecoveryElement", "MeetingBorough") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr valign="middle">
+	<td class="frm_label">Zipcode:</td>
+	<td>
+		<%= formTextBox("AA_ZipCode", "10", AA_ZipCode, "RecoveryElement", "AA_ZipCode", "Invalid AA_ZipCode") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label" valign="top">Comments:</td>
+	<td>
+		<%= formTextArea("AA_Comments", AA_Comments, "400", "100", "RecoveryElement", "Comments", "Invalid Comments") %>
+	</td>
+</tr>
+<tr>
+	<td>&nbsp;</td>
+	<td>
+		<%= Submit_Button("SubmitButton", LocationSubmitButtonValue & " Meeting Location", "Button", "", LocationSubmitButtonValue & " Meeting Location") %>&nbsp;&nbsp;
+		
+		<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?RecoveryType=" & RecoveryType & "'") %>
+	</td>
+</tr>
+</table>
+
+
+<input type="hidden" id="RecoveryType" name="RecoveryType" value="<%= RecoveryType %>" />
+<input type="hidden" id="AA_MeetingLocationID" name="AA_MeetingLocationID" value="<%= AA_MeetingLocationID %>" />
+<input type="hidden" id="Template" name="Template" value="<%= Template %>" />
+</form>
+
+<% 
+	If AA_MeetingLocationID <> "" Then 
+%>
+
+<form action="<%= SCRIPT_NAME %>" method="post" id="frm_AA_LocationMeeting" name="frm_AA_LocationMeeting">
+<table cellpadding="3">
+<tr valign="middle">
+	<td class="frm_label">Meeting&nbsp;Name:</td>
+	<td>
+		<b><%= AA_MeetingName %></b>
+	</td>
+</tr>
+<tr valign="middle">
+	<td class="frm_label">Meeting&nbsp;Type:</td>
+	<td>
+		<%
+			sql = "SELECT AA_MeetingTypeID, AA_MeetingTypeName FROM AA_MeetingType ORDER BY AA_MeetingTypeName"
+			WriteDebugger sql, Debugging, 0
+		%>
+		<%= SelectBox(oConn, sql, "AA_MeetingTypeID", AA_MeetingTypeID, "RecoveryElement", "MeetingType") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+</table>
+<input type="hidden" id="AA_MeetingLocationID" name="AA_MeetingLocationID" value="<%= AA_MeetingLocationID %>" />
+<input type="hidden" id="RecoveryType" name="RecoveryType" value="<%= RecoveryType %>" />
+<input type="hidden" id="Template" name="Template" value="<%= Template %>" />
+</form>
+
+
+
+
+<% End If %>

@@ -1,0 +1,28 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Hours' AND TYPE = 'U')
+DROP TABLE Hours;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Hours' AND TYPE = 'U')
+	DROP TABLE Hours;
+GO
+
+CREATE TABLE Hours
+(
+	HoursID		IDENTITY (1001,1) INT  NOT NULL,
+	CompanyID		 INT  NOT NULL,
+	WorkDate		 DATETIME DEFAULT (getdate()) NOT NULL,
+	StartHour		 NUMERIC(4,1) DEFAULT (0) NOT NULL,
+	EndHour		 NUMERIC(4,1) DEFAULT (0) NULL,
+	LunchHour		 NUMERIC(4,3) DEFAULT (0) NULL
+
+);
+GO
+
+
+
+
+GO
+
+
+GO
+

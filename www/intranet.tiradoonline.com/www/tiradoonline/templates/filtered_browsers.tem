@@ -1,0 +1,102 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formFilteredBrowser" name="formFilteredBrowser">
+<%
+	SubmitButtonValue = "Create"
+	
+	If FilteredBrowserID <> "" Then 
+		sql = "SELECT * FROM FilteredBrowsers WHERE FilteredBrowserID = " & FilteredBrowserID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		If NOT ors.EOF Then
+			Alias = ors("Alias")
+			Browser = ors("Browser")
+			ors.Close
+			SubmitButtonValue = "Save"
+		End If
+		Set ors = Nothing
+	End If 
+%>
+<% If tiradoonlineErrorMessage <> "" Then %>
+&nbsp;<br />
+<div class="ErrorMessage"><%= tiradoonlineErrorMessage %></div>
+<% End If %>
+
+<div class="tiradoonlineTheme"><h1 class="Header" style="padding: 5px;">Filtered&nbsp;Browsers</h1></div>
+<p>
+
+
+<table cellspacing=0 cellpadding=5 border=0>
+<tr>
+	<td align="right"><b>Alias:</b></td>
+	<td>
+		<%= formTextBox("Alias", "20", Alias, "tiradoonlineElement", "Alias", "Invalid Alias") %>
+	</td>
+</tr>
+<tr>
+	<td align="right"><b>Browser:</b></td>
+	<td>
+		<%= formTextBox("Browser", "40", Browser, "tiradoonlineElement", "Browser", "Invalid Browser") %>
+	</td>
+</tr>
+<tr>
+	<td align="right">&nbsp;</td>
+	<td>
+		
+		<%= Submit_Button("SubmitButton", SubmitButtonValue & " Filtered Browser", "Button", "", SubmitButtonValue & " Filtered Browser") %>&nbsp;&nbsp;
+		<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+	</td>
+</tr>
+</table>
+
+<p>
+ 	
+<%
+	sql = "SELECT * FROM FilteredBrowsers ORDER BY Alias"
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+%>
+
+<table cellspacing=0 cellpadding=5 border=0 width="100%">
+<%
+	If NOT ors.EOF Then
+%>
+<tr bgcolor="<%= tiradoonline_THEME %>" class="tiradoonlineTheme">
+	<td><b>Alias</b></td>
+	<td><b>Browser</b></td>
+	<td>
+		<%= Button("Button", "Add New Filtered Browser", "Button", "", "Add New Filtered Browser", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&Action=Add'") %>
+	</td>
+</tr>
+<%
+		Do Until ors.EOF
+			v_FilteredBrowserID = ors("FilteredBrowserID")
+			Alias = ors("Alias")
+			Browser = ors("Browser")
+%>
+<tr valign="middle" valign="center" class="GridViewRow">
+	<td><a href="<%= SCRIPT_NAME %>?FilteredBrowserID=<%= v_FilteredBrowserID %>&Template=<%= Template %>&Action=Edit"><%= HTMLFormat(Alias) %></a></td>
+	<td><%= HTMLFormat(Browser) %></td>
+	<td>
+		<%= Button("Button", "Delete", "DeleteButton", " ", "Delete", "DeleteItem('Are you sure you want to delete this item?', '" & SCRIPT_NAME & "?Template=" & Template & "&SubmitButton=DeleteFilteredBrowser&FilteredBrowserID=" & v_FilteredBrowserID & "')") %>
+	</td>
+</tr>
+<%
+			ors.MoveNext
+		Loop
+		ors.Close
+		Set ors = Nothing
+	Else
+%>
+<tr class="ErrorMessage">
+	<td>No Browsers found.</td>
+</tr>
+<%
+	End If
+%>
+</table>
+
+
+<%= formHidden("Template", Template) %>
+
+<%= formHidden("FilteredBrowserID", FilteredBrowserID) %>
+
+</form>

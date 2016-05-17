@@ -1,0 +1,131 @@
+<%
+	sqlStatement = Trim(Request("sqlStatement"))
+	SQLScriptID = Trim(Request("SQLScriptID"))
+%>
+
+<form action="<%= SCRIPT_NAME %>" method="post" id="formSQLEditor" name="formSQLEditor">
+<table width="100%" cellspacing=0 cellpadding=10 border=0>
+<tr class="AdministrationTheme">
+	<td>Execute SQL</td>
+	<td align="right">
+		<%= Button("Button", "Clear", "Button", "", "Clear", "document.forms[0].sqlStatement.value=''") %>&nbsp;&nbsp;
+		<%= Submit_Button("SubmitButton", "Execute", "Button", "AdministrationElement", "Execute") %>&nbsp;&nbsp;
+	</td>
+</tr>
+<%
+	sql = "sp_SQLScripts_get " & Session("UserID")
+	WriteDebugger sql, Debugging, 0
+	Set rs = oConn.Execute(sql)
+%>
+<% If NOT rs.EOF Then %>
+<tr>
+	<td colspan="2">
+		<select id="SQLScriptID" name="SQLScriptID" class="AdministrationTheme" title="SQL Script" onChange="location='<%= SCRIPT_NAME %>?Template=<%= Template %>&SQLScriptID=' + document.forms[0].SQLScriptID[document.forms[0].SQLScriptID.selectedIndex].value">
+		<option value="">CREATE NEW SCRIPT</option>
+		<%
+			sql = "sp_SQLScripts_get " & Session("UserID")
+			WriteDebugger sql, Debugging, 0
+			Set rs = oConn.Execute(sql)
+			Do Until rs.EOF
+		%>
+			<% If CStr(rs("SQLScriptID")) = SQLScriptID Then %>
+				<option value="<%= rs("SQLScriptID") %>" SELECTED><%= rs("SQLScriptShow") %></option>
+				<% sqlStatement = rs("SQLScript") %>
+			<% Else %>
+				<option value="<%= rs("SQLScriptID") %>"><%= rs("SQLScriptShow") %></option>
+			<% End If %>
+		<%
+				rs.MoveNext
+			Loop
+		%>
+		</select>
+		
+		&nbsp;&nbsp;
+		<%= Button("Button", "New SQL Script", "Button", "", "New SQL Script", "location.href='" & SCRIPT_NAME & "?Template=" & Template &"'") %>
+	</td>
+</tr>
+<% End If %>
+<%
+	rs.Close
+	Set rs = Nothing
+%>
+<tr>
+	<td colspan="2">
+		<%= formTextArea("sqlStatement", sqlStatement, "600", "200", "AdministrationElement", "SQL Statement", "Invalid SQL Statement") %>
+	</td>
+</tr>
+<tr>
+	<td>
+<%
+	If SubmitButton = "Execute" AND sqlStatement <> "" Then
+		If Left(UCase(sqlStatement), 6) = "INSERT" OR Left(UCase(sqlStatement), 6) = "UPDATE" OR Left(UCase(sqlStatement), 6) = "DELETE" Then
+			sql = "sp_administration_execute " & Session("UserID") & ", '" & sqlStatement & "'"
+			WriteDebugger sql, Debugging, 0
+			oConn.Execute sql
+		Else
+			'on Error Resume Next
+			Set rs = oConn.Execute(sqlStatement)
+			If oConn.Errors.Count > 0 Then
+				sql = sqlStatement & " EXECUTED<br />"
+				WriteDebugger sql, Debugging, 0
+				Response.Write "<font face=""Verdana,Arial"" color=""#C80000"" size=2><b>"
+				For Each Item in oConn.Errors
+					sqlStatement = sqlStatement & "<li>" & Item.Description & "<br />"
+					Response.Write "<li>" & Item.Description & "<br />"
+				Next
+				sql = "sp_Logs_insert '" & Request.ServerVariables("SERVER_NAME") & "', '" & sqlStatement & " EXECUTED'"
+				WriteDebugger sql, Debugging, 0
+				oConn.Execute sql
+			Else
+				'Err.Clear
+				'sql = "sp_SQLScripts_insert " & Session("UserID") & ", '" & sqlStatement & "'"
+				'oConn.Execute sql
+				sql = "sp_Logs_insert '" & Request.ServerVariables("SERVER_NAME") & "', '" & sqlStatement & " EXECUTED'"
+				WriteDebugger sql, Debugging, 0
+				oConn.Execute sql
+				If NOT rs.EOF Then
+					TotalRows = SQLTotalRows(rs)
+					TotalColumns = 0
+					For Each Item in rs.Fields
+						TotalColumns = TotalColumns + 1
+					Next
+					
+					Response.Write "<table cellspacig=""1"" cellpadding=""2"" border=""0"" bgcolor='#000000'>" & vbCrLF
+					Response.Write "<tr align='center'>" & vbCrLF
+					Response.Write "	<td colspan='" & TotalColumns & "' bgcolor='#dddddd'><b>Total&nbsp;Rows:&nbsp;" & TotalRows & "</b>&nbsp;</td>"
+					Response.Write "<tr>" & vbCrLF
+					Response.Write "<tr class='AdministrationTheme' align='center'>" & vbCrLF
+					For Each Item in rs.Fields
+						Response.Write "	<td>" & Item.Name & "&nbsp;</td>"
+					Next
+					Response.Write "</tr>" & vbCrLF
+					Do Until rs.EOF
+						Response.Write "<tr align='center' class='GridViewRow'>" & vbCrLF
+						For Each Item in rs.Fields
+							'On Error Resume Next
+							Response.Write "	<td><font face=""Verdana,Arial"" size=1>" & Item.Value & "&nbsp;</td>"
+							'If Err.Number <> 0 Then Response.Write "	<td>&nbsp;</td>"
+							'Err.Clear
+						Next
+						Response.Write "</tr>" & vbCrLF
+						rs.MoveNext
+					Loop
+					Response.Write "</table>" & vbCrLF
+				Else
+					Response.Write "No records returned."
+				End If
+			End If
+			Err.Clear
+			rs.Close
+			Set rs = Nothing
+		End If
+	End If
+%>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("Template", Template) %>
+</form>
+
+</form>

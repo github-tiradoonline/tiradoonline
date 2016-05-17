@@ -1,0 +1,87 @@
+<%
+	SubmitButtonValue = "Create"
+	If TransactionID <> "" Then 
+		SubmitButtonValue = "Save"
+		sql = "sp_Transactions_TransactionID_get " & TransactionID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		If NOT ors.EOF Then
+			TransactionName = ors("Description")
+			TotalTransactions = ors("TotalTransactions")
+			ors.Close
+		End If
+		Set ors = Nothing
+	End If
+	
+%>
+
+<form action="<%= SCRIPT_NAME %>" method="post" id="formBankingTransactions" name="formBankingTransactions">
+
+<% If BankingErrorMessage <> "" Then %>
+<div class="ErrorMessage"><%= BankingErrorMessage %></div>
+<p />
+<% End If %>
+<table cellpadding="5">
+<tr align="center">
+	<td class="BankingElement SubHeader">Transactions</td>
+</tr>
+<tr valign="top">
+	<!-- ACTIVE ACCOUNTS -->
+	<td>
+		<%= formTextBox("TransactionName", "20", TransactionName, "BankingElement", "Transaction Name", "Invalid Transaction Name") %>&nbsp;&nbsp;
+		<%= Submit_Button("SubmitButton", SubmitButtonValue & " Transaction", "Button", "", SubmitButtonValue & " Transaction") %>
+	<%
+		sql = "sp_Transactions_get " & Session("UserID")
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		
+		If NOT ors.EOF Then
+	%>
+		<table cellpadding="5" class="GridView">
+		<tr>
+			<td class="BankingTheme">Transaction</td>
+			<td class="BankingTheme">Banking&nbsp;Transactions</td>
+		</tr>
+	<%
+			Do Until ors.EOF
+				TransactionID = ors("TransactionID")
+				TransactionName = ors("Description")
+				TotalTransactions = ors("TotalTransactions")
+	%>
+		<tr class="GridViewRow">
+			<!--
+			<td>
+				<%= Button("Button", "Archive", "Button", "", "Archive", "DeleteItem('Are you sure you want to delete this account (" & Owner & " - " & FormatJavaScript(TransactionName) & ")?','" & SCRIPT_NAME & "?Template=" & Template & "&BankingAccountID=" & BankingAccountID & "&SubmitButton=ActivateAccount&Active=0')") %>
+			</td>
+			-->
+			<td>
+				<a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&TransactionID=<%= TransactionID %>">
+					<%= HTMLFormat(TransactionName) %>
+				</a>
+			</td>
+			<td align="center">
+				<%= ors("TotalTransactions") %>
+			</td>
+		</tr>
+	<%
+				ors.MoveNext
+			Loop
+	%>
+		</table>
+	<%		
+			ors.Close
+		Else
+	%>
+		<div class="ErrorMessage">No Transactions found.</div>
+
+	<%
+		End If 
+		Set ors = Nothing
+	%>
+	</td>
+</tr>
+</table>
+<%= formHidden("Template", Template) %>
+<%= formHidden("TransactionID", TransactionID) %>
+
+</form>

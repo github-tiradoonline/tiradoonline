@@ -1,0 +1,234 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formJobsCompanyContact" name="formJobsCompanyContact">
+<% 
+	sql = "SELECT JobCompanyName, JobCompanyWebsite FROM JobCompany WHERE JobCompanyID = " & JobCompanyID
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+	JobCompanyName = ors("JobCompanyName")
+	JobCompanyWebsite = ors("JobCompanyWebsite")
+	ors.Close
+	Set ors = Nothing
+	
+	SubmitButtonValue = "Create Company Contact"
+	
+	If JobCompanyContactID <> "" Then
+		SubmitButtonValue = "Save Company Contact"
+		sql = "SELECT * FROM JobCompanyContact WHERE JobCompanyContactID = " & JobCompanyContactID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		JobCompanyContactTitle = ors("JobCompanyContactTitle")
+		JobCompanyContactFirstName = ors("JobCompanyContactFirstName")
+		JobCompanyContactLastName = ors("JobCompanyContactLastName")
+		JobCompanyContactTitle = ors("JobCompanyContactTitle")
+		JobCompanyContactWorkPhone = ors("JobCompanyContactWorkPhone")
+		JobCompanyContactWorkPhone2 = ors("JobCompanyContactWorkPhone2")
+		JobCompanyContactCellPhone = ors("JobCompanyContactCellPhone")
+		JobCompanyContactFax = ors("JobCompanyContactFax")
+		JobCompanyContactEmail = ors("JobCompanyContactEmail")
+		JobCompanyContactEmail2 = ors("JobCompanyContactEmail2")
+		JobCompanyContactLinkedIn = ors("JobCompanyContactLinkedIn")
+		JobCompanyContactTwitter = ors("JobCompanyContactTwitter")
+		JobCompanyContactFacebook = ors("JobCompanyContactFacebook")
+		JobCompanyContactGooglePlus = ors("JobCompanyContactGooglePlus")
+		JobCompanyContactInstagram = ors("JobCompanyContactInstagram")
+		JobCompanyContactSkype = ors("JobCompanyContactSkype")
+		JobCompanyContactHotmail = ors("JobCompanyContactHotmail")
+		JobCompanyContactYahoo = ors("JobCompanyContactYahoo")
+		JobCompanyContactAIM = ors("JobCompanyContactAIM")
+		JobCompanyContactGmail = ors("JobCompanyContactGmail")
+		JobCompanyContactNotes = ors("JobCompanyContactNotes")
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<div class="JobsTheme" style="text-align:center;">
+	<h1 class="Header" style="padding: 5px;" style="float:left;">
+		<%= JobCompanyName %>&nbsp;-&nbsp;Contacts
+	</h1>
+</div>
+<table border=0>
+<tr valign="top">
+	<td>
+		<table border=0>
+		<tr valign="top">
+			<td>
+				<table cellpadding="3" border="0">
+				<tr valign="top">
+					<td colspan="2">
+						<!-- #include virtual="/jobs/includes/company.inc" -->
+					</td>
+				</tr>
+				<tr valign="top">
+					<td>
+						<!-- #include virtual="/jobs/includes/addresses.inc" -->
+					</td>
+					<td>
+						<!-- #include virtual="/jobs/includes/contacts.inc" -->
+					</td>
+				</tr>
+				<tr valign="top">
+					<td>
+						<!-- #include virtual="/jobs/includes/interviews.inc" -->
+					</td>
+					<td>
+						<!-- #include virtual="/jobs/includes/phonecalls.inc" -->
+					</td>
+				</tr>
+				<tr valign="top">
+					<td colspan="2">
+						<!-- #include virtual="/jobs/includes/jobs.inc" -->
+					</td>
+				</tr>
+				</table>
+			</td>
+			<td valign="top">
+				<% If JobsErrorMessage <> "" Then %>
+				<div class="ErrorMessage"><%= JobsErrorMessage %></div>
+				<% End If %>
+				<table cellpadding="3">
+				<tr>
+					<td align="right"><b>First&nbsp;Name:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyContactFirstName", "30", JobCompanyContactFirstName, "JobsTheme", "First Name", "Invalid First Name") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Last&nbsp;Name:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyContactLastName", "30", JobCompanyContactLastName, "JobsTheme", "Last Name", "Invalid Last Name") %>
+						<!-- <%= REQUIRED_ICON %> -->
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Email:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyContactEmail", "50", JobCompanyContactEmail, "JobsTheme", "Email", "Invalid Email") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Email2:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyContactEmail2", "50", JobCompanyContactEmail2, "JobsTheme", "Email", "Invalid Email") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Title:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyContactTitle", "30", JobCompanyContactTitle, "JobsTheme", "Title", "Invalid Title") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Work&nbsp;Phone:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyContactWorkPhone", "30", JobCompanyContactWorkPhone, "JobsTheme", "Work Phone", "Invalid Work Phone") %>&nbsp;
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Work&nbsp;Phone2:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyContactWorkPhone2", "30", JobCompanyContactWorkPhone2, "JobsTheme", "Work Phone", "Invalid Work Phone2") %>&nbsp;
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Fax:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyContactFax", "30", JobCompanyContactFax, "JobsTheme", "Fax", "Invalid Fax") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Cell&nbsp;Phone:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyContactCellPhone", "30", JobCompanyContactCellPhone, "JobsTheme", "Cell Phone", "Invalid Cell Phone") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>LinkedIn:</b><br /><%= LINKEDIN_ICON %></td>
+					<td>
+						<%= formTextBox("JobCompanyContactLinkedIn", "50", JobCompanyContactLinkedIn, "JobsTheme", "LinkedIn", "Invalid LinkedIn") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Twitter:</b><br /><%= TWITTER_ICON %></td>
+					<td>
+						<%= formTextBox("JobCompanyContactTwitter", "50", JobCompanyContactTwitter, "JobsTheme", "Twitter", "Invalid Twitter") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Facebook:</b><br /><%= FACEBOOK_ICON %></td>
+					<td>
+						<%= formTextBox("JobCompanyContactFacebook", "50", JobCompanyContactFacebook, "JobsTheme", "Facebook", "Invalid Facebook") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Google&nbsp;Plus:</b><br /><%= GOOGLEPLUS_ICON %></td>
+					<td>
+						<%= formTextBox("JobCompanyContactGooglePlus", "50", JobCompanyContactGooglePlus, "JobsTheme", "GooglePlus", "Invalid GooglePlus") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Instagram:</b><br /><%= INSTAGRAM_ICON %></td>
+					<td>
+						<%= formTextBox("JobCompanyContactInstagram", "50", JobCompanyContactInstagram, "JobsTheme", "Instagram", "Invalid Instagram") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Skype:</b><br /><%= SKYPE_ICON %></td>
+					<td>
+						<%= formTextBox("JobCompanyContactSkype", "50", JobCompanyContactSkype, "JobsTheme", "Skype", "Invalid Skype") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Hotmail:</b><br /><%= HOTMAIL_ICON %></td>
+					<td>
+						<%= formTextBox("JobCompanyContactHotmail", "50", JobCompanyContactHotmail, "JobsTheme", "", "Invalid Hotmail") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Yahoo:</b><br /><%= YAHOO_ICON %></td>
+					<td>
+						<%= formTextBox("JobCompanyContactYahoo", "50", JobCompanyContactYahoo, "JobsTheme", "", "Invalid Yahoo") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>AIM:</b><br /><%= AIM_ICON %></td>
+					<td>
+						<%= formTextBox("JobCompanyContactAIM", "50", JobCompanyContactAIM, "JobsTheme", "", "Invalid AIM") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Gmail:</b><br /><%= GMAIL_ICON %></td>
+					<td>
+						<%= formTextBox("JobCompanyContactGmail", "50", JobCompanyContactGmail, "JobsTheme", "", "Invalid Gmail") %>
+					</td>
+				</tr>
+				<tr valign="top">
+					<td align="right"><b>Notes:</b></td>
+					<td>
+						<%= formTextArea("JobCompanyContactNotes", JobCompanyContactNotes, "450", "150", "JobsElement", "Notes", "Invalid Notes") %>
+					</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>
+						<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("JobCompanyID", JobCompanyID) %>
+<%= formHidden("JobCompanyContactID", JobCompanyContactID) %>
+
+<%= formHidden("Template", Template) %>
+</form>
+
+<script type="text/javascript">
+
+	$('#JobCompanyContactFirstName').focus();
+
+</script>

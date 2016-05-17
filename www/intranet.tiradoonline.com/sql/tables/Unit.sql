@@ -1,0 +1,26 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Unit' AND TYPE = 'U')
+DROP TABLE Unit;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Unit' AND TYPE = 'U')
+	DROP TABLE Unit;
+GO
+
+CREATE TABLE Unit
+(
+	UnitID		IDENTITY (1001,1) INT  NOT NULL,
+	UserID		 INT  NOT NULL,
+	UnitName		 VARCHAR(20)  NOT NULL,
+	create_dt		 DATETIME DEFAULT (getdate()) NOT NULL
+
+);
+GO
+
+
+
+
+GO
+
+
+GO
+

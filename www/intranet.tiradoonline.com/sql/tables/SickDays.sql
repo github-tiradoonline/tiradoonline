@@ -1,0 +1,26 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'SickDays' AND TYPE = 'U')
+DROP TABLE SickDays;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'SickDays' AND TYPE = 'U')
+	DROP TABLE SickDays;
+GO
+
+CREATE TABLE SickDays
+(
+	SickDayID		IDENTITY (1001,1) INT  NOT NULL,
+	CompanyID		 INT  NOT NULL,
+	SickDate		 SMALLDATETIME  NOT NULL,
+	create_dt		 SMALLDATETIME DEFAULT (getdate()) NOT NULL
+
+);
+GO
+
+
+
+
+GO
+
+
+GO
+

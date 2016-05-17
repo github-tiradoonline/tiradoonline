@@ -1,0 +1,167 @@
+<% If Trim(Request("CreditCardErrorMessage")) <> "" Then %>
+<div class="ErrorMessage"><%= Trim(Request("CreditCardErrorMessage")) %></div>
+<p></p>
+<% End If %>
+<%
+	If Action = "" Then 	
+
+	sql = "SELECT * FROM BankingMonthlyExpense WHERE UserID = " & Session("UserID") & " ORDER BY BankingMonthlyExpenseBillDate"
+	Set ors = oConn.Execute(sql)
+	
+	If NOT ors.EOF Then
+	
+		GridView = ""
+		EmailGridView = ""
+
+		GridView = GridView & "<table bgcolor=""#000000"" cellpadding=""10"" id=""GridView"" name=""GridView"" class=""shadow"">" & vbCrlF
+		EmailGridView = EmailGridView & "<table bgcolor=""#000000"" cellpadding=""10"" id=""GridView"" name=""GridView"" class=""shadow"">" & vbCrlF
+		
+		GridView = GridView & "<tr bgcolor=""" & BANKING_MONTHLY_EXPENSES_THEME & """ style=""color:#000000"">" & vbCrlF
+		EmailGridView = EmailGridView & "<tr bgcolor=""" & BANKING_MONTHLY_EXPENSES_THEME & """ style=""color:#000000"">" & vbCrlF
+		GridView = GridView & "<td style=""font-size:15px"">" & vbCrlF
+		EmailGridView = EmailGridView & "<td style=""font-size:15px"">" & vbCrlF
+		GridView = GridView & "<b>Monthly&nbsp;Expense</b>" & vbCrlF
+		EmailGridView = EmailGridView & "<b>Monthly&nbsp;Expense</b>" & vbCrlF
+		GridView = GridView & "</td>" & vbCrlF
+		EmailGridView = EmailGridView & "</td>" & vbCrlF
+		GridView = GridView & "<td align=""center"" style=""font-size:15px"">" & vbCrlF
+		EmailGridView = EmailGridView & "<td align=""center"" style=""font-size:15px"">" & vbCrlF
+		GridView = GridView & "<b>Billing<br>Day</b>" & vbCrlF
+		EmailGridView = EmailGridView & "<b>Billing<br>Day</b>" & vbCrlF
+		GridView = GridView & "</td>" & vbCrlF
+		EmailGridView = EmailGridView & "</td>" & vbCrlF
+		GridView = GridView & "<td style=""font-size:15px"">" & vbCrlF
+		EmailGridView = EmailGridView & "<td style=""font-size:15px"">" & vbCrlF
+		GridView = GridView & "<b>Amount</b>" & vbCrlF
+		EmailGridView = EmailGridView & "<b>Amount</b>" & vbCrlF
+		GridView = GridView & "</td>" & vbCrlF
+		EmailGridView = EmailGridView & "</td>" & vbCrlF
+
+		GridView = GridView & "<td>" & vbCrlF
+		GridView = GridView & "&nbsp;" & vbCrlF
+		GridView = GridView & "</td>" & vbCrlF
+		GridView = GridView & "</tr>" & vbCrlF
+
+		TotalBankingMonthlyExpenseAmount = 0
+		Do Until ors.EOF
+			BankingMonthlyExpenseID = ors("BankingMonthlyExpenseID")
+			BankingMonthlyExpenseName = ors("BankingMonthlyExpenseName")
+			BankingMonthlyExpenseAmount = ors("BankingMonthlyExpenseAmount")
+			TotalBankingMonthlyExpenseAmount = CDbl(TotalBankingMonthlyExpenseAmount) + CDbl(BankingMonthlyExpenseAmount)
+			BankingMonthlyExpenseBillDate = ors("BankingMonthlyExpenseBillDate")
+
+			GridView = GridView & "<tr align=""right"" class=""GridViewRow"">" & vbCrlF
+			EmailGridView = EmailGridView & "<tr align=""right"" class=""GridViewRow"">" & vbCrlF
+
+			GridView = GridView & "	<td style=""font-size:15px"" align=""left""><a href=""" & SCRIPT_NAME & "?BankingMonthlyExpenseID=" & BankingMonthlyExpenseID & "&Template=" & Template & "&Action=Edit""><b>" & HTMLFormat(BankingMonthlyExpenseName) & "</b></a></td>" & vbCrlF
+			EmailGridView = EmailGridView & "	<td style=""font-size:15px"" align=""left""><b>" & HTMLFormat(BankingMonthlyExpenseName) & "</b></td>" & vbCrlF
+
+			GridView = GridView & "	<td style=""font-size:15px"" align=""center"">" & BankingMonthlyExpenseBillDate & "</td>" & vbCrlF
+			EmailGridView = EmailGridView & "	<td style=""font-size:15px"" align=""center"">" & BankingMonthlyExpenseBillDate & "</td>" & vbCrlF
+
+			GridView = GridView & "	<td style=""font-size:15px"">" & FormatCurrency(BankingMonthlyExpenseAmount) & "</td>" & vbCrlF
+			EmailGridView = EmailGridView & "	<td style=""font-size:15px"">" & FormatCurrency(BankingMonthlyExpenseAmount) & "</td>" & vbCrlF
+
+			GridView = GridView & "	<td>" & vbCrlF
+			GridView = GridView & Button("Button", "Delete", "DeleteButton", "", "Delete", "DeleteItem('Are you sure you want to delete this Monthly Expense?', '" & SCRIPT_NAME & "?Template=" & Template & "&SubmitButton=Delete&BankingMonthlyExpenseID=" & BankingMonthlyExpenseID & "')") & vbCrlF
+			GridView = GridView & "	</td>" & vbCrlF
+			GridView = GridView & "</tr>" & vbCrlF
+
+			ors.MoveNext
+		Loop
+		ors.Close
+
+		GridView = GridView & "<tr>" & vbCrlF
+		EmailGridView = EmailGridView & "<tr>" & vbCrlF
+		GridView = GridView & "	<td colspan=""3"" align=""right"" bgcolor=""" & BANKING_MONTHLY_EXPENSES_THEME & """ style=""font-size:15px"">" & vbCrlF
+		EmailGridView = EmailGridView & "	<td colspan=""3"" align=""right"" bgcolor=""" & BANKING_MONTHLY_EXPENSES_THEME & """ style=""font-size:15px"">" & vbCrlF
+		GridView = GridView & "		<b>" & FormatCurrency(TotalBankingMonthlyExpenseAmount) & "</b>" & vbCrlF
+		EmailGridView = EmailGridView & "		<b>" & FormatCurrency(TotalBankingMonthlyExpenseAmount) & "</b>" & vbCrlF
+		GridView = GridView & "	</td>" & vbCrlF
+		EmailGridView = EmailGridView & "	</td>" & vbCrlF
+		GridView = GridView & "	<td bgcolor="""& BANKING_MONTHLY_EXPENSES_THEME & """>&nbsp;</td>" & vbCrlF
+		GridView = GridView & "</tr>" & vbCrlF
+		EmailGridView = EmailGridView & "</tr>" & vbCrlF
+		GridView = GridView & "</table>" & vbCrlF
+		EmailGridView = EmailGridView & "</table>" & vbCrlF
+
+		Response.Write GridView
+
+		ToEmail = Session("Email")
+		FromEmail = Session("Email")
+		Subject = "BankingIntranet -- " & BankingAccountName & _
+			   	  " : " & MonthName(Month(CurrentDate)) & " " & Year(CurrentDate) & _
+			   	  " Transactions (" & TotalBanking & ")"
+		sql = "sp_BankingEmail_insert " & _
+			  Session("UserID") & ", " & _
+			  "'" & SQLEncode(ToEmail) & "', " & _
+			  "'" & SQLEncode(FromEmail) & "', " & _
+			  "'" & SQLEncode(Subject) & "', " & _
+			  "'" & SQLEncode(BankingText) & "'"
+		WriteDebugger sql, Debugging, 0
+		oConn.Execute sql
+
+Else
+%>
+<div class="ErrorMessage">No records found.</div>
+<% 
+	End If 
+	Set ors = Nothing
+%>
+
+<% Else %>
+<%
+	SubmitButtonValue = "Create"	
+
+	If BankingMonthlyExpenseID <> "" Then
+		sql = "SELECT * FROM BankingMonthlyExpense WHERE BankingMonthlyExpenseID = " & BankingMonthlyExpenseID
+		Set ors = oConn.Execute(sql)
+
+		If NOT ors.EOF Then
+			BankingMonthlyExpenseName = ors("BankingMonthlyExpenseName")
+			BankingMonthlyExpenseAmount = ors("BankingMonthlyExpenseAmount")
+			SubmitButtonValue = "Save"
+			ors.Close
+		End If
+	
+		Set ors = Nothing
+	Else
+		BankingMonthlyExpenseName = Trim(Request("BankingMonthlyExpenseName"))
+		BankingMonthlyExpenseAmount = Trim(Request("BankingMonthlyExpenseAmount"))
+	End If
+%>
+<form action="<%= SCRIPT_NAME %>" method="post" id="formBankingMonthlyExpense" name="formBankingMonthlyExpense">
+<table cellpadding="5">
+<tr>
+	<td class="frm_label">Monthly&nbsp;Expense:</b></td>
+	<td>
+		<%= formTextBox("BankingMonthlyExpenseName", "30", BankingMonthlyExpenseName, "BankingMonthlyExpensesElement", "Monthly Expense", "Invalid Monthly Expense") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Bill&nbsp;Date:</td>
+	<td>
+		<%= DaysBox("BankingMonthlyExpenseBillDate", BankingMonthlyExpenseBillDate, "BankingMonthlyExpensesElement") %>
+		
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Amount:</td>
+	<td>
+		<%= formTextBox("BankingMonthlyExpenseAmount", "10", BankingMonthlyExpenseAmount, "BankingMonthlyExpensesElement", "Amount", "Invalid Amount") %><%= REQUIRED_ICON %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">&nbsp;</b></td>
+	<td>
+		<%= Submit_Button("SubmitButton", SubmitButtonValue & " Monthly Expense", "Button", "", SubmitButtonValue & " Monthly Expense") %>&nbsp;&nbsp;&nbsp;
+		<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=MonthlyExpenses'") %>&nbsp;&nbsp;&nbsp;
+		<%= Button("Button", "Delete", "DeleteButton", "", "Delete", "DeleteItem('Are you sure you want to delete this Monthly Expense?', '" & SCRIPT_NAME & "?Template=" & Template & "&SubmitButton=Delete&BankingMonthlyExpenseID=" & BankingMonthlyExpenseID & "')") %>
+	</td>
+</tr>
+</table>
+<% End If %>
+
+<input type="hidden" id="BankingMonthlyExpenseID" name="BankingMonthlyExpenseID" value="<%= BankingMonthlyExpenseID %>" />
+<input type="hidden" id="Template" name="Template" value="<%= Template %>" />
+</form>

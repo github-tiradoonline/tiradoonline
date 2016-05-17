@@ -1,0 +1,268 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formExport" name="formExport">
+<%
+	HealthStartDate = Trim(Request("HealthStartDate"))
+	If HealthStartDate = "" Then HealthStartDate = DateAdd("d", -7, Date)
+	HealthEndDate = Trim(Request("HealthEndDate"))
+	If HealthEndDate = "" Then HealthEndDate = Date
+%>
+
+<table>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td>
+		<div class="HealthTheme"><h1 class="Header" style="padding: 5px;">Health Reports</h1>	</div>
+		<p>
+		<div class="ErrorMessage" id="HealthErrorMessage" name="HealthErrorMessage"><%= HealthErrorMessage %></div>
+
+		<table cellpadding="5" cellspacing="0">
+		<tr class="HealthTheme">
+			<td align="center">Start&nbsp;Date</td>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td align="center">End&nbsp;Date</td>
+			<td>
+				<%= Submit_Button("SubmitButton", "Generate Report", "Button", "", "Generate Report") %>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<%= formTextBox("HealthStartDate", "10", HealthStartDate, "HealthTheme", "Start Date", "Invalid Start Date") %><%= REQUIRED_ICON %>
+			</td>
+			<td>&nbsp;</td>
+			<td>
+				<%= formTextBox("HealthEndDate", "10", HealthEndDate, "HealthTheme", "End Date", "Invalid End Date") %><%= REQUIRED_ICON %>
+			</td>
+			<td>&nbsp;</td>
+			
+		</table>
+		<% 	If SubmitButton = "Generate Report" Then %>
+		<table class="GridView">
+		<%
+			sql = "sp_Health_reports_export " & Session("UserID") & ", '" & HealthStartDate & "', '" & HealthEndDate & "'"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+		%>
+		<tr align="center" class="HealthTheme">
+			<td class="SubHeader" colspan="4">Sugar</td>
+
+			<td bgcolor="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			
+			<td class="SubHeader" colspan="5">Medicine</td>
+
+			<td bgcolor="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			
+			<td class="SubHeader" colspan="3">Blood&nbsp;Pressure</td>
+
+			<td bgcolor="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			
+			<td class="SubHeader" colspan="3">Heart&nbsp;Rate</td>
+
+			<td bgcolor="#ffffff">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			
+			<td class="SubHeader" colspan="3">Temperature</td>
+		</tr>
+		<tr class="HealthTheme" valign="top">
+			<td align="right">Date</td>
+			<td align="right">Time</td>
+			<td>Sugar</td>
+			<td>Comments</td>
+
+			<td class="HealthTheme">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			
+			<td align="right">Date</td>
+			<td align="right">Time</td>
+			<td>Medicine</td>
+			<td align="center">Amount</td>
+			<td>Description</td>
+
+			<td class="HealthTheme">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			
+			<td align="right">Date</td>
+			<td align="right">Time</td>
+			<td align="center">Blood&nbsp;Pressure</td>
+
+			<td class="HealthTheme">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			
+			<td align="right">Date</td>
+			<td align="right">Time</td>
+			<td>Heart&nbsp;Rate</td>
+
+			<td class="HealthTheme">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			
+			<td align="right">Date</td>
+			<td align="right">Time</td>
+			<td>Temperature</td>
+		</tr>
+		<%
+				tempSugarDate = ""
+				tempMedicineDoseDate = ""
+				tempHeartRateDate = ""
+				tempTemperatureDate = ""
+				Do Until ors.EOF
+					SugarDateTime = ors("SugarDateTime")
+					If NOT isNull(SugarDateTime) Then
+						SugarDate = FormatDateTime(SugarDateTime, 2)
+						SugarTime = FormatDateTime(SugarDateTime, 3)
+						If tempSugarDate <> SugarDate Then 
+							outputSugarDate = SugarDate & "<br />"
+							tempSugarDate = SugarDate
+						Else
+							outputSugarDate = "&nbsp;"
+						End If
+					Else
+						outputSugarDate = "&nbsp;"
+						SugarTime = "&nbsp;"
+					End If
+					Sugar = ors("Sugar")
+					SugarComments = HTMLFormat(ors("SugarComments"))
+
+					MedicineDoseDateTime = ors("MedicineDoseDateTime")
+					If NOT isNull(MedicineDoseDateTime) Then
+						MedicineDoseDate = FormatDateTime(MedicineDoseDateTime, 2)
+						MedicineDoseTime = FormatDateTime(MedicineDoseDateTime, 3)
+						If tempMedicineDoseDate <> MedicineDoseDate Then 
+							outputMedicineDoseDate = MedicineDoseDate & "<br />"
+							tempMedicineDoseDate = MedicineDoseDate
+						Else
+							outputMedicineDoseDate = "&nbsp;"
+						End If
+					Else
+						outputMedicineDoseDate = "&nbsp;"
+						MedicineDoseTime = "&nbsp;"
+					End If
+					Medicine = ors("Medicine")
+					MedicineDoseAmount = ors("MedicineDoseAmount")
+					MedicineDoseDescription = HTMLFormat(ors("MedicineDoseDescription"))
+
+					BloodPressureDateTime = ors("BloodPressureDateTime")
+					If NOT isNull(BloodPressureDateTime) Then
+						BloodPressureDate = FormatDateTime(BloodPressureDateTime, 2)
+						BloodPressureTime = FormatDateTime(BloodPressureDateTime, 3)
+						If tempBloodPressureDate <> BloodPressureDate Then 
+							outputBloodPressureDate = BloodPressureDate & "<br />"
+							tempBloodPressureDate = BloodPressureDate
+						Else
+							outputBloodPressureDate = "&nbsp;"
+						End If
+					Else
+						outputBloodPressureDate = "&nbsp;"
+						BloodPressureTime = "&nbsp;"
+					End If
+					BloodPressure = ors("BloodPressure")
+					If NOT isNull(BloodPressure) Then
+						BloodPressureArray = Split(BloodPressure, "/")
+						BloodPressureBottom = BloodPressureArray(1)
+						BloodPressure = BloodPressureColor(BloodPressure, BloodPressureBottom)
+					End If
+
+					HeartRateDateTime = ors("HeartRateDateTime")
+					If NOT isNull(HeartRateDateTime) Then
+						HeartRateDate = FormatDateTime(HeartRateDateTime, 2)
+						HeartRateTime = FormatDateTime(HeartRateDateTime, 3)
+						If tempHeartRateDate <> HeartRateDate Then 
+							outputHeartRateDate = HeartRateDate & "<br />"
+							tempHeartRateDate = HeartRateDate
+						Else
+							outputHeartRateDate = "&nbsp;"
+						End If
+					Else
+						outputHeartRateDate = "&nbsp;"
+						HeartRateTime = "&nbsp;"
+					End If
+					HeartRate = ors("HeartRate")
+
+					TemperatureDateTime = ors("TemperatureDateTime")
+					If NOT isNull(TemperatureDateTime) Then
+						TemperatureDate = FormatDateTime(TemperatureDateTime, 2)
+						TemperatureTime = FormatDateTime(TemperatureDateTime, 3)
+						If tempTemperatureDate <> TemperatureDate Then 
+							outputTemperatureDate = TemperatureDate & "<br />"
+							tempTemperatureDate = TemperatureDate
+						Else
+							outputTemperatureDate = "&nbsp;"
+						End If
+					Else
+						outputTemperatureDate = "&nbsp;"
+						TemperatureTime = "&nbsp;"
+					End If
+					Temperature = ors("Temperature")
+		%>
+		<tr class="GridViewRow" valign="top">
+			<td align="right" <% If outputSugarDate = "" Then Response.Write "bgcolor=""#ffffff"""  %>>
+				<b><%= outputSugarDate %></b>&nbsp;
+			</td>
+			<td align="right">
+				<%= HTMLFormat(SugarTime) %>&nbsp;
+			</td>
+			<td align="center"><%= SugarColor(Sugar) %>&nbsp;</td>
+			<td><%= SugarComments %>&nbsp;</td>
+
+			<td class="HealthTheme">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			
+			<td align="right" <% If outputMedicineDoseDate = "" Then Response.Write "bgcolor=""#ffffff"""  %>>
+				<b><%= outputMedicineDoseDate %></b>&nbsp;
+			</td>
+			<td align="right">
+				<%= HTMLFormat(MedicineDoseTime) %>&nbsp;
+			</td>
+			<td><%= HTMLFormat(Medicine) %>&nbsp;</td>
+			<td align="center"><%= HTMLFormat(MedicineDoseAmount) %>&nbsp;</td>
+			<td><%= MedicineDoseDescription %>&nbsp;</td>
+
+			<td class="HealthTheme">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			
+			<td align="right" <% If outputBloodPressureDate = "" Then Response.Write "bgcolor=""#ffffff"""  %>>
+				<b><%= outputBloodPressureDate %></b>&nbsp;
+			</td>
+			<td align="right">
+				<%= HTMLFormat(BloodPressureTime) %>&nbsp;
+			</td>
+			<td align="center"><%= BloodPressure %>&nbsp;</td>
+
+			<td class="HealthTheme">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			
+			<td align="right" <% If outputHeartRateDate = "" Then Response.Write "bgcolor=""#ffffff"""  %>>
+				<b><%= outputHeartRateDate %></b>&nbsp;
+			</td>
+			<td align="right">
+				<%= HTMLFormat(HeartRateTime) %>&nbsp;
+			</td>
+			<td align="center"><%= HeartRateColor(HeartRate) %>&nbsp;</td>
+
+			<td class="HealthTheme">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			
+			<td align="right" <% If outputTemperatureDate = "" Then Response.Write "bgcolor=""#ffffff"""  %>>
+				<b><%= outputTemperatureDate %></b>&nbsp;
+			</td>
+			<td align="right">
+				<%= HTMLFormat(TemperatureTime) %>&nbsp;
+			</td>
+			<td align="center"><%= Temperature %>&nbsp;</td>
+		</tr>
+		<%
+					ors.MoveNext
+				Loop
+				ors.Close
+			
+			Else
+		%>
+		<tr>
+			<td class="ErrorMessage">No records found.</td>
+		</tr>
+		<% 	
+			End If 
+			Set ors = Nothing
+		%>
+		</table>
+		<% End If %>
+	</td>
+</tr>
+</table>
+<%= formHidden("Template", Template) %>
+
+ <script type="text/javascript">
+	$( "#HealthStartDate" ).datepicker();
+	$( "#HealthEndDate" ).datepicker();
+</script>
+
+</form>

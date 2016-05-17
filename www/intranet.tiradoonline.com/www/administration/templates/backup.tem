@@ -1,0 +1,140 @@
+<%
+	SubmitButton = Trim(Request("SubmitButton"))
+	
+	If SubmitButton = "Cancel" Then Response.Redirect "../Banking/banking.asp?UserID=" & Session("UserID")
+
+	If SubmitButton = "Start" Then
+		On Error Resume Next
+			DBNAME = "teddy"
+			'PATH = Server.MapPath("/teddy") & "\data\" & Replace(Replace(Replace(Now(), " ", "_"), ":", "_"), "/", "_")
+			PATH = Server.MapPath("/teddy") & "\data\backup\" & Replace(Replace(Replace(Now(), " ", "_"), ":", "_"), "/", "_")
+			'rESPONSE.Write PATH
+			StartTime = Time
+
+			'Set oConn2 = Server.CreateObject("ADODB.Connection")
+			'oConn2.Open ConnectionString_admin
+			'Response.Write ConnectionString_admin
+			'sql = "teddy.sp_administration_bcp_out '" & DBNAME & "', '" & PATH & "'"
+			sql = "sp_administration_bcp_out"
+			WriteDebugger sql, Debugging, 0
+			oConn.Execute sql
+
+			sql = "sp_administration_backup " & Session("UserID")
+			WriteDebugger sql, Debugging, 0
+			oConn.Execute sql
+
+			EndTime = Time
+			TotalMinutes = DateDiff("n", StartTime, EndTime) - 1
+			TotalSeconds = DateDiff("s", StartTime, EndTime)
+			TotalTime = TotalSeconds & " seconds"
+		Err.Clear
+	End If
+%>
+
+<script language="JavaScript">
+<!--
+	function ChangeBackupButton()
+	{
+		document.forms[0].StartButton.value = "Backing up........";
+		document.forms[0].StartButton.disabled = true;
+		document.onmousedown = LinksDisabledAlert;
+		document.forms[0].submit();
+		return true;
+	}
+	
+	function LinksDisabledAlert()
+	{
+		alert("Backup in progress....");
+	}
+//-->
+</script>
+<table width="100%" cellspacing=0 cellpadding=0 border=0 bgcolor="#FF0000">
+<tr>
+	<td align=center><font face="Arial,Verdana" size=2 color="#fffffff"><b>Backup</td>
+</tr>
+</table>
+<table cellspacing=0 cellpadding=0 border=0 width="100%" bgcolor="#ffffff">
+<tr>
+	<td bgcolor="#ffffff" valign=top>
+		<table>
+		<%
+			sql = "sp_Backups_get " & Session("UserID")
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If  NOT ors.EOF Then
+		%>
+		<tr>
+			<td bgcolor="#c80000"><font face="Arial" size=2 color="#ffffff">&nbsp;&nbsp;<b>Backups</b>&nbsp;</td>
+		</tr>
+		<%
+			End If
+			If NOT ors.EOF Then
+		%>
+		<tr>
+			<td>
+				<table>
+		<%
+				Do Until ors.EOF
+					BackupDate = ors("BackupDate")
+		%>
+				<tr>
+					<td><font face="Verdana" size=1>&nbsp;&nbsp;<%= MonthName(Month(BackupDate)) & "&nbsp;" & Day(BackupDate) & ",&nbsp;" & Year(BackupDate) %>&nbsp;&nbsp;</td>
+					<td><font face="Verdana" size=1>&nbsp;&nbsp;<%= FormatDateTime(BackupDate, 3) %>&nbsp;&nbsp;</td>
+				</tr>
+		<%
+					ors.MoveNext
+				Loop
+		%>
+				</table>
+			</td>
+		</tr>
+		<%
+			End If
+			ors.Close
+			Set ors = Nothing
+		%>
+		<tr>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+		</tr>
+		</table>
+	</td>
+	<td bgcolor="#ffffff" valign=top>
+		&nbsp;<br />
+		<% If SubmitButton = "" Then %>
+		<%
+			Set FileObj = Server.CreateObject("Scripting.FileSystemObject")
+			FileName = Server.MapPath("/teddy") & "\data\teddy.dmp"
+			'Response.Write "<font color='#000000'>" & Folder
+			If FileObj.FileExists(FileName) Then
+				Set DumpFile = FileObj.GetFile(FileName)
+				Response.Write "<font face='Verdana' size=2><b>teddy.dmp:&nbsp;" & Fix(DumpFile.size/1044) & "&nbsp;KB</b></font>"
+			End If
+			Set FileObj = Nothing
+		%>
+		&nbsp;<br /><font face="Verdana,Arial" size=2>Are you ready to begin backup?
+		<p>
+		<input type="button" name="StartButton" value="Start" onClick="ChangeBackupButton()" class="Button" class="Element" style="">&nbsp;&nbsp;
+		<% Else %>
+		<font face="Verdana,Arial" size=2 color="#C80000"><b>Backup complete.</font></b>
+		<table>
+		<tr>
+			<td><font face="Verdana,Arial" size=2 color="#000000"><b>Start&nbsp;time:</b></td>
+			<td>&nbsp;</td>
+			<td><font face="Verdana,Arial" size=2 color="#000000"><%= StartTime %></td>
+		</tr>			
+		<tr>
+			<td><font face="Verdana,Arial" size=2 color="#000000"><b>End&nbsp;time:</b></td>
+			<td>&nbsp;</td>
+			<td><font face="Verdana,Arial" size=2 color="#000000"><%= EndTime %></td>
+		</tr>			
+		<tr>
+			<td><font face="Verdana,Arial" size=2 color="#000000"><b>Total&nbsp;time:</b></td>
+			<td>&nbsp;</td>
+			<td><font face="Verdana,Arial" size=2 color="#000000"><b><%= TotalSeconds %></b>&nbsp;seconds</td>
+		</tr>
+		</table>
+		<% End If %>
+	</td>
+</tr>
+</table>
+<%= formHidden("SubmitButton", "Start") %>

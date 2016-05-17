@@ -1,0 +1,139 @@
+<!-- #include virtual="/includes/functions.inc" -->
+<%
+	Title = UCase(Session("UserName"))
+
+	BankingAccountLinkedID = Trim(Request("BankingAccountLinkedID"))
+	Email = Trim(Request("Email"))
+
+	CurrentMonth = Trim(Request("CurrentMonth"))
+	CurrentYear = Trim(Request("CurrentYear"))
+	
+	If SubmitButton = "Add Email" Then
+		sql = "sp_BankingAccountLinked_insert " & BankingAccountID & ", '" & SQLEncode(Email) & "'"
+		oConn.Execute sql
+		BankingErrorMessage = Server.URLEncode("Email added.")
+		Response.Redirect SCRIPT_NAME & "?BankingAccountID=" & BankingAccountID & "&CurrentMonth=" & CurrentMonth & "&CurrentYear=" & CurrentYear & "&Template=ScheduledTasks&BankingErrorMessage=" & BankingErrorMessage
+	ElseIf SubmitButton = "Delete" Then
+		sql = "sp_BankingAccountLinked_delete " & BankingAccountLinkedID
+		oConn.Execute sql
+		BankingErrorMessage = Server.URLEncode("Email deleted.")
+		Response.Redirect SCRIPT_NAME & "?BankingAccountID=" & BankingAccountID & "&CurrentMonth=" & CurrentMonth & "&CurrentYear=" & CurrentYear & "&Template=ScheduledTasks&BankingErrorMessage=" & BankingErrorMessage
+	End If
+
+%>
+
+<table cellspacing=0 cellpadding=2 width="100%" border=0>
+		<%
+			sql = "SELECT BankingAccountName FROM BankingAccount WHERE BankingAccountID = " & BankingAccountID
+			Set rs = oConn.Execute(sql)
+			BankingAccountName = rs("BankingAccountName")
+			rs.Close
+			Set rs = Nothing
+		%>
+		<tr bgcolor="#639a63">
+			<td align="center"><font face="Arial,Verdana" color="#9cd59c" size=2><b>Account:&nbsp;</font><font face="Arial,Verdana" color="#ffffff" size=2><%= BankingAccountName %></td>
+		</tr>
+<tr>
+	<td align=center><font face="Arial" size=2><b>Scheduled&nbsp;Tasks&nbsp;Emails</b></td>
+</tr>
+<tr>
+	<td align=center bgcolor="#ffffff">&nbsp;</td>
+</tr>
+<tr>
+	<td align=center bgcolor="#ffffff">&nbsp;</td>
+</tr>
+<tr>
+	<td bgcolor="#ffffff">
+		<table width="100%" border=0>
+
+		<tr>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td>
+			<% If BankingErrorMessage <> "" Then %>
+				<span class="ErrorHeader"><%= BankingErrorMessage %></span>
+				<p>
+			<% End If %>			
+		<%
+		If Action = "" Then
+		%>
+		<table width="100%">
+		<tr>
+			<td align="right"><input type="button" value="Add New Email" onClick="location.href='<%= SCRIPT_NAME %>?BankingAccountID=<%= BankingAccountID %>&CurrentMonth=<%= CurrentMonth %>&CurrentYear=<%= CurrentYear %>&Template=<%= Template %>&Action=Add'"><br />&nbsp;<br /></td>
+		</tr>
+		<tr>
+			<td>
+		<%
+			sql = "sp_BankingAccountLinked_get " & BankingAccountID
+			Set ors = oConn.Execute(sql)
+			
+			If NOT ors.EOF Then
+		%>
+		<table>
+		<%
+				Do Until ors.EOF
+					BankingAccountLinkedID = ors("BankingAccountLinkedID")
+					Email = ors("Email")
+		%>
+		<tr>
+			<td><li><%= Email %></li></td>
+			<td>&nbsp;</td>
+			<td><a href="#" onClick="DeleteItem('Are you sure you want to delete this item', '<%= SCRIPT_NAME %>?BankingAccountID=<%= BankingAccountID %>&CurrentMonth=<%= CurrentMonth %>&CurrentYear=<%= CurrentYear %>&Template=<%= Template %>&SubmitButton=Delete&BankingAccountLinkedID=<%= BankingAccountLinkedID %>')"><%= X_ICON %></a></td>
+		</tr>
+			
+		<%
+					ors.MoveNext
+				Loop
+					ors.Close
+		%>
+		</table>
+			</td>
+		</tr>
+		</table>
+		<%
+			Else
+		%>
+		<span class="ErrorHeader">No Emails found.</span>
+		<%
+			End If
+			Set rs = Nothing
+		%>
+		&nbsp;<br />
+		&nbsp;<br />
+		&nbsp;<br />
+		<input type="button" value="BACK" onClick="location.href='<%= SCRIPT_NAME %>?BankingAccountID=<%= BankingAccountID %>&CurrentMonth=<%= CurrentMonth %>&CurrentYear=<%= CurrentYear %>&Template=View'">
+		<% Else %>
+		<table>
+		<tr>
+			<td>Email:</td>
+			<td><input type="text" name="Email" size="50"></td>
+		</tr>
+		<tr>
+			<td colspan="2">&nbsp;</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<%= Submit_Button("SubmitButton", "Add Email", "Button", "", "Add Email") %>&nbsp;&nbsp;&nbsp;
+				<input type="button" value="Cancel" onClick="history.back(-1)">
+			</td>
+		</tr>
+		</table>
+		<script language="JavaScript">
+		<!--
+			document.forms[0].Email.focus();
+		//-->
+		</script>
+		<% End If %>
+		
+			</td>
+		</tr>
+		</table>
+		
+	</td>
+</tr>
+</table>
+<%= formHidden("CurrentMonth", CurrentMonth) %>
+<%= formHidden("CurrentYear", CurrentYear) %>
+<%= formHidden("BankingAccountID", BankingAccountID) %>
+<%= formHidden("BankingAccountLinkedID", BankingAccountLinkedID) %>
+<%= formHidden("Template", Template) %>

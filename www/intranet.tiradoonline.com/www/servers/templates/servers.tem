@@ -1,0 +1,417 @@
+<% If Trim(Request("ServerErrorMessage")) <> "" Then %>
+<div class="ErrorMessage"><%= Trim(Request("ServerErrorMessage")) %></div>
+<p></p>
+<% End If %>
+
+<%
+	If ServerProjectID <> "" Then 
+		sql = "sp_ServerProject_ServerProjectID_get " & ServerProjectID
+		Set ors = oConn.Execute(sql)
+		ServerProjectName = ors("ServerProjectName")
+		ServerProjectNotes = ors("ServerProjectNotes")
+		ors.Close
+		Set ors = Nothing
+	End If
+
+	If ServerID <> "" Then 
+		sql = "sp_Server_ServerID_get  " & ServerID
+		Set ors = oConn.Execute(sql)
+		ServerName = ors("ServerName")
+		ServerNotes = ors("ServerNotes")
+		ors.Close
+		Set ors = Nothing
+	End If
+
+	If ServerProjectID = "" Then
+		sql = "sp_ServerProject_UserID_get " & Session("UserID")
+		Set ors = oConn.Execute(sql)
+		
+		If NOT ors.EOF Then
+%>
+<table bgcolor="#000000" cellpadding="10" id="GridView" name="GridView" class="shadow">
+<tr bgcolor="<%= SERVER_THEME %>" style="color:#ffffff">
+	<td style="font-size:15px">
+		<b>Project&nbsp;Name</b>
+	</td>
+<%
+			Do Until ors.EOF
+				ServerProjectID = ors("ServerProjectID")
+				ServerProjectName = ors("ServerProjectName")
+				ServerProjectNotes = ors("ServerProjectNotes")
+%>
+<tr bgcolor="#ffffff" class="GridViewRow">
+	<td style="font-size:15px" align="left">
+		<a href="<%= SCRIPT_NAME %>?ServerProjectID=<%= ServerProjectID %>" style="color:#000000"><b><%= HTMLFormat(ServerProjectName) %></b></a>
+	</td>
+<%
+				ors.MoveNext
+			Loop
+			ors.Close
+%>
+</table>
+<%		
+		Else
+%>
+	<div class="ErrorMessage">No Projects found.</div>
+<%
+		End If
+		
+		Set ors = Nothing
+			
+	ElseIf ServerProjectID <> "" Then 	
+%>
+
+		<div class="ServerTheme"><h1 class="Header" style="padding: 5px;"><%= ServerProjectName %></h1></div>
+		<p>
+		<div class="ErrorMessage" id="ServerErrorMessage" name="ServerErrorMessage"><%= ServerErrorMessage %></div>
+
+<fieldset style="padding:20px">
+	<legend>
+		<%= SelectBox(oConn, "SELECT ServerProjectID, ServerProjectName FROM ServerProject WHERE UserID = " & Session("UserID"), "ServerProjectID", ServerProjectID, "ServerElement", "Server") %>&nbsp;
+		Servers
+
+	</legend>
+	
+	<div id="tabs" style="height:750px;width:600px;overflow-y: auto">
+         <ul>
+        	<li><a href="#tabs-0" title="Create New Server"><%= ServerProjectName %>&nbsp;Information</a></li>
+        	<li><a href="#tabs-1" title="Create New Server">Create New Server</a></li>
+	<%
+		sql = "sp_Server_ServerProjectID_get " & ServerProjectID
+		Set ors = oConn.Execute(sql)
+		
+		If NOT ors.EOF Then
+			x = 2
+			Do Until ors.EOF
+				ServerName = ors("ServerName")
+	%>	
+        	<li><a href="#tabs-<%= x %>" title="<%= ServerName %>"><%= ServerName %></a></li>
+
+	<%
+				x = x + 1
+				ors.MoveNext
+			Loop
+			ors.Close
+		End If
+		Set ors = Nothing
+		
+	%>	
+		</ul>
+		
+		<div id="tabs-0">
+		
+			<p>
+			
+				<form action="<%= SCRIPT_NAME %>" method="post" id="frmServerProject" name="frmServerProject">
+				<table cellspacing=0 cellpadding=2 border=0 bgcolor="#ffffff">
+				<tr>
+					<td class="frm_label" align="right"><b>Project&nbsp;Name:</b></font>&nbsp;</td>
+					<td>
+						<%= formTextBox("ServerProjectName", "20", ServerProjectName, "ServerElement", "Server Project Name", "Invalid Server Project Name") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>
+					<td class="frm_label" valign="top">Server&nbsp;Notes:</td>
+					<td>
+						<%= formTextArea("ServerProjectNotes", ServerProjectNotes, "400", "100", "ServerElement", "Description", "Invalid Description") %>
+					</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>
+						<%= Submit_Button("SubmitButton", "Save Server Project", "Button", "", "Save Server Project") %>&nbsp;&nbsp;
+						&nbsp;<br>
+						&nbsp;<br>
+						&nbsp;<br>
+						<%= Button("Button", "Delete", "DeleteButton", "", "Delete", "DeleteItem('Are you sure you want to delete this Server Project?', '" & SCRIPT_NAME & "?SubmitButton=DeleteServerProject&SelectedTab=" & ServerTabNumber & "&ServerProjectID=" & ServerProjectID & "&ServerID=" & ServerID & "')") %>
+					</td>
+				</tr>
+				</table>
+				
+				<%= formHidden("ServerProjectID", ServerProjectID) %>
+
+				</form>
+			
+			
+			</p>
+		
+		</div>
+		
+		<div id="tabs-1">
+		
+			<p>
+			
+				<form action="<%= SCRIPT_NAME %>" method="post" id="frmServer" name="frmServer">
+				<table cellspacing=0 cellpadding=2 border=0 bgcolor="#ffffff">
+				<tr>
+					<td class="frm_label" align="right"><b>Server&nbsp;Name:</b></font>&nbsp;</td>
+					<td>
+						<%= formTextBox("ServerName", "20", "", "ServerElement", "Server Name", "Invalid Server Name") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>
+					<td class="frm_label" valign="top">Server&nbsp;Notes:</td>
+					<td>
+						<%= formTextArea("ServerNotes", ServerNotes, "400", "100", "ServerElement", "Description", "Invalid Description") %>
+					</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>
+						<%= Submit_Button("SubmitButton", "Create Server", "Button", "", "Create Server") %>&nbsp;&nbsp;
+					</td>
+				</tr>
+				</table>
+				
+				<%= formHidden("ServerProjectID", ServerProjectID) %>
+
+				</form>
+			
+			
+			</p>
+		
+		</div>
+		
+	<%
+		sql = "sp_Server_ServerProjectID_get " & ServerProjectID
+		Set ors = oConn.Execute(sql)
+		
+		If NOT ors.EOF Then
+			ServerTabNumber = 2
+			Do Until ors.EOF
+				ServerID = ors("ServerID")
+				ServerName = ors("ServerName")
+				ServerNotes = ors("ServerNotes")
+	%>	
+		<div id="tabs-<%= ServerTabNumber %>">
+		
+			
+				<form action="<%= SCRIPT_NAME %>" method="post" id="frmServer-<%= ServerTabNumber %>" name="frmServer-<%= ServerTabNumber %>">
+				<table cellspacing=0 cellpadding=2 border=0 bgcolor="#ffffff">
+				<tr>
+					<td class="frm_label" align="right"><b>Server&nbsp;Name:</b></td>
+					<td>
+						<%= formTextBox("ServerName", "20", ServerName, "ServerElement", "Server Name", "Invalid Server Name") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>
+					<td class="frm_label" valign="top">Server&nbsp;Notes:</td>
+					<td>
+						<%= formTextArea("ServerNotes", ServerNotes, "400", "100", "ServerElement", "Description", "Invalid Description") %>
+					</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>
+						<%= Submit_Button("SubmitButton", "Save Server", "Button", "", "Save Server") %>&nbsp;&nbsp;
+						
+						&nbsp;<br>
+						&nbsp;<br>
+						&nbsp;<br>
+						<%= Button("Button", "Delete", "DeleteButton", "", "Delete", "DeleteItem('Are you sure you want to delete this Server?', '" & SCRIPT_NAME & "?SubmitButton=DeleteServer&SelectedTab=" & ServerTabNumber & "&ServerProjectID=" & ServerProjectID & "&ServerID=" & ServerID & "')") %>
+					</td>
+				</tr>
+				</table>
+				
+				<%= formHidden("ServerID", ServerID) %>
+
+				<%= formHidden("ServerProjectID", ServerProjectID) %>
+
+				<%= formHidden("SelectedTab", ServerTabNumber) %>
+
+				</form>
+
+				<script type="text/javascript">
+
+					$('#frmServer-<%= ServerTabNumber %>').submit(
+						function() {
+							
+							var $ServerName = $.trim($('#frmServer-<%= ServerTabNumber %> #ServerName').val());
+				
+							if($ServerName == '') {
+								displayError($('#frmServer-<%= ServerTabNumber %> #ServerName'));
+								$('#frmServer-<%= ServerTabNumber %> #ServerName').focus();
+								return false;
+							}
+						}
+					);
+
+				</script>
+
+
+				<p />
+				
+				<%
+					SubmitButtonValue = "Create"
+					If ServerInformationID <> "" Then
+						sql = "sp_ServerInformation_ServerInformationID_get " & ServerInformationID
+						Set ors3 = oConn.Execute(sql)
+						ServerInformationName = ors3("ServerInformationName")
+						ServerInformationValue = ors3("ServerInformationValue")
+						ors3.Close
+						Set ors3 = Nothing
+						
+						SubmitButtonValue = "Save"
+					End If
+				%>
+				<div class="ServerTheme"><h1 class="Header" style="padding: 5px;">Server&nbsp;Information</h1></div>
+				
+				<form action="<%= SCRIPT_NAME %>" method="post" id="frmServer_Information" name="frmServer_Information" onsubmit="return checkServerInformation(this)">
+				<table cellspacing=0 cellpadding=2 border=0 bgcolor="#ffffff">
+				<tr>
+					<td class="frm_label"><b>Name:</b></td>
+					<td>
+						<%= formTextBox("ServerInformationName", "20", ServerInformationName, "ServerElement", "Server InformationName", "Invalid Name") %>
+					</td>
+				</tr>
+				<tr valign="top">
+					<td class="frm_label">Value:</td>
+					<td>
+						<%= formTextArea("ServerInformationValue", ServerInformationValue, "400", "100", "ServerElement", "Description", "Invalid Value") %>
+					</td>
+				</tr>
+				<tr valign="top">
+					<td>&nbsp;</td>
+					<td>
+						<%= Submit_Button("SubmitButton", SubmitButtonValue & " Server Information", "Button", "", SubmitButtonValue & " Server Information") %>&nbsp;&nbsp;
+					</td>
+				</tr>
+				</table>
+							
+							
+				<%= formHidden("ServerInformationID", ServerInformationID) %>
+
+				<%= formHidden("ServerID", ServerID) %>
+
+				<%= formHidden("ServerProjectID", ServerProjectID) %>
+
+				<%= formHidden("SelectedTab", ServerTabNumber) %>
+				</form>
+
+
+			<script type="text/javascript">
+		
+				function checkServerInformation(thisForm)
+				{
+					var $ServerInformationName = thisForm.ServerInformationName.value;
+					var $ServerInformationValue = thisForm.ServerInformationValue.value;
+				
+					if($ServerInformationName == '') {
+						//displayError($('#ServerInformationName'));
+						alert('Invalid name');
+						thisForm.ServerInformationName.focus();
+						return false;
+					}
+					else if($ServerInformationValue == '') {
+						//displayError($('#ServerInformationValue'));
+						alert('Invalid value');
+						thisForm.ServerInformationValue.focus();
+						return false;
+					}	
+				}
+			</script>
+
+<%
+				sql = "sp_ServerInformation_ServerID_get " & ServerID
+				Set ors2 = oConn.Execute(sql)
+				
+				If NOT ors2.EOF Then
+%>				
+				<table bgcolor="#000000" cellpadding="10" id="GridView" name="GridView" class="shadow">
+				<tr bgcolor="<%= SERVER_THEME %>" style="color:#ffffff">
+					<td style="font-size:15px">
+						<b>Name</b>
+					</td>
+					<td style="font-size:15px" colspan="3">
+						<b>Value</b>
+					</td>
+				</tr>
+<%
+					ImageCounter = 1
+					Do Until ors2.EOF
+						v_ServerInformationID = ors2("ServerInformationID")
+						v_ServerInformationName = ors2("ServerInformationName")
+						v_ServerInformationValue = ors2("ServerInformationValue")
+						v_ServerInformationOrderNum = ors2("ServerInformationOrderNum")
+						v_TotalServerInformations = ors2("TotalServerInformations")
+%>
+
+				<tr bgcolor="#ffffff" class="GridViewRow" valign="top">
+					<td style="font-size:15px" class="frm_label">
+						<a href="<%= SCRIPT_NAME %>?ServerProjectID=<%= ServerProjectID %>&ServerID=<%= ServerID %>&ServerInformationID=<%= v_ServerInformationID %>&SelectedTab=<%= ServerTabNumber %>"><%= HTMLFormat(v_ServerInformationName) %></a>
+					</td>
+					<td style="font-size:15px">
+						<%= HTMLFormat2(v_ServerInformationValue) %>
+					</td>
+					<td style="font-size:15px">
+						<% If ImageCounter > 1 Then %>
+						<a href="<%= SCRIPT_NAME %>?SubmitButton=ServerInformationOrderChangeServer&ServerProjectID=<%= ServerProjectID %>&ServerID=<%= ServerID %>&ServerInformationID=<%= v_ServerInformationID %>&SelectedTab=<%= ServerTabNumber %>&OldOrderNumber=<%= v_ServerInformationOrderNum %>&NewOrderNumber=<%= v_ServerInformationOrderNum - 1 %>"><%= UP_ICON %></a>
+						<% End If %>
+						<% If ImageCounter < v_TotalServerInformations Then %>
+						<a href="<%= SCRIPT_NAME %>?SubmitButton=ServerInformationOrderChangeServer&ServerProjectID=<%= ServerProjectID %>&ServerID=<%= ServerID %>&ServerInformationID=<%= v_ServerInformationID %>&SelectedTab=<%= ServerTabNumber %>&OldOrderNumber=<%= v_ServerInformationOrderNum %>&NewOrderNumber=<%= v_ServerInformationOrderNum + 1 %>"><%= DOWN_ICON %></a>
+						<% End If %>
+					</td>
+					<td>
+						<%= Button("Button", "Delete", "DeleteButton", "", "Delete", "DeleteItem('Are you sure you want to delete this Server Information?', '" & SCRIPT_NAME & "?SubmitButton=DeleteServerInformation&ServerInformationID=" & v_ServerInformationID & "&SelectedTab=" & ServerTabNumber & "&ServerProjectID=" & ServerProjectID & "&ServerID=" & ServerID & "')") %>
+					</td>
+				</tr>
+<%	
+						ImageCounter = ImageCounter + 1
+						ors2.MoveNext
+					Loop
+					ors2.Close
+%>
+				</table>
+				
+				&nbsp;<br>
+				&nbsp;<br>
+				&nbsp;<br>
+				&nbsp;<br>
+				&nbsp;<br>
+<%
+				Else
+%>
+				<div class="ErrorMessage">No Information found.</div>
+<%
+				End If
+				Set ors2 = Nothing
+%>
+				
+		</div>	
+
+
+ <%
+ 			ServerTabNumber = ServerTabNumber + 1
+ 			ors.MoveNext
+		Loop
+		ors.Close
+	End If
+	Set ors = Nothing	
+ 
+ %>
+						
+	</div>
+</fieldset>
+<script type="text/javascript">
+
+	$('#ServerProjectID').change
+	(
+		function()
+		{
+			location.href = "<%= SCRIPT_NAME %>?ServerProjectID=" + $(this).val();
+		}
+	);
+	
+	$('#tabs').tabs();
+
+	<% If SelectedTab <> "" Then %>
+
+	$('#tabs').tabs('select', <%= SelectedTab %>);
+
+	<% End If %>
+</script>
+
+
+
+<% End If %>
+

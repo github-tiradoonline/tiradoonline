@@ -1,0 +1,141 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formJobsCompanyPhoneCall" name="formJobsCompanyPhoneCall">
+<% 
+	sql = "SELECT JobCompanyName, JobCompanyWebsite FROM JobCompany WHERE JobCompanyID = " & JobCompanyID
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+	JobCompanyName = ors("JobCompanyName")
+	JobCompanyWebsite = ors("JobCompanyWebsite")
+	ors.Close
+	Set ors = Nothing
+	
+	SubmitButtonValue = "Create Phone Call"
+	
+	If JobCompanyPhoneCallID <> "" Then
+		SubmitButtonValue = "Save Phone Call"
+		sql = "SELECT * FROM JobCompanyPhoneCall WHERE JobCompanyPhoneCallID = " & JobCompanyPhoneCallID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		JobCompanyContactID = ors("JobCompanyContactID")
+		JobCompanyPhoneCallTypeID = ors("JobCompanyPhoneCallTypeID")
+		JobCompanyPhoneCall_DateTime = ors("JobCompanyPhoneCallDateTime")
+		JobCompanyPhoneCallDate = FormatDateTime(JobCompanyPhoneCall_DateTime, 2)
+		JobCompanyPhoneCallTime = FormatDateTime(JobCompanyPhoneCall_DateTime, 3)
+		JobCompanyPhoneCallPhoneNumber = ors("JobCompanyPhoneCallPhoneNumber")
+		JobCompanyPhoneCallNotes = ors("JobCompanyPhoneCallNotes")
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<div class="JobsTheme" style="text-align:center;">
+	<h1 class="Header" style="padding: 5px;" style="float:left;">
+		<%= JobCompanyName %>&nbsp;-&nbsp;Phone&nbsp;Calls
+	</h1>
+</div>
+<table border=0>
+<tr valign="top">
+	<td>
+		<table border=0>
+		<tr valign="top">
+				
+			<td>
+				<table cellpadding="3" border="0">
+				<tr valign="top">
+					<td colspan="2">
+						<!-- #include virtual="/jobs/includes/company.inc" -->
+					</td>
+				</tr>
+				<tr valign="top">
+					<td>
+						<!-- #include virtual="/jobs/includes/addresses.inc" -->
+					</td>
+					<td>
+						<!-- #include virtual="/jobs/includes/contacts.inc" -->
+					</td>
+				</tr>
+				<tr valign="top">
+					<td>
+						<!-- #include virtual="/jobs/includes/interviews.inc" -->
+					</td>
+					<td>
+						<!-- #include virtual="/jobs/includes/phonecalls.inc" -->
+					</td>
+				</tr>
+				<tr valign="top">
+					<td colspan="2">
+						<!-- #include virtual="/jobs/includes/jobs.inc" -->
+					</td>
+				</tr>
+				</table>
+			</td>
+			<td valign="top">
+				<% If JobsErrorMessage <> "" Then %>
+				<div class="ErrorMessage"><%= JobsErrorMessage %></div>
+				<% End If %>
+				<table cellpadding="3">
+				<tr>
+					<td class="frm_label">Date:</td>
+					<td>
+						<%= formTextBox("JobCompanyPhoneCallDate", "10", JobCompanyPhoneCallDate, "JobsElement", "Date", "Invalid Date") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>
+					<td class="frm_label">Time:</td>
+					<td>
+						<%= formTextBox("JobCompanyPhoneCallTime", "10", JobCompanyPhoneCallTime, "JobsElement", "Time", "Invalid Time") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>	
+					<td align="right">
+						<b>Type:</b>
+					</td>
+					<td>
+						<%= SelectBox(oConn, "sp_JobCompanyPhoneCallType_get", "JobCompanyPhoneCallTypeID", JobCompanyPhoneCallTypeID, "JobsElement", "Type") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>	
+					<td align="right">
+						<b>Contact:</b>
+					</td>
+					<td>
+						<%= SelectBox(oConn, "sp_JobCompanyContact_JobCompanyID_get " & JobCompanyID, "JobCompanyContactID", JobCompanyContactID, "JobsElement", "Contact") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Phone&nbsp;Number:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyPhoneCallPhoneNumber", "20", JobCompanyPhoneCallPhoneNumber, "JobsTheme", "Zip Code", "Invalid Phone Number") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr valign="top">
+					<td align="right"><b>Notes:</b></td>
+					<td>
+						<%= formTextArea("JobCompanyPhoneCallNotes", JobCompanyPhoneCallNotes, "450", "150", "JobsElement", "Notes", "Invalid Notes") %>
+					</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>
+						<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("JobCompanyID", JobCompanyID) %>
+<%= formHidden("JobCompanyPhoneCallID", JobCompanyPhoneCallID) %>
+
+<%= formHidden("Template", Template) %>
+</form>
+
+<script type="text/javascript">
+
+	$('#JobCompanyPhoneCallAddress1').focus();
+	$('#JobCompanyPhoneCallDate').datepicker();
+
+</script>

@@ -1,0 +1,28 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Sugar' AND TYPE = 'U')
+DROP TABLE Sugar;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Sugar' AND TYPE = 'U')
+	DROP TABLE Sugar;
+GO
+
+CREATE TABLE Sugar
+(
+	SugarID		IDENTITY (1001,1) INT  NOT NULL,
+	UserID		 INT  NOT NULL,
+	SugarDateTime		 DATETIME  NOT NULL,
+	Sugar		 SMALLINT  NOT NULL,
+	SugarComments		 VARCHAR(2000)  NULL,
+	create_dt		 DATETIME DEFAULT (getdate()) NOT NULL
+
+);
+GO
+
+
+
+
+GO
+
+
+GO
+

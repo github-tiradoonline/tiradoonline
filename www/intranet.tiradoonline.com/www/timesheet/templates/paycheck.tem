@@ -1,0 +1,221 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formPaycheck" name="formPaycheck">
+<%
+	sql = "sp_Timehseet_Paychecks_info_get " & TimesheetCompanyID
+	Set ors = oConn.Execute(sql)
+	TimesheetCompanyName = ors("TimesheetCompanyName")
+	TotalPaychecks = ors("TotalPaychecks")
+	ors.Close
+	Set ors = Nothing
+	
+%>
+
+<div class="TimesheetTheme" style="text-align:center;">
+	<h1 class="Header" style="padding: 5px;" style="float:left;">
+		<%= TimesheetCompanyName %>&nbsp;-&nbsp;Paychecks
+	</h1>
+</div>
+
+<!-- #include virtual="/timesheet/includes/subnav.inc" -->
+
+<table>
+<tr valign="top">
+	<td>
+				<table cellpadding="5" class"GridViewAlteringRows" width="100%">
+				<tr>
+					<td class="TimesheetTheme" align="right">
+						<b><a href="/timesheet/timesheet.asp?Template=company&TimesheetCompanyID=<%= TimesheetCompanyID %>">Paychecks&nbsp;(<%= TotalPaychecks %>)</a></b>
+					</td>
+				</tr>
+				<%
+					sql = "sp_Timehseet_Paychecks_CompanyID_get " & TimesheetCompanyID
+					Set ors = oConn.Execute(sql)
+					NetTotal = 0
+					If NOT ors.EOF Then
+						Do Until ors.EOF
+							v_PaycheckID = ors("PaycheckID")
+							v_PaymentDate = ors("PaymentDate")
+							v_Net = ors("Net")
+							NetTotal = CDbl(NetTotal) + CDbl(v_Net)
+				%>
+				<tr>
+					<td class="GridViewRow" style="border-top: #000000 1px solid" align="right">
+						<a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&TimesheetCompanyID=<%= TimesheetCompanyID%>&PaycheckID=<%= v_PaycheckID %>"><%= v_PaymentDate %>&nbsp;&nbsp;-&nbsp;[&nbsp;<%= FormatCurrency(v_Net) %></a>&nbsp;]
+					<td>
+				</tr>
+				<%
+							ors.MoveNext
+						Loop
+						ors.Close
+				%>
+				<tr>
+					<td class="GridViewRow" style="border-top: #000000 1px solid" align="right">
+						&nbsp;<strong class="ErrorMessage"	><%= FormatCurrency(NetTotal) %></strong></a>&nbsp;
+					<td>
+				</tr>
+				<%
+					Else
+				%>
+				<tr>
+					<td class="ErrorMessage">
+						No Paychecks found.
+					<td>
+				</tr>
+					
+				<%
+					End If
+				%>
+			</table>
+	</td>		
+	
+	<td>
+		<div class="TimeSheetTheme">
+			<h1 class="Header" style="padding: 5px;">Paychecks
+				<span style="float:right;display:inline;">
+					<%= Button("Button", "Create New Paycheck", "Button", "", "Create New Paycheck", "location.href='" & SCRIPT_NAME & "?Template=paycheck&TimesheetCompanyID=" & TimesheetCompanyID & "'") %>
+				</span>&nbsp;&nbsp;
+			</h1>	
+		</div>
+		<p>
+		<%
+			SubmitButtonValue = "Create Paycheck"
+			If PaycheckID <> "" Then
+			
+				sql = "sp_Timesheet_Paychecks_PaycheckID_get " & PaycheckID
+				Set ors = oConn.Execute(sql)
+
+				If NOT ors.EOF Then
+					PaycheckDate = ors("PaymentDate")
+					HourlyRate = ors("HourlyRate")
+					Gross = ors("Gross")
+					Federal = ors("Federal")
+					SocialSecurity = ors("SocialSecurity")
+					Medicare = ors("Medicare")
+					Withholding = ors("NY_Withholding")
+					Disability = ors("NY_Disability")
+					City = ors("NY_City")
+					Notes = ors("Notes")
+				ors.Close
+			End If
+				Set ors = Nothing
+				SubmitButtonValue = "Save Paycheck"
+			Else
+					PaycheckDate  = Date
+					HourlyRate = 0
+					Gross = 0
+					Federal = 0
+					SocialSecurity = 0
+					Medicare = 0
+					Withholding = 0
+					Disability = 0
+					City = 0
+					Notes = ""
+				End If
+		%>
+		<% If TimesheetErrorMessage <> "" Then %>
+		<div class="ErrorMessage"><%= TimesheetErrorMessage %></div>
+		<% End If %>
+		<p>
+		<table cellpadding="3">
+		<tr>
+			<td class="frm_label">Date:</td>
+			<td>
+				<%= formTextBox("PaycheckDate", "10", PaycheckDate, "TimeSheetElement", "PaycheckDate", "Invalid Paycheck Date") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Hourly&nbsp;Rate:</td>
+			<td>
+				<%= formTextBox("HourlyRate", "10", FormatNumber(HourlyRate, 2), "TimeSheetElement", "HourlyRate", "Invalid Hourly Rate") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Gross:</td>
+			<td>
+				<%= formTextBox("Gross", "10", Gross, "TimeSheetElement", "Gross", "Invalid Gross") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Federal:</td>
+			<td>
+				<%= formTextBox("Federal", "10", Federal, "TimeSheetElement", "Federal", "Invalid Federal") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Social&nbsp;Security</td>
+			<td>
+				<%= formTextBox("SocialSecurity", "10", SocialSecurity, "TimeSheetElement", "SocialSecurity", "Invalid SocialSecurity") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Medicare:</td>
+			<td>
+				<%= formTextBox("Medicare", "10", Medicare, "TimeSheetElement", "Medicare", "Invalid Medicare") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Withholding:</td>
+			<td>
+				<%= formTextBox("Withholding", "10", Withholding, "TimeSheetElement", "Withholding", "Invalid Withholding") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">City:</td>
+			<td>
+				<%= formTextBox("City", "10",City, "TimeSheetElement", "City", "Invalid City") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Disability:</td>
+			<td>
+				<%= formTextBox("Disability", "10", Disability, "TimeSheetElement", "Disability", "Invalid Disability") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label" valign="top">Notes:</td>
+			<td>
+				<%= formTextArea("Notes", Notes, "400", "100", "TimesheetElement", "", "Invalid Notes") %>
+			</td>
+		</tr>
+		<% 
+			If TimesheetCompanyID <> "" Then 
+				Net = CDbl(Gross) - CDbl(Federal) - CDbl(SocialSecurity) - CDbl(Medicare) - CDbl(Withholding)- CDbl(Disability) - CDbl(City)
+			End If
+		%>
+		<% If TimesheetCompanyID <> "" Then %>
+		<tr class="ErrorMessage">
+			<td class="frm_label" style="font-size:20px;">Net:</td>
+			<td style="font-size:20px;">
+				<%= FormatCurrency(FormatNumber(Net, 2)) %>
+			</td>
+		</tr>
+		<% End If %>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+				<% If TimesheetCompanyID <> "" Then %>
+				<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+				<% End If %>
+
+			</td>
+		</tr>
+		</table>
+	
+	
+	
+	</td>
+	
+	
+</tr>
+</table>
+
+<%= formHidden("TimesheetCompanyID", TimesheetCompanyID) %>
+
+<%= formHidden("PaycheckID", PaycheckID) %>
+
+<script type="text/javascript">
+
+	$('#PaycheckDate').datepicker();
+
+</script>
+

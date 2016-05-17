@@ -1,0 +1,41 @@
+<%
+	BankingAccountID = Trim(Request("BankingAccountID"))
+%>
+				<table cellspacing=0 cellpadding=2 border=0 bgcolor="#ffffff" width="100%">
+				<tr>
+					<td width="100%" align="right"><font face="Verdana,Arial" size=2 color="#639a63"><b>Account&nbsp;Name</b></font>&nbsp;</td>
+					<td><input type="text" name="BankingAccountName" value="<%= BankingAccountName %>" size="20" maxlength="20"></td>
+					<td>&nbsp;&nbsp;</td>
+					<td>
+						<%= Submit_Button("SubmitButton", "Create Account", "Button", "", "Create Account") %>
+					</td>
+				</tr>
+				</table>
+					<table cellspacing=0 cellpadding=0 width="100%" border=0 bgcolor="#ffffff">
+					<tr>
+						<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+						<td width="100%">
+							&nbsp;<br />
+							<font face="Verdana,Arial" size=2>
+							<%
+								sql = "sp_Banking_transaction_reports " & BankingAccountID
+								Set ors = oConn.Execute(sql)
+								If NOT ors.EOF Then 
+									Do Until ors.EOF
+							%>
+									<li><a href="../banking/banking.asp?BankingAccountID=<%= ors("BankingAccountID") %>&CurrentDate=<%= CurrentDate %>&Template=View"><%= ors("BankingAccountName") %></a>
+									<p>
+							<%
+										ors.MoveNext
+									Loop
+								Else
+							%>
+								No Accounts found
+							<% 
+								End If
+								ors.Close
+								Set ors = Nothing
+							%>
+						</td>
+					</tr>
+					</table>

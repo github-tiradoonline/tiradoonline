@@ -1,0 +1,500 @@
+<%
+	Action = Trim(Request("Action"))
+	CompanyID = Trim(Request("CompanyID"))
+	ErrorMessage = Trim(Request("ErrorMessage"))
+	PaycheckID = Trim(Request("PaycheckID"))
+	PaymentYear = Trim(Request("PaymentYear"))
+	If PaymentYear = "" Then PaymentYear = Year(Date)
+	SubmitButton = Trim(Request("SubmitButton"))
+	
+	If SubmitButton = "Cancel" Then Response.Redirect Request.ServerVariables("SCRIPT_NAME") & "?Template=" & Template
+
+	Function FormatPaymentDate(Payment_date)
+		PaymentMonth = Month(Payment_date)
+		PaymentDay = Day(Payment_date)
+		PaymentYear = Year(Payment_date)
+		
+		PaymentDateText = ""
+		PaymentDateText = PaymentDateText & "<SELECT name=""PaymentMonth"" class=""EmploymentElement"">"
+		For x = 1 to 12
+			If PaymentMonth = x Then
+				PaymentDateText = PaymentDateText & "<option value=""" & x & """ SELECTED>" & MonthName(x) & "</option>" & vbCrLF
+			Else
+				PaymentDateText = PaymentDateText & "<option value=""" & x & """>" & MonthName(x) & "</option>" & vbCrLF
+			End If
+		Next
+		PaymentDateText = PaymentDateText & "</SELECT>&nbsp;"
+		PaymentDateText = PaymentDateText & "<SELECT name=""PaymentDay"" class=""EmploymentElement"">"
+		For x = 1 to 31
+			If PaymentDay = x Then
+				PaymentDateText = PaymentDateText & "<option value=""" & x & """ SELECTED>" & x & "</option>" & vbCrLF
+			Else
+				PaymentDateText = PaymentDateText & "<option value=""" & x & """>" & x & "</option>" & vbCrLF
+			End If
+		Next
+		PaymentDateText = PaymentDateText & "</SELECT>&nbsp;"
+		PaymentDateText = PaymentDateText & "<SELECT name=""PaymentYear"" class=""EmploymentElement"">"
+		For x = (Year(Now) - 1 ) to Year(Now) + 3
+			If PaymentYear = x Then
+				PaymentDateText = PaymentDateText & "<option value=""" & x & """ SELECTED>" & x & "</option>" & vbCrLF
+			Else
+				PaymentDateText = PaymentDateText & "<option value=""" & x & """>" & x & "</option>" & vbCrLF
+			End If
+		Next
+		PaymentDateText = PaymentDateText & "</SELECT>"
+		FormatPaymentDate = PaymentDateText
+	End Function
+
+%>
+
+<table cellspacing=0 cellpadding=2 border=0 width="100%">
+<tr>
+	<td align=center>
+		<table cellspacing=0 cellpadding=3 border=0 width="100%">
+		<tr>
+			<td>&nbsp;&nbsp;&nbsp;</td>
+			<td><a href="<%= Request.ServerVariables("SCRIPT_NAME") %>?Template=<%= Template %>&Action=<%= Action %>&PaymentYear=<%= Year(DateAdd("yyyy", -1, DateSerial(PaymentYear, 1, 1))) %>"><img src="images/previous.gif" width=13 height=16 hspace=0 vspace=0 border=0></a></td>
+			<td align=center width="100%"><a href="<%= SCRIPT_NAME %>?Template=Paychecks&PaymentYear=<%= PaymentYear %>" style="text-decoration:none"><font face="Arial,Verdana" size=2 color="#ffffff"><b>Paychecks&nbsp;for&nbsp;Year</a>&nbsp;<%= PaymentYear %></td>
+			<td><a href="<%= Request.ServerVariables("SCRIPT_NAME") %>?Template=<%= Template %>&Action=<%= Action %>&PaymentYear=<%= Year(DateAdd("yyyy", 1, DateSerial(PaymentYear, 1, 1))) %>"><img src="images/next.gif" width=13 height=16 hspace=0 vspace=0 border=0></a></td>
+			<td>&nbsp;&nbsp;&nbsp;</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+<tr>
+	<td bgcolor="#ffffff" align="center">
+		<% If Action = "" Then %>
+			<%
+				sql = "sp_Paychecks_UserID " & Session("UserID") & ", " & PaymentYear
+				WriteDebugger sql, Debugging, 0
+				Set rs = oConn.Execute(sql)
+				If rs.EOF Then Response.Write "&nbsp;" & vbCrLF
+			%>
+			
+			<table cellspacing=1 cellpadding=3 border=0 width="100%" bgcolor="#000066">
+			<% 	
+				If NOT rs.EOF Then 
+					CompanyName = ""
+					FinalTotalGross = 0.0
+					FinalTotalHours = 0.0
+					FinalTotalNet = 0.0
+					TotalGross = 0.0
+					TotalHours = 0.0
+					TotalNet = 0.0
+					x = 1
+					Do Until rs.EOF
+						PaymentDate = rs("PaymentDate")
+						PaymentDate = MonthName(Month(PaymentDate)) & " " & Day(PaymentDate) & ", " & Year(PaymentDate)
+			%>
+						<%  If CompanyName <> rs("CompanyName") Then %>
+							<% If x <> 1 Then %>
+							<tr bgcolor="#ffffff">
+								<td><font face="Verdana,Arial" size=1 color="#ff0000">&nbsp;&nbsp;<b>TOTALS&nbsp;FOR&nbsp;<%= Replace(CompanyName, " ", "&nbsp;") %></b>&nbsp;</td>
+								<td><font face="Verdana,Arial" size=1 color="#ff0000">&nbsp;&nbsp;<b><%= FormatNumber(TotalHours) %></b>&nbsp;&nbsp;</td>
+								<td><font face="Verdana,Arial" size=1 color="#ff0000">&nbsp;&nbsp;<b><%= FormatCurrency(TotalGross) %></b>&nbsp;&nbsp;</td>
+								<td><font face="Verdana,Arial" size=1 color="#ff0000">&nbsp;&nbsp;<b><%= FormatCurrency(TotalNet) %></b>&nbsp;&nbsp;</td>
+							</tr>
+							<%
+								sql = "sp_Paychecks_CompanyID " & CompanyID & ", " & PaymentYear
+								Set Companies = oConn.Execute(sql)
+							%>		
+							<tr bgcolor="#ffffff">
+								<td colspan=4>
+									<table cellspacing=1 cellpadding=0 border=0 width="100%" bgcolor="#000000">
+									<tr>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;Gross&nbsp;</td>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;Federal&nbsp;</td>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;Social&nbsp;Security&nbsp;</td>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;Medicare&nbsp;</td>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;State&nbsp;</td>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;Disability&nbsp;</td>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;City&nbsp;</td>
+									</tr>
+									<tr>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= FormatCurrency(Companies("Gross")) %>&nbsp;</td>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= FormatCurrency(Companies("Federal")) %>&nbsp;</td>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= FormatCurrency(Companies("SocialSecurity")) %>&nbsp;</td>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= FormatCurrency(Companies("Medicare")) %>&nbsp;</td>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= FormatCurrency(Companies("NY_Withholding")) %>&nbsp;</td>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= FormatCurrency(Companies("NY_Disability")) %>&nbsp;</td>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= FormatCurrency(Companies("NY_City")) %>&nbsp;</td>
+									</tr>
+									</table>
+								</td>
+							</tr>
+							<%
+								Companies.Close
+								Set Companies = Nothing
+							%>
+							<% End If %>
+							<% If x <> 1 Then %>
+							<tr bgcolor="#ffffff">
+								<td colspan=4>&nbsp;</td>
+							</tr>
+							<% End If %>
+							<tr bgcolor="#000094">
+								<td colspan=4><table cellspacing=0 cellpadding=0 border=0 width="100%"><tr><td><font face="Verdana,Arial" size=2 color="#ffffff">&nbsp;<b><%= Replace(rs("CompanyName"), " ", "&nbsp;") %></b></td><td align="right"><a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&Action=Add&PaymentYear=<%= PaymentYear %>&CompanyID=<%= rs("CompanyID") %>" class="SubNavigation_on">Add</a>&nbsp;</td></tr></table></td>
+							</tr>
+							<tr bgcolor="#dddddd">
+								<td><font face="Verdana,Arial" size=2 color="#000000">&nbsp;&nbsp;<b>Date&nbsp;&nbsp;</td>
+								<td><font face="Verdana,Arial" size=2 color="#000000">&nbsp;&nbsp;<b>Hours&nbsp;&nbsp;</td>
+								<td><font face="Verdana,Arial" size=2 color="#000000">&nbsp;&nbsp;<b>Gross&nbsp;&nbsp;</td>
+								<td><font face="Verdana,Arial" size=2 color="#000000">&nbsp;&nbsp;<b>Net&nbsp;&nbsp;</td>
+							</tr>
+						<%
+							TotalGross = 0.0
+							TotalHours = 0.0
+							TotalNet = 0.0
+							CompanyName = rs("CompanyName")
+						End If
+						TotalHours = CDbl(TotalHours) + CDbl(rs("Hours"))
+						TotalGross = CDbl(TotalGross) + CDbl(rs("Gross"))
+						TotalNet = CDbl(TotalNet) + CDbl(rs("Net"))
+			%>						
+				<tr bgcolor="#ffffff">
+					<td><font face="Verdana,Arial" size=1>&nbsp;&nbsp;<a href="<%= Request.ServerVariables("SCRIPT_NAME") %>?PaycheckID=<%= rs("PaycheckID") %>&Template=<%= Template %>&Action=Edit&PaymentYear=<%= PaymentYear %>"><%= PaymentDate %></a>&nbsp;&nbsp;</td>
+					<td><font face="Verdana,Arial" size=1>&nbsp;&nbsp;<%= FormatNumber(rs("Hours"), 2) %>&nbsp;&nbsp;</td>
+					<td><font face="Verdana,Arial" size=1 color="#000066">&nbsp;&nbsp;<%= FormatCurrency(rs("Gross")) %>&nbsp;&nbsp;</td>
+					<td><font face="Verdana,Arial" size=1 color="#000066">&nbsp;&nbsp;<%= FormatCurrency(rs("Net")) %>&nbsp;&nbsp;</td>
+				</tr>
+			<%
+			
+						FinalTotalHours = CDbl(FinalTotalHours) + CDbl(rs("Hours"))
+						FinalTotalGross = CDbl(FinalTotalGross) + CDbl(rs("Gross"))
+						FinalTotalNet = CDbl(FinalTotalNet) + CDbl(rs("Net"))
+						x = x + 1
+						CompanyID = rs("CompanyID")
+						rs.MoveNext
+					Loop
+					rs.MoveFirst
+				End If 
+				
+				If FinalTotalGross > 0 Then
+			%>
+			<tr bgcolor="#ffffff">
+				<td><font face="Verdana,Arial" size=1 color="#ff0000">&nbsp;&nbsp;<b>TOTALS&nbsp;FOR&nbsp;<%= Replace(CompanyName, " ", "&nbsp;") %></b>&nbsp;</td>
+				<td><font face="Verdana,Arial" size=1 color="#ff0000">&nbsp;&nbsp;<b><%= FormatNumber(TotalHours) %></b>&nbsp;&nbsp;</td>
+				<td><font face="Verdana,Arial" size=1 color="#ff0000">&nbsp;&nbsp;<b><%= FormatCurrency(TotalGross) %></b>&nbsp;&nbsp;</td>
+				<td><font face="Verdana,Arial" size=1 color="#ff0000">&nbsp;&nbsp;<b><%= FormatCurrency(TotalNet) %></b>&nbsp;&nbsp;</td>
+			</tr>
+							<%
+								sql = "sp_Paychecks_CompanyID " & CompanyID & ", " & PaymentYear
+								Set Companies = oConn.Execute(sql)
+							%>		
+							<tr bgcolor="#ffffff">
+								<td colspan=4>
+									<table cellspacing=1 cellpadding=0 border=0 width="100%" bgcolor="#000000">
+									<tr>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;Gross&nbsp;</td>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;Federal&nbsp;</td>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;Social&nbsp;Security&nbsp;</td>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;Medicare&nbsp;</td>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;State&nbsp;</td>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;Disability&nbsp;</td>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;City&nbsp;</td>
+									</tr>
+									<tr>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= FormatCurrency(Companies("Gross")) %>&nbsp;</td>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= FormatCurrency(Companies("Federal")) %>&nbsp;</td>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= FormatCurrency(Companies("SocialSecurity")) %>&nbsp;</td>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= FormatCurrency(Companies("Medicare")) %>&nbsp;</td>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= FormatCurrency(Companies("NY_Withholding")) %>&nbsp;</td>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= FormatCurrency(Companies("NY_Disability")) %>&nbsp;</td>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= FormatCurrency(Companies("NY_City")) %>&nbsp;</td>
+									</tr>
+									</table>
+								</td>
+							</tr>
+							<%
+								Companies.Close
+								Set Companies = Nothing
+							%>
+			<tr bgcolor="#ffffff">
+				<td colspan="4"><font face="Verdana,Arial" size=1 color="#639AFF">&nbsp;</td>
+			</tr>
+			<%
+				End If
+			%>
+			<tr bgcolor="#ffffff">
+				<td align="right"><font face="Verdana,Arial" size=2 color="#000000""><b>&nbsp;&nbsp;TOTALS&nbsp;FOR&nbsp;YEAR&nbsp;<%= PaymentYear %></b>&nbsp;</td>
+				<td><font face="Verdana,Arial" size=2 color="#ff0000"">&nbsp;&nbsp;<b><%= FormatNumber(FinalTotalHours) %></b>&nbsp;&nbsp;</td>
+				<td><font face="Verdana,Arial" size=2 color="#ff0000"">&nbsp;&nbsp;<b><%= FormatCurrency(FinalTotalGross) %></b>&nbsp;&nbsp;</td>
+				<td><font face="Verdana,Arial" size=2 color="#ff0000"">&nbsp;&nbsp;<b><%= FormatCurrency(FinalTotalNet) %></b>&nbsp;&nbsp;</td>
+			</tr>
+							<%
+								sql = "sp_Paychecks_UserID_PaycheckDate_total " & Session("UserID") & ", " & PaymentYear
+								Set Companies = oConn.Execute(sql)
+								vv_Gross = Companies("Gross")
+								vv_Federal = Companies("Federal")
+								vv_SocialSecurity = Companies("SocialSecurity")
+								vv_Medicare = Companies("Medicare")
+								vv_NY_Withholding = Companies("NY_Withholding")
+								vv_NY_Disability = Companies("NY_Disability")
+								vv_NY_City = Companies("NY_City")
+							%>		
+							<tr bgcolor="#ffffff">
+								<td colspan=4>
+									<table cellspacing=1 cellpadding=0 border=0 width="100%" bgcolor="#000000">
+									<tr>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;Gross&nbsp;</td>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;Federal&nbsp;</td>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;Social&nbsp;Security&nbsp;</td>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;Medicare&nbsp;</td>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;State&nbsp;</td>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;Disability&nbsp;</td>
+										<td bgcolor="#639AFF" align="center"><font face="Verdana,Arial" size=2 color="#ffffff"><b>&nbsp;City&nbsp;</td>
+									</tr>
+									<tr>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= vv_Gross %>&nbsp;</td>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= vv_Federal %>&nbsp;</td>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= vv_SocialSecurity %>&nbsp;</td>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= vv_Medicare %>&nbsp;</td>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= vv_NY_Withholding %>&nbsp;</td>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= vv_NY_Disability %>&nbsp;</td>
+										<td bgcolor="#FFFFFF" align="center"><font face="Verdana,Arial" size=1 color="#ff0000"><b>&nbsp;<%= vv_NY_City %>&nbsp;</td>
+									</tr>
+									</table>
+								</td>
+							</tr>
+							<%
+								Companies.Close
+								Set Companies = Nothing
+							%>
+			</table>
+		<% ElseIf PaycheckID <> "" OR Action = "Add" Then %>
+		<%
+			If SubmitButton = "" AND Action = "Edit" Then
+				sql = "sp_Paychecks_PaycheckID " & PaycheckID
+				WriteDebugger sql, Debugging, 0
+				Set rs = oConn.Execute(sql)
+				CompanyID = rs("CompanyID")
+				PaymentDate = rs("PaymentDate")
+				HourlyRate = rs("HourlyRate")
+				Gross = rs("Gross")
+				Federal = rs("Federal")
+				SocialSecurity = rs("SocialSecurity")
+				Medicare = rs("Medicare")
+				NY_Withholding = rs("NY_Withholding")
+				NY_Disability = rs("NY_Disability")
+				NY_City = rs("NY_City")
+				Title = PaymentDate
+				rs.Close
+				Set rs = Nothing
+			ElseIf SubmitButton = "Update" OR SubmitButton = "Add" Then
+				CompanyID = Request("CompanyID")
+				HourlyRate = Request("HourlyRate")
+				Gross = Request("Gross")
+				Federal = Request("Federal")
+				PaymentDay = Request("PaymentDay")
+				PaymentMonth = Request("PaymentMonth")
+				PaymentYear = Request("PaymentYear")
+				PaymentDate = PaymentMonth & "/" & PaymentDay & "/" & Right(PaymentYear, 2)
+				SocialSecurity = Request("SocialSecurity")
+				Medicare = Request("Medicare")
+				NY_Withholding = Request("NY_Withholding")
+				NY_Disability = Request("NY_Disability")
+				NY_City = Request("NY_City")
+				Title = Request("Request")
+			End If	
+	
+			If SubmitButton = "Add" Then
+				Set ors = Server.CreateObject("ADODB.Recordset")
+				ors.Open "Paychecks", oConn, 1, 2, &H0002
+				ors.AddNew
+				ors("PaymentDate") = PaymentMonth & "/" & PaymentDay & "/" & Right(PaymentYear, 2)
+				ors("CompanyID") = CompanyID
+				
+				ors("HourlyRate") = HourlyRate
+				ors("Gross") = Gross
+				ors("Federal") = Federal
+				ors("SocialSecurity") = SocialSecurity
+				ors("Medicare") = Medicare
+				ors("NY_Withholding") = NY_Withholding
+				ors("NY_Disability") = NY_Disability
+				ors("NY_City") = NY_City
+				ors.Update
+				PaycheckID = ors("PaycheckID")
+				ors.Close
+				Set ors = Nothing
+				ErrorMessage = Server.URLEncode("<font face=""Arial"" size=2 color=""#ff0000""><b>Paycheck added.</b>")
+				If NOT Debugging Then Response.Redirect Request.ServerVariables("SCRIPT_NAME") & "?Template=" & Template & "&Action=Edit&PaycheckID=" & PaycheckID & "&ErrorMessage=" & ErrorMessage
+			ElseIf SubmitButton = "Update" Then
+				WriteDebugger sql, Debugging, 0
+				oConn.Execute sql
+				ErrorMessage = "<font face=""Arial"" size=2 color=""#ff0000""><b>Paycheck updated.</b>"
+			ElseIf SubmitButton = "Delete" Then
+				sql = ""
+				sql = sql & "DELETE FROM Paychecks WHERE PaycheckID = " & PaycheckID
+				WriteDebugger sql, Debugging, 0
+				If NOT Debugging Then oConn.Execute sql
+				If NOT Debugging Then Response.Redirect Request.ServerVariables("SCRIPT_NAME") & "?Template=" & Template
+			ElseIf Action = "Add" AND SubmitButton = "" Then
+				If CompanyID = "" Then
+					sql = "SELECT CompanyID FROM Users WHERE UserID = " & Session("UserID")
+					Set CompanyID_rs = oConn.Execute(sql)
+					If NOT CompanyID_rs.EOF Then CompanyID = CompanyID_rs("CompanyID")
+					CompanyID_rs.Close
+					Set CompanyID_rs = Nothing
+				End If
+				PaymentDate = DateSerial(PaymentYear, Month(Date), Day(Date))
+				Gross = "0"
+				Federal = "0"
+				SocialSecurity = "0"
+				Medicare = "0"
+				NY_Withholding = "0"
+				NY_Disability = "0"
+				NY_City = "0"
+			End If
+
+			sql = "sp_Companies_CompanyID_CompanyName " & Session("UserID")
+			Set Companies = oConn.Execute(sql)
+			
+			sql = "sp_Paychecks_UserID " & Session("UserID") & ", " & PaymentYear
+			Set Paychecks = oConn.Execute(sql)
+		%>
+			<table border=0 width="100%" cellspacing=0 cellpadding=0>
+			<tr>
+				<td valign=top>
+					<table cellspacing=1 cellpadding=3 bgcolor="#000094">
+					<tr bgcolor="#000094">
+						<td align=right><font face="Verdana,Arial" size=2 color="#ffffff">&nbsp;&nbsp;<b><a href="<%= Request.ServerVariables("SCRIPT_NAME") %>?Template=<%= Template %>&PaymentYear=<%= PaymentYear %>" style="text-decoration:none;"><font face="Verdana,Arial" size=2 color="#ffffff">Paychecks</a>&nbsp;&nbsp;</td>
+					</tr>			
+					<% 
+						CompanyID_tmp = ""
+						tmp_Gross = 0.0
+						Do Until Paychecks.EOF
+							tmp_Gross = CDbl(Paychecks("Gross")) + tmp_Gross
+					%>
+						<% If CStr(CompanyID_tmp) <> CStr(Paychecks("CompanyID")) Then %>
+						<tr bgcolor="#639AFF">
+							<td align=right bgcolor="#639AFF"><font face="Verdana,Arial" size=1 color="#ffffff"><b><%= Replace(Paychecks("CompanyName"), " ", "&nbsp;") %></b>&nbsp;&nbsp;</td>
+						</tr>
+							<% CompanyID_tmp = Paychecks("CompanyID") %>
+						<% End If %>
+						<tr bgcolor="#ffffff">
+							<% If CStr(Paychecks("PaycheckID")) = PaycheckID Then %>
+								<td align=right bgcolor="#dddddd"><font face="Verdana,Arial" size=1 color="#ff0000">&nbsp;&nbsp;<b><%= Replace(MonthName(Month(Paychecks("PaymentDate"))) & " " & Day(Paychecks("PaymentDate")) & ", " & Year(Paychecks("PaymentDate")), " ", "&nbsp;") %>&nbsp;&nbsp;</td>
+							<% Else %>
+								<td align=right><font face="Verdana,Arial" size=1>&nbsp;&nbsp;<a href="<%= Request.ServerVariables("SCRIPT_NAME") %>?Template=<%= Template %>&Action=Edit&PaycheckID=<%= Paychecks("PaycheckID") %>&PaymentYear=<%= PaymentYear %>"><%= Replace(MonthName(Month(Paychecks("PaymentDate"))) & " " & Day(Paychecks("PaymentDate")) & ", " & Year(Paychecks("PaymentDate")), " ", "&nbsp;") %></a>&nbsp;&nbsp;</td>
+							<% End If %>
+						</tr>
+					<%
+							Paychecks.MoveNext
+						Loop
+						Paychecks.Close
+						Set Paychecks = Nothing
+					%>	
+					<tr bgcolor="#000094">
+						<td align=right><font face="Verdana,Arial" size=2 color="#ffffff">&nbsp;&nbsp;<b>Gross:&nbsp;<%= FormatCurrency(tmp_Gross) %>&nbsp;&nbsp;</td>
+					</tr>			
+					</table>			
+				</td>
+				<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+				<td valign=top width="100%">
+								<table cellspacing=0 border=0 cellpadding=2>
+								<tr bgcolor="#000094">
+									<td colspan=2><font face="Arial,Verdana" size=2 color="#ffffff">&nbsp;&nbsp;<b><%= Action %>&nbsp;paycheck</td>
+								</tr>
+								<% If ErrorMessage <> "" Then %>
+								<tr>
+									<td colspan=2><%= ErrorMessage %></td>
+								</tr>
+								<% End If %>
+								<tr>
+								    <td><font face="Verdana, Arial" size=2 color="#000094">&nbsp;<b>Company</b></td>
+								    <td>
+										<select name="CompanyID" class="EmploymentElement">
+										<%
+											Do Until Companies.EOF
+												If CInt(CompanyID) = Companies("CompanyID") OR CStr(Companies("CompanyID")) = Request("CompanyID") Then
+													Response.Write "<option value=""" & Companies("CompanyID") & """ SELECTED>" & Companies("CompanyName") & "</option>" & vbCrLF
+												Else
+													Response.Write "<option value=""" & Companies("CompanyID") & """>" & Companies("CompanyName") & "</option>" & vbCrLF
+												End If
+												Companies.MoveNext
+											Loop
+										%>
+										</select>
+									</td>
+								</tr>
+								<tr>
+								    <td><font face="Verdana, Arial" size=2 color="#000094">&nbsp;<b>Payment&nbsp;Date</b></td>
+								    <td><%= FormatPaymentDate(PaymentDate) %></td>
+								</tr>
+								<%
+									If Trim(CStr(HourlyRate)) = "" Then
+										sql = "SELECT HourlyRate FROM Users WHERE UserID = " & Session("UserID")
+										Set rs = oConn.Execute(sql)
+										HourlyRate = rs("HourlyRate")
+										rs.Close
+										Set rs = Nothing
+										If IsNull(HourlyRate) Then HourlyRate = 0.0
+									End If
+								%>
+								<tr>
+								    <td><font face="Verdana, Arial" size=2 color="#000094">&nbsp;<b>Hourly&nbsp;Rate</b></td>
+								    <td><input type=text size=10 maxlength=10 name="HourlyRate" value="<%= HourlyRate %>" class="EmploymentElement"></td>
+								</tr>
+								<tr>
+								    <td><font face="Verdana, Arial" size=2 color="#000094">&nbsp;<b>Gross</b></td>
+								    <td><input type=text size=10 maxlength=10 name="Gross" value="<%= Gross %>" class="EmploymentElement"></td>
+								</tr>
+								<tr>
+								    <td><font face="Verdana, Arial" size=2 color="#000094">&nbsp;<b>Federal</b></td>
+								    <td><input type=text size=10 maxlength=10 name="Federal" value="<%= Federal %>" class="EmploymentElement"></td>
+								</tr>
+								<tr>
+								    <td><font face="Verdana, Arial" size=2 color="#000094">&nbsp;<b>Social&nbsp;Security</b></td>
+								    <td><input type=text size=10 maxlength=10 name="SocialSecurity" value="<%= SocialSecurity %>" class="EmploymentElement"></td>
+								</tr>
+								<tr>
+								    <td><font face="Verdana, Arial" size=2 color="#000094">&nbsp;<b>Medicare</b></td>
+								    <td><input type=text size=10 maxlength=10 name="Medicare" value="<%= Medicare %>" class="EmploymentElement"></td>
+								</tr>
+								<tr>
+								    <td><font face="Verdana, Arial" size=2 color="#000094">&nbsp;<b>NY&nbsp;-&nbsp;Withholding</b>&nbsp;</td>
+								    <td><input type=text size=10 maxlength=50 name="NY_Withholding" value="<%= NY_Withholding %>" class="EmploymentElement"></td>
+								</tr>
+								<tr>
+								    <td><font face="Verdana, Arial" size=2 color="#000094">&nbsp;<b>NY&nbsp;-&nbsp;Disability</b></td>
+								    <td><input type=text size=10 maxlength=50 name="NY_Disability" value="<%= NY_Disability %>" class="EmploymentElement"></td>
+								</tr>
+								<tr>
+								    <td><font face="Verdana, Arial" size=2 color="#000094">&nbsp;<b>NY&nbsp;-&nbsp;City</b></td>
+								    <td><input type=text size=10 maxlength=50 name="NY_City" value="<%= NY_City %>" class="EmploymentElement"></td>
+								</tr>
+								<% If Action = "Edit" Then %>
+								<%	
+									Net = CDbl(Gross) - (CDbl(Federal) + CDbl(SocialSecurity) + CDbl(Medicare) + CDbl(NY_Withholding) + CDbl(NY_Disability) + CDbl(NY_City))
+								%>
+								<tr>
+								    <td><font face="Verdana, Arial" size=2 color="#ffffff">&nbsp;<b>NET</b></td>
+								    <td><font face="Verdana, Arial" size=2 color="#ff0000"><b><%= FormatNumber(Net, 2) %></b></td>
+								</tr>
+								<% End If %>
+								<tr>
+								    <td>&nbsp;</td>
+									<td>
+										<input type="submit" name="SubmitButton" value="<% If Action = "Edit" Then %>Update<% Else %>Add<% End If %>" class="EmploymentElement">&nbsp;&nbsp;
+										<input type="submit" name="SubmitButton" value="Cancel" class="EmploymentElement">&nbsp;&nbsp;
+										<% If Action = "Edit" Then %><input type="submit" name="SubmitButton" value="Delete" class="EmploymentElement"><% End If %>
+									</td>
+								</tr>
+								</table>							
+								
+				</td>
+			</tr>
+			</table>
+
+		<% End If %>
+	</td>
+</tr>
+</table>
+
+<% If PaycheckID <> "" Then %>
+
+<%= formHidden("PaycheckID", PaycheckID) %>
+
+<% End IF %>
+<%= formHidden("Action", Action) %>
+<%= formHidden("Template", Template) %>

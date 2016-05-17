@@ -1,0 +1,102 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formReferencedBy" name="formReferencedBy">
+<%
+	SubmitButtonValue = "Create"
+	
+	If ReferencedByID <> "" Then 
+		sql = "SELECT * FROM ReferencedBy WHERE ReferencedByID = " & ReferencedByID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		If NOT ors.EOF Then
+			OrderNum = ors("OrderNum")
+			ReferencedByName = ors("ReferencedByName")
+			ors.Close
+			SubmitButtonValue = "Save"
+		End If
+		Set ors = Nothing
+	End If 
+%>
+<% If tiradoonlineErrorMessage <> "" Then %>
+&nbsp;<br />
+<div class="ErrorMessage"><%= tiradoonlineErrorMessage %></div>
+<% End If %>
+
+<div class="tiradoonlineTheme"><h1 class="Header" style="padding: 5px;">Resume&nbsp;Type</h1></div>
+<p>
+
+
+<table cellspacing=0 cellpadding=5 border=0>
+<tr>
+	<td align="right"><b>Order#:</b></td>
+	<td>
+		<%= formTextBox("OrderNum", "3", OrderNum, "tiradoonlineElement", "OrderNum", "Invalid Order#") %>
+	</td>
+</tr>
+<tr>	
+	<td align="right"><b>Referenced&nbsp;By:</b></td>
+	<td>
+		<%= formTextBox("ReferencedByName", "40", ReferencedByName, "tiradoonlineElement", "ReferencedByName", "Invalid Referenced By") %>
+	</td>
+</tr>
+<tr>
+	<td align="right">&nbsp;</td>
+	<td>
+		
+		<%= Submit_Button("SubmitButton", SubmitButtonValue & " Referenced By", "Button", "", SubmitButtonValue & " Referenced By") %>&nbsp;&nbsp;
+		<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+	</td>
+</tr>
+</table>
+
+<p>
+ 	
+<%
+	sql = "SELECT * FROM ReferencedBy ORDER BY OrderNum"
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+%>
+
+<table cellspacing=0 cellpadding=5 border=0 width="100%">
+<%
+	If NOT ors.EOF Then
+%>
+<tr bgcolor="<%= tiradoonline_THEME %>" class="tiradoonlineTheme">
+	<td><b>Order#</b></td>
+	<td><b>Referenced&nbsp;By</b></td>
+	<td>
+		<%= Button("Button", "Add New Filtered Resume Type", "Button", "", "Add New Filtered Resume Type", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&Action=Add'") %>
+	</td>
+</tr>
+<%
+		Do Until ors.EOF
+			ReferencedByID = ors("ReferencedByID")
+			OrderNum = ors("OrderNum")
+			ReferencedByName = ors("ReferencedByName")
+%>
+<tr valign="middle" valign="center" class="GridViewRow">
+	<td><a href="<%= SCRIPT_NAME %>?ReferencedByID=<%= ReferencedByID %>&Template=<%= Template %>&Action=Edit"><%= OrderNum %></a></td>
+	<td><%= ReferencedByName %></td>
+	<td>
+		<%= Button("Button", "Delete", "DeleteButton", " ", "Delete", "DeleteItem('Are you sure you want to delete this item?', '" & SCRIPT_NAME & "?Template=" & Template & "&SubmitButton=DeleteReferencedBy&ReferencedByID=" & ReferencedByID & "')") %>
+	</td>
+</tr>
+<%
+			ors.MoveNext
+		Loop
+		ors.Close
+		Set ors = Nothing
+	Else
+%>
+<tr class="ErrorMessage">
+	<td>No Referenced By found.</td>
+</tr>
+<%
+	End If
+%>
+</table>
+
+
+<%= formHidden("Template", Template) %>
+
+<%= formHidden("ReferencedByID", ReferencedByID) %>
+
+</form>

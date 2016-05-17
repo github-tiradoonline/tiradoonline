@@ -1,0 +1,110 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formDoctor" name="formDoctor">
+<% 
+	SubmitButtonValue = "Create Doctor"
+	If DoctorID <> "" Then
+		SubmitButtonValue = "Save Doctor"
+		sql = "SELECT * FROM Doctor WHERE DoctorID = " & DoctorID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		FirstName = ors("FirstName")
+		LastName = ors("LastName")
+		TelephoneNumber = ors("TelephoneNumber")
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<table>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td>
+		<div class="HealthTheme"><h1 class="Header" style="padding: 5px;">Doctor(s)</h1></div>
+		<p>
+		<p>
+		<div class="ErrorMessage" id="HealthErrorMessage" name="HealthErrorMessage"><%= HealthErrorMessage %></div>
+		<table cellpadding="3">
+		<tr>
+			<td class="frm_label">First&nbsp;Name:</td>
+			<td>
+				<%= formTextBox("FirstName", "20", FirstName, "HealthElement", "First Name", "Invalid First Name") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Last&nbsp;Name:</td>
+			<td>
+				<%= formTextBox("LastName", "20", LastName, "HealthElement", "Last Name", "Invalid Last Name") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Telephone&nbsp;Number:</td>
+			<td>
+				<%= formTextBox("TelephoneNumber", "20", TelephoneNumber, "HealthElement", "Telephone Number", "Invalid Telephone") %>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+
+				<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+				
+			</td>
+		</tr>
+		</table>
+		&nbsp;<br />
+		&nbsp;<br />
+		<table cellpadding="5" cellspacing="0" class="GridViewAlteringRows">
+		<%
+			sql = "sp_Doctor_UserID_get " & Session("UserID")
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+		%>
+		<tr class="HealthTheme">
+			<td>First&nbsp;Name</td>
+			<td>Last&nbsp;Name</td>
+			<td>Telephone&nbsp;Number</td>
+			<td>&nbsp;</td>
+		</tr>
+		<%
+				Do Until ors.EOF
+					Doctor_ID = ors("DoctorID")
+					FirstName = ors("FirstName")
+					LastName = ors("LastName")
+					TelephoneNumber = ors("TelephoneNumber")
+					style = "  style=""border-top: #000000 3px solid"""
+		%>
+		<tr class="GridViewRow" valign="top">
+			<td align="center"<%= style %>><%= FirstName %></td>
+			<td align="center"<%= style %>><%= LastName %></td>
+			<td align="center"<%= style %>><%= TelephoneNumber %></td>
+			<td<%= style %>>
+				<%= Button("Button", "Edit", "Button", "", "Edit", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&DoctorID=" & Doctor_ID & "'") %>
+				<p />
+				<%= Button("Button", "Add Medine Refill", "Button", "", "Add Medine Refill", "location.href='" & SCRIPT_NAME & "?Template=medicinerefill&DoctorID=" & Doctor_ID & "'") %><br />
+				
+				&nbsp;&nbsp;
+			</td>
+		</tr>
+		<%
+					ors.MoveNext
+				Loop
+				ors.Close
+			
+			Else
+		%>
+		<tr>
+			<td class="ErrorMessage">No Doctors found.</td>
+		</tr>
+		<% 	
+			End If 
+			Set ors = Nothing
+		%>
+		</table>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("DoctorID", DoctorID) %>
+
+<%= formHidden("Template", Template) %>
+</form>

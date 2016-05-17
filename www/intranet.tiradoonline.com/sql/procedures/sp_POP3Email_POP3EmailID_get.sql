@@ -1,0 +1,22 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'sp_POP3Email_POP3EmailID_get' AND TYPE = 'P')
+	DROP PROCEDURE sp_POP3Email_POP3EmailID_get;
+GO
+
+CREATE PROCEDURE sp_POP3Email_POP3EmailID_get
+	@POP3EmailID		INT
+
+AS
+
+	SELECT
+		*
+	FROM
+		POP3Email
+	WHERE
+		Active = 1
+		AND POP3EmailID = @POP3EmailID
+	ORDER BY
+		CONVERT(DATETIME, POP3EmailMessageDateTime) DESC
+
+GO
+
+EXEC sp_POP3Email_POP3EmailID_get 1001

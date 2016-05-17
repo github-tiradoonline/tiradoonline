@@ -1,0 +1,24 @@
+<%
+		vForm = ""
+		vQueryString = ""
+		For Each Item In Request.QueryString
+    		vQueryString = vQueryString & Item & "=" & SQLEncode(Request.QueryString(Item)) & "|||||"
+		Next
+		For Each Item In Request.Form
+    		vForm = vForm & Item & "=" & SQLEncode(Request.Form(Item)) & "|||||"
+		Next
+		sql = "sp_PageLogs_insert " & _
+				 	"'" & Session("SalesID") & "', " & _
+				 	"'" & SCRIPT_NAME & "', " & _
+				 	"'" & Request.ServerVariables("REQUEST_METHOD") & "', " & _
+				 	"'" & Left(vQueryString, 8000) & "', " & _
+				 	"'" & Left(vForm, 8000) & "'"
+		
+			WriteDebugger sql & "<br>"
+		'If SCRIPT_NAME <> "/administration/pagelogs.asp" Then
+			Set orsPageLog = oConn.Execute(sql)
+			PageLogID = orsPageLog.Fields(0).Value
+			orsPageLog.Close
+			Set orsPageLog = Nothing
+		'End If
+%>

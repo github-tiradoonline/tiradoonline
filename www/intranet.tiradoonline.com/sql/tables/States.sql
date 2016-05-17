@@ -1,0 +1,24 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'States' AND TYPE = 'U')
+DROP TABLE States;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'States' AND TYPE = 'U')
+	DROP TABLE States;
+GO
+
+CREATE TABLE States
+(
+	StateID		IDENTITY (1001,1) INT  NOT NULL,
+	State		 VARCHAR(30)  NULL,
+	StateAbbr		 VARCHAR(2)  NULL
+
+);
+GO
+
+
+
+
+GO
+
+GO
+

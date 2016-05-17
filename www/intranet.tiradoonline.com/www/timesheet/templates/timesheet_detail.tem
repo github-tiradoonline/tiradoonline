@@ -1,0 +1,268 @@
+<!-- #include virtual="/timesheet/includes/subnav.inc" -->
+
+<%
+	sql = "SELECT * FROM TimesheetCompany WHERE TimesheetCompanyID = " & TimesheetCompanyID
+	WriteDebugger sql, Debugging, 0
+	
+	Set ors = oConn.Execute(sql)
+	If NOT ors.EOF Then 
+		TimesheetCompanyName = ors("TimesheetCompanyName")
+		ors.Close
+	End If
+	Set ors = Nothing
+%>
+<form action="<%= SCRIPT_NAME %>" method="post" id="formTimesheetDetail" name="formTimesheetDetail">
+<%
+	sql = "SELECT a.TimesheetInvoiceNumber, a.TimesheetHourlyRate, a.TimesheetStartDate, a.TimesheetEndDate, b.TimesheetType FROM Timesheet a, TimesheetType b WHERE a.TimesheetTypeID = b.TimesheetTypeID AND a.TimesheetID = " & TimesheetID
+	Set ors = oConn.Execute(sql)
+	
+	If NOT ors.EOF Then
+		TimesheetInvoiceNumber = ors("TimesheetInvoiceNumber")
+		TimesheetHourlyRate = ors("TimesheetHourlyRate")
+		TimesheetStartDate = ors("TimesheetStartDate")
+		TimesheetEndDate = ors("TimesheetEndDate")
+		TimesheetType = ors("TimesheetType")
+		CurrentDate = TimesheetStartDate
+%>
+	<div class="TimesheetTheme"><h1 class="Header" style="padding: 5px;">Timesheet&nbsp;(<%= FormatDateTime(TimesheetStartDate, 1) %>&nbsp;-&nbsp;<%= FormatDateTime(TimesheetEndDate, 1) %>)</h1></div>
+	<p>
+	<% If TimesheetErrorMessage <> "" Then %>
+	
+	<div class="ErrorMessage"><%= TimesheetErrorMessage %></div>
+	&nbsp;<br />
+	<% End If %>
+	<table cellpadding="5" cellspacing=0 width="500">
+	<tr>
+		<td colspan="5">
+			<table cellpadding="5" cellspacing=0 width="100%">
+			<tr class="MusicTheme">	
+				<td>
+					<h2><a href="<%= SCRIPT_NAME %>?Template=timesheet&TimeSheetCompanyID=<%= TimeSheetCompanyID %>&TimesheetID=<%= TimesheetID %>"><%= HTMLFormat(TimesheetCompanyName) %>&nbsp;-&nbsp;Invoice#&nbsp;<%= TimesheetInvoiceNumber %></a></h2>
+				</td>
+				<td align="right">
+				<%
+					TemplateFile2 = Server.URLEncode(Server.MapPath("/timesheet/invoice_template.html"))
+				%>
+					<%= Button("Button", "Preview Invoice", "Button", "", "Preview Invoice", "window.open('invoice.asp?TimesheetID=" & TimesheetID & "&TemplateFile=" & TemplateFile2 & "&TemplateType=" & Server.URLEncode("Invoice") & "')") %>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<%= Button("Button", "Preview Timesheet", "Button", "", "Preview Invoice", "window.open('invoice.asp?TimesheetID=" & TimesheetID & "&TemplateFile=" & TemplateFile2 & "&TemplateType=" & Server.URLEncode("Timesheet") & "')") %>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<%
+						EmailInvoice = "invoice.asp?SubmitButton=EmailInvoice&TemplateFile=" & TemplateFile2 & "&Template=timesheet_detail&TimesheetCompanyID=" & TimesheetCompanyID & "&TimesheetID=" & TimesheetID & "&TemplateType=" & Server.URLEncode("Invoice")
+						EmailTimesheet = "invoice.asp?SubmitButton=EmailInvoice&TemplateFile=" & TemplateFile2 & "&Template=timesheet_detail&TimesheetCompanyID=" & TimesheetCompanyID & "&TimesheetID=" & TimesheetID & "&TemplateType=" & Server.URLEncode("Timesheet")
+					%>
+					<%= Button("Button", "Email Invoice", "Button", "", "Email Invoice", "EmailInvoice('" & EmailInvoice & "')") %>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<%= Button("Button", "Add New Entry", "Button", "", "Add New Entry", "location.href='" & SCRIPT_NAME & "?Template=timesheet_detail&TimesheetCompanyID=" & TimesheetCompanyID & "&TimesheetID=" & TimesheetID & "'") %>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<%= Button("Button", "Email Timesheet", "Button", "", "Email Invoice", "EmailInvoice('" & EmailTimesheet & "')") %>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=timesheet&TimeSheetCompanyID=" & TimeSheetCompanyID & "'") %>
+				</td>
+			</tr>
+			</table>
+			
+			<!-- #include virtual="/timesheet/includes/subnav.inc" -->
+
+		</td>
+	</tr>
+	<tr class="TimesheetTheme">
+		<td align="center"><b>Date</b></td>
+		<td align="center"><b>Hours</b></td>
+		<td><b>Detail</b></td>
+		<td colspan="2"><b>Billable</b></td>
+	</tr>
+	<% 
+		SubmitButtonValue = "Add"
+		If TimesheetDetailID <> "" Then 
+			SubmitButtonValue = "Save"
+			sql = "SELECT * FROM TimesheetDetail WHERE TimesheetDetailID = " & TimesheetDetailID
+			Set ors2 = oConn.Execute(sql)
+			If NOT ors2.EOF Then
+				TimesheetDetailDate = ors2("TimesheetDetailDate")
+				TimesheetHours = ors2("TimesheetHours")
+				TimesheetDescription = ors2("TimesheetDescription")
+				TimesheetBillable = ors2("TimesheetBillable")
+				ors2.Close
+			End If
+			Set ors2 = Nothing
+	%>
+	<% End If %>
+	<tr valign="top">
+		<td>
+			<select id="TimesheetDetailDate" name="TimesheetDetailDate" class="TimesheetElement">
+			
+			<% 
+				
+				Do Until CurrentDate = DateAdd("d",1,TimesheetEndDate)
+					CurrentDateName = WeekDayName(WeekDay(CurrentDate)) & ", " & CurrentDate
+			%>
+				<% If CStr(CurrentDate) = CStr(TimesheetDetailDate) Then %>
+				<option value="<%= CurrentDate %>" SELECTED><%= CurrentDateName %></option>
+				<% Else %>
+				<option value="<%= CurrentDate %>"><%= CurrentDateName %></option>
+				<% End If %>
+			<%
+					CurrentDate = DateAdd("d",1,CurrentDate) 
+				Loop 
+			%>
+			</select>
+		</td>
+		<td align="center">
+			<%= formTextBox("TimesheetHours", "3", TimesheetHours, "TimesheetElement", "TimesheetHours", "Invalid Hours") %>
+		</td>
+		<td>
+			<%= formTextArea("TimesheetDescription", TimesheetDescription, "300", "100", "TimesheetElement", "TimesheetDescription", "Invalid Detail") %>
+		</td>
+		<td>
+			<input type="checkbox" id="TimesheetBillable" name="TimesheetBillable" value="1" <% If CBool(TimesheetBillable) Then Response.Write " CHECKED"  %> />
+		</td>
+		<td>
+			<%= Submit_Button("SubmitButton", SubmitButtonValue & " Timesheet Entry", "Button", "", SubmitButtonValue & " Timesheet Entry") %>&nbsp;&nbsp;
+		</td>
+	</tr>
+	</table>
+	<%
+		ors.Close
+	End If
+	Set ors = Nothing
+%>
+
+&nbsp;<br />
+&nbsp;<br />
+<%
+	sql = "sp_TimesheetDetail_TimesheetID_get " & TimesheetID
+	Set ors = oConn.Execute(sql)
+	
+	If NOT ors.EOF Then
+%>
+<table cellspacing="0" border=0 class="GridViewAlteringRows" width="100%">
+<tr class="TimesheetTheme" valign="top">
+	<td align="right"><b>Date</b></td>
+	<td align="center"><b>Hours</b></td>
+	<td><b>Detail</b></td>
+	<td align="right"><b>Total</b></td>
+	<td>&nbsp;</td>
+</td>
+<%
+		TotalHours = 0
+		TotalSubHours = 0
+		TotalSubHours = 0
+		TotalSubPay = 0
+		Do Until ors.EOF
+			TotalTimesheetEntries = ors("TotalTimesheetEntries")
+			TimesheetDetailID = ors("TimesheetDetailID")
+			TimesheetDetailDate = ors("TimesheetDetailDate")
+			DayofWeek = WeekDayName(WeekDay(TimesheetDetailDate))
+			TimesheetDetailDate = DayofWeek & ",&nbsp;" & TimesheetDetailDate & "<br />"
+			If tempTimesheetDetailDate <> TimesheetDetailDate Then 
+				outputTimesheetDetailDate = TimesheetDetailDate & "<br />"
+				tempTimesheetDetailDate = TimesheetDetailDate
+				timesheetCounter = 1
+				TotalSubHours = 0
+				TotalSubPay = 0
+			Else
+				outputTimesheetDetailDate = ""
+			End If
+
+			TimesheetBillable = ors("TimesheetBillable")
+			TimesheetDetailTime = FormatDateTime(ors("TimesheetDetailDate"), 3)
+			TimesheetHours = ors("TimesheetHours")
+			If TimesheetBillable Then 
+				TotalSubHours = CDbl(TotalSubHours) + CDbl(TimesheetHours)
+			End If
+			If TimesheetBillable Then 
+				TotalHours = CDbl(TotalHours) + CDbl(TimesheetHours)
+			End If
+			TimesheetDescription = ors("TimesheetDescription")
+			If TimesheetBillable Then 
+				Pay = CDbl(TimesheetHours) * CDbl(TimesheetHourlyRate)
+			Else
+				Pay = 0.00
+			End If
+			TotalSubPay = CDbl(TotalSubPay) + CDbl(Pay)
+%>
+<tr class="GridViewRow" valign="top">
+	<td align="right" <% If outputTimesheetDetailDate = "" Then Response.Write "bgcolor=""#ffffff"""  %>>
+		<b><%= outputTimesheetDetailDate %></b>
+	</td>
+	<td align="center"><%= TimesheetHours %></td>
+	<td>
+		<a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&TimesheetCompanyID=<%= TimesheetCompanyID %>&TimesheetID=<%= TimesheetID %>&TimesheetDetailID=<%= TimesheetDetailID %>"><%= HTMLFormat2(TimesheetDescription) %></a>
+		<% If NOT TimesheetBillable Then %>
+		<br /><b>(NOT BILLABLE)</b>
+		<% End If %>
+	</td>
+	<td align="right">
+		<% If TimesheetType <> "Daily" AND TimesheetType <> "Project" Then %>
+			<%= FormatNumber(Pay, 2) %>	
+		<% End If %>
+		&nbsp;
+	</td>
+	<td>
+		<a href="javascript:void(null)" onclick="DeleteItem('Are you sure you want to delete this item?', '<%= SCRIPT_NAME %>?Template=<%= Template %>&SubmitButton=DeleteTimesheetDetail&TimesheetDetailID=<%= TimesheetDetailID %>&TimesheetID=<%= TimesheetID %>&TimesheetCompanyID=<%= TimesheetCompanyID %>')"><%= DELETE_ICON %></a>
+	</td>
+</tr>
+
+<%
+			If timesheetCounter = TotalTimesheetEntries Then
+%>
+
+<tr valign="top" bgcolor="grey">
+	<td align="right" bgcolor="grey">&nbsp;</td>
+	<td align="center" style="color:#fff;font-size:16px" bgcolor="grey"><strong><%= TotalSubHours %></strong></td>
+	<td  bgcolor="grey">&nbsp;</td>
+	<% 
+		If TimesheetType = "Daily" Then
+			TotalPay = FormatNumber(TimesheetHourlyRate, 2)
+		ElseIf TimesheetType = "Project" Then
+			TotalPay = ""
+		Else
+			TotalPay = FormatNumber(TotalSubPay, 2)
+		End If 
+	%>
+	<td align="right" style="color:#fff;font-size:16px" bgcolor="grey"><strong><%= TotalPay %></strong></td>
+	<td bgcolor="grey">&nbsp;</td>
+</tr>
+
+
+<%			
+			
+			End If 
+			 
+			timesheetCounter = timesheetCounter + 1
+			ors.MoveNext
+		Loop
+		ors.Close
+		Set ors = Nothing
+		
+		sql = "sp_Timehseet_TimesheetID_Total_get " & TimesheetID
+		Set ors = oConn.Execute(sql)
+		
+		TotalPay = 0.0
+		If NOT ors.EOF Then
+			TotalPay = ors.Fields(0).Value
+			ors.Close
+		End If
+		Set ors = Nothing
+%>
+<tr class="TimesheetTheme" valign="top">
+	<td class="TimesheetTheme" align="right" style="color:#fff;font-size:16px">Total&nbsp;Hours:</td>
+	<td class="TimesheetTheme" align="center" style="color:#fff;font-size:16px"><%= FormatNumber(TotalHours, 2) %></td>
+	<td class="TimesheetTheme" align="right" width="100%" style="color:#fff;font-size:16px">Total&nbsp;Pay</td>
+	<td class="TimesheetTheme" style="color:#fff;font-size:16px" align="right"><%= FormatNumber(TotalPay, 2) %></td>
+	<td class="TimesheetTheme">&nbsp;</td>
+</tr>
+</table>
+<%
+	Else
+%>
+	<div class="ErrorMessage">No Entries found.</div>
+<%
+	End If
+%>
+<%= formHidden("Template", Template) %>
+
+<%= formHidden("TimesheetCompanyID", TimesheetCompanyID) %>
+
+<%= formHidden("TimesheetID", TimesheetID) %>
+
+<%= formHidden("TimesheetDetailID", TimesheetDetailID) %>
+
+</form>
+&nbsp;<br />&nbsp;<br />&nbsp;<br />&nbsp;<br />

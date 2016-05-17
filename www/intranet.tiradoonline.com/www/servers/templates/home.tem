@@ -1,0 +1,27 @@
+
+<!-- <div class="iconSubNav">
+	<a href="/monthly_expense/monthly_expense.asp?Template=reports"><img src="/images/icons/reports_off.gif" title="Reports" hspace="0" vspace="0" border="0" class="icon"></a>
+	<div class="iconName">Reports test</div>
+</div>	
+ -->
+ <%
+	sql = "sp_ServerProject_UserID_get " & Session("UserID")
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+	If NOT ors.EOF Then
+		Do Until ors.EOF
+			v_ServerProjectID = ors("ServerProjectID")
+			v_ServerProjectName = ors("ServerProjectName")
+%>
+<div class="iconSubNav">
+	<a href="<%= SCRIPT_NAME %>?Template=&ServerProjectID=<%= v_ServerProjectID %>"><img src="/images/icons/servers_off.gif" title="<%= v_ServerProjectName %>" hspace="0" vspace="0" border="0" class="icon"></a>
+	<!-- <div class="iconName"><%= v_ServerProjectName %></div> -->
+	<div class="iconName"><%= v_ServerProjectName %></div>
+</div>	
+<%
+			ors.MoveNext
+		Loop
+		ors.Close
+	End If
+	Set ors = Nothing
+%>

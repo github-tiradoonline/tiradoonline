@@ -1,0 +1,85 @@
+<body>
+<table width="100%">	
+
+<tr valign="top">
+	<td>
+		<div style="font-family:'Engravers MT';font-size:12pt;text-transform:uppercase;">
+			Theodore W. Tirado
+		</div>
+		
+		<p />
+
+		<div style="font-family:Tahoma;font-size:8.5pt;">
+			1234 Olmstead Ave<br />
+			Bronx, NY 10462<br />
+			Phone (347) 414-1284<br />
+		</div>
+		
+		<div style="font-family:Tahoma;font-size:8pt;font-weight:bold;">
+		&nbsp;<br />
+			TO:
+		</div>
+		<div style="font-family:Tahoma;font-size:8.5pt;">
+			Manhattan Information Systems<br />
+			228 East 45th Street
+			6th Floor<br/>
+			New York, NY 10017<br />
+			(212) 557-0123
+		</div>	
+	</td>
+	
+	<td align="right">
+		<div style="font-family:'Tahoma';font-size:20pt;text-transform:uppercase;color:#dddddd;font-weight:bold;">
+			Invoice
+		</div>
+	
+		&nbsp;<br />
+		&nbsp;<br />
+		&nbsp;<br />
+
+		<div style="font-family:Tahoma;font-size:8.5pt;text-transform:uppercase">
+		 Invoice# 1030<br />
+		 Date: 6/16/2014
+		</div>
+	</td>
+</tr>
+</table>
+
+&nbsp;<br />
+
+<table width="100%" style="background-color:#000000;" cellspacing="1" cellpadding="5"><tr style="background-color:#dddddd;text-transform:uppercase;font-family:Tahoma;font-size:8pt;text-align:center;font-weight:bold;">	<td>Date</td>	<td width="100%">Description</td>	<td>Hours</td>	<td>Rate</td>	<td>Amount</td></tr><tr style="background-color:#ffffff;font-family:'Courier New';font-size:10pt;" valign="middle">	<td><b>6/16/2014</b></td><td><br /><ul><li>	Item Lookup bug. if they enterand invalid Price (0 hours)<br /><li>	Added a feature to edit ACCPAC Customer Information. There is NOW an edit button for Customer Lookup. (2 hours)<br /><li>	Help Carol look for invoices 34164 & 34404. Result was there were no Service Report Dates entered. (1 hour)<br /><li>	Formated all phone numbers to proper phone number format. e.g. 2125570123 is now (212) 557-0123 or 2125557012343115 would return (212) 557-0123 x3115 (1 hour)<br /><li>	Added a feature to delete Service Reports (2 hours)<br /><li>	Added New Feature for Carol, When she searched for Service Reports w/o a Service Date it would never show up because it was filtered by a date range.   I added a checkbox to search with or w/o a date range (2 hours)<br /></ul>	</td>	<td align="center">		<b>8.00</b>	</td>	<td align="center">		<b>31.25</b>	</td>	<td align="right">		<b>250.00</b>	</td></tr><tr style="background-color:#eeeeee;font-family:'Courier New';font-size:10pt;" valign="middle">	<td><b>6/18/2014</b></td><td><br /><ul><li>	Build Administration Screen to build delete duplicate Service Reports (2 hours)<br /><li>	Update all pages, CreditMemo
+DateServicePerformed
+PurchseOrderServicePrice
+ServiceDates
+ServicedSerialNumbers, ServiceReportNumber was not unique, had to update all tables with ServerReportNumberID. Update all Service report pages, companies.asp, credit_memo.asp, credit_memo_100.asp, credit_memo_preview.asp, credit_memo_search.asp, service_report.asp, service_report_100.asp, service_report_duplicates.asp, service_report_windows.asp, service_reports_open.asp, vendors.asp (2 hours)<br /><li>	Added feature for Lora (and of course all SalesPersons) when they and a new item they can see the best prices for Part# from other Sales Persons (4 hours)<br /></ul>	</td>	<td align="center">		<b>8.00</b>	</td>	<td align="center">		<b>31.25</b>	</td>	<td align="right">		<b>250.00</b>	</td></tr><tr style="background-color:#ffffff;font-family:'Courier New';font-size:10pt;" valign="middle">	<td><b>6/23/2014</b></td><td><br /><ul><li>	Credit Memo - When Jessie tries to close a Credit Memo with a check# 20146313711 is generates an error because the database can only hold a number as big as 2147483647 and the number is too big to enter so i changed it into a character in case it might have a letter and it can hold up to 50 characters (0.5 hours)<br /><li>	Worked with Jessie, Carol for duplicate Credit Memos. Only found for Credit Memo '20521'. Service Report# 32569 (Learning Express) 11/23/2010 2:06:40 PM and Service Report# 34264(Nederlander) 1/31/2013 11:59:37 AM (0.5 hours)<br /><li>	Exported Carol a list of Service Reports w/o Service Date so she can go in a put a valid Date (0.5 hours)<br /></ul>	</td>	<td align="center">		<b>1.50</b>	</td>	<td align="center">		<b>31.25</b>	</td>	<td align="right">		<b>46.88</b>	</td></tr><tr style="background-color:#eeeeee;font-family:'Courier New';font-size:10pt;" valign="middle">	<td><b>6/26/2014</b></td><td><br /><ul><li>	Fixed close Service Report Bug with "-1" appended to end.  SQL Server did not know if it was a number or not. (0.25 hours)<br /><li>	Fix duplicate bug for credit memo '20521'. Had to manually go into SQL Server and write a script.  Could not do it thru the front end because it did not know which one to update cause there 2 entries of '20521' (0.25 hours)<br /></ul>	</td>	<td align="center">		<b>0.50</b>	</td>	<td align="center">		<b>31.25</b>	</td>	<td align="right">		<b>15.63</b>	</td></tr><tr style="background-color:#ffffff;font-family:'Courier New';font-size:10pt;" valign="middle">	<td><b>6/27/2014</b></td><td><br /><ul><li>	Gave Aja permissions same as Debbie & Jessie (0.25 hours)<br /><li>	Sales History, you can choose "All Sales Person" or Incividual Sales Person.  They were displaying ALL Sales Persons, changed it to just active Sales Persons. (0.25 hours)<br /><li>	Sales History - Added Person who you are searching for.  It was unclear what the results were (0.25 hours)<br /></ul>	</td>	<td align="center">		<b>0.75</b>	</td>	<td align="center">		<b>31.25</b>	</td>	<td align="right">		<b>23.44</b>	</td></tr><tr style="background-color:#eeeeee;font-family:'Courier New';font-size:10pt;" valign="middle">	<td><b>6/30/2014</b></td><td><br /><ul><li>	Fix bug with Quote/Work Order Quanities.  Allow decimal places for hours. (0 hours)<br /><li>	Fix bug for mouse over description of a quote/work order item. Remove tooltip (0 hours)<br /><li>	Fix Calendar pop up bug.  Instead of placing it on top of the text box place it directly to the right side of it. (1 hour)<br /></ul>	</td>	<td align="center">		<b>1.00</b>	</td>	<td align="center">		<b>31.25</b>	</td>	<td align="right">		<b>31.25</b>	</td></tr><tr style="background-color:#dddddd;text-transform:uppercase;font-family:'Courier New';font-size:10pt;text-align:center;font-weight:bold;">	<td colspan="2">		&nbsp;	</td>	<td align="center">		<b>19.75</b>	</td>	<td align="center">		&nbsp;	</td>	<td align="right">		<b>617.19</b>	</td></tr></table>
+
+<p />
+&nbsp;<br />
+&nbsp;<br />
+&nbsp;<br />
+
+<table width="100%" style="font-family:Tahoma;font-size:8.5pt">
+<tr>
+	<td width="50%">
+	 X__________________________________________________________________________
+	</td>
+	<td>
+	 X__________________________________________________________________________
+	</td>
+</tr>
+<tr>
+	<td>
+		Theodore W. Tirado	
+	</td>
+	<td>&nbsp;</td>
+</tr>
+</table>
+
+<p />
+&nbsp;<br />
+
+<div style="font-family:Tahoma;font-size:8.5pt">
+
+	Make all checks payable to <b>Theodore W. Tirado</b>
+</div>
+</body>

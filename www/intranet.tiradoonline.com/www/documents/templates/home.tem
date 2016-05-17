@@ -1,0 +1,103 @@
+<%
+	Set objFileSystem = CreateObject("Scripting.FileSystemObject")
+    Set objFolder = objFileSystem.GetFolder(CurrentDirectory)
+
+    ParentDirectory = objFolder.ParentFolder
+%>
+
+<table width="100%" border="0">
+<tr>
+	<td align="right">
+		<% If CurrentDirectory <> Documents_Directory Then %>
+		
+		<%= Button("Button", "BACK", "Button", "", "Back", "location.href='" & SCRIPT_NAME & "?CurrentDirectory=" & Server.URLEncode(ParentDirectory) & "&SubmitButton=ChangeDirectory'") %>&nbsp;&nbsp;&nbsp;
+		
+		<% End If %>
+		
+		<%= Button("Button", "CREATE FOLDER", "Button", "", "Create Folder", "promptCreateFolder('" & Server.URLEncode(CurrentDirectory & "\") & "', '" & HeaderTitle & ": Create New Folder')") %>
+	</td>
+</tr>
+</table>
+
+<% If DocumentsErrorMessage <> "" Then %>
+	<p>
+	<div class="ErrorMessage"><%= DocumentsErrorMessage %></div>
+<% End If %>
+
+<p>
+
+
+<b>Current&nbsp;Directory</b>:&nbsp;&nbsp;<%= Replace(CurrentDirectory, Documents_Directory, "") %>\
+
+<p>
+
+<table width="100%" border="0">
+<tr>
+	<td align="right"><b>Upload&nbsp;Directory:</b></td>
+	<td><input type="file" size="60" name="UploadFile" id="UploadFile" class="Button" /></td>
+</tr>
+<tr>
+	<td>&nbsp;</td>
+	<td>
+		<%= Submit_Button("SubmitButton", "Upload File", "Button", "", "Upload File) %>
+	</td>
+</tr>
+</table>
+<p>
+<!-- 
+*************************************************
+************ FOLDERS ****************************
+*************************************************
+-->
+<% 
+	If objFolder.SubFolders.Count > 0 Then
+		For Each Folder in objFolder.SubFolders
+			SubFolder = Server.URLEncode(CurrentDirectory & "\" & Folder.Name)
+%>
+		<div style="float:left;padding:30px;width:116px;text-align:center;">
+			<a href="<%= SCRIPT_NAME %>?CurrentDirectory=<%= SubFolder %>&SubmitButton=ChangeDirectory"><img src="/images/icons/folder_off.gif" title="" width="105" height="116" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm"><%= Folder.Name %></div>
+		</div>	
+<%
+		Next
+%>
+
+<% Else %>
+
+<div class="ErrorMessage">No Folders found.</div>
+
+<% End If %>
+
+<p clear="all">
+
+<br clear="all">
+<!-- 
+*************************************************
+************ FILES ****************************
+*************************************************
+-->
+<% 
+	If objFolder.Files.Count > 0 Then
+		For Each File in objFolder.Files
+			
+			FileName = File.Name
+			DownloadFileName = Replace(CurrentDirectory, Documents_Directory, "") & "/"
+			DownloadFileName = Application("DocumentsDirectoryName") & Replace(DownloadFileName, "\", "/") & FileName
+%>
+
+<li style="line-height:30px"><a href="<%= DownloadFileName %>"><%= FileName %></a></li>
+<%
+		Next
+%>
+
+<% Else %>
+
+<div class="ErrorMessage">No Files found.</div>
+
+<% End If %>
+
+
+<%
+	Set objFolder = Nothing
+	Set objFileSystem = Nothing
+%>

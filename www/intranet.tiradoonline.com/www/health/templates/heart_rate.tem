@@ -1,0 +1,134 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formHeartRate" name="formHeartRate">
+<% 
+	SubmitButtonValue = "Create Heart Rate"
+	If HeartRateID <> "" Then
+		SubmitButtonValue = "Save Heart Rate"
+		sql = "SELECT * FROM HeartRate WHERE HeartRateID = " & HeartRateID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		HeartRate = ors("HeartRate")
+		HeartRate_Date = ors("HeartRateDateTime")
+		HeartRateDate = FormatDateTime(HeartRate_Date, 2)
+		HeartRateTime = FormatDateTime(HeartRate_Date, 3)
+		HeartRateComments = ors("HeartRateComments")
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<table>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td>
+		<div class="HealthTheme"><h1 class="Header" style="padding: 5px;">Heart&nbsp;Rate</h1></div>
+		<p>
+		<div class="ErrorMessage" id="HealthErrorMessage" name="HealthErrorMessage"><%= HealthErrorMessage %></div>
+		<table cellpadding="3">
+		<tr>
+			<td class="frm_label">Date:</td>
+			<td>
+				<%= formTextBox("HeartRateDate", "10", HeartRateDate, "HealthElement", "Date", "Invalid Date") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Time:</td>
+			<td>
+				<%= formTextBox("HeartRateTime", "10", HeartRateTime, "HealthElement", "Time", "Invalid Time") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Heart&nbsp;Rate:</td>
+			<td>
+				<%= formTextBox("HeartRate", "5", HeartRate, "HealthElement", "Heart Rate", "Invalid Heart Rate") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label" valign="top">Comments:</td>
+			<td>
+				<%= formTextArea("HeartRateComments", HeartRateComments, "400", "100", "HealthElement", "Heart Rate", "Invalid Heart Rate") %>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+
+				<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+			</td>
+		</tr>
+		</table>
+		&nbsp;<br />
+		&nbsp;<br />
+		<table cellpadding="3" class="GridViewAlteringRows">
+		<%
+			sql = "SELECT * FROM HeartRate WHERE UserID = " & Session("UserID") & " ORDER BY HeartRateDateTime DESC"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+		%>
+		<tr class="HealthTheme" valign="top">
+			<td align="right"><b>Date</b></td>
+			<td align="right"><b>Time</b></td>
+			<td align="center"><b>Heart&nbsp;Rate</b></td>
+			<td align="center"><b>Comments</b></td>
+			<td bgcolor="#ffffff">&nbsp;</td>
+		</tr>
+		<%
+				tempHeartRateDate = ""
+				Do Until ors.EOF
+					HeartRate_ID = ors("HeartRateID")
+					HeartRateDate = FormatDateTime(ors("HeartRateDateTime"), 2)
+					If tempHeartRateDate <> HeartRateDate Then 
+						outputHeartRateDate = HeartRateDate & "<br />"
+						tempHeartRateDate = HeartRateDate
+					Else
+						outputHeartRateDate = ""
+					End If
+					HeartRateTime = FormatDateTime(ors("HeartRateDateTime"), 3)
+					HeartRate = ors("HeartRate")
+					HeartRateComments = ors("HeartRateComments")
+		%>
+		<tr class="GridViewRow" valign="top">
+			<td align="right" <% If outputHeartRateDate = "" Then Response.Write "bgcolor=""#ffffff"""  %>>
+				<b><%= outputHeartRateDate %></b>
+			</td>
+			<td align="right">
+				<%= HTMLFormat(HeartRateTime) %>
+			</td>
+			<td align="center"><%= HeartRateColor(HeartRate) %></td>
+			<td align="center"><%= HeartRateComments %></td>
+			<td>
+				<!-- <%= Button("Button", "Edit", "Button", "", "Edit", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&HeartRateID=" & HeartRate_ID & "'") %> -->
+				<a href="<%= SCRIPT_NAEM %>?Template=<%= Template %>&HeartRateID=<%= HeartRate_ID %>"><%= EDIT_ICON %></a>
+				&nbsp;&nbsp;
+				<a onclick="DeleteItem('Are you sure you want to delete this heart rate?', '<%= SCRIPT_NAME %>?SubmitButton=DeleteHeartRate&Template=<%= Template %>&HeartRateID=<%= HeartRate_ID %>')"><%= DELETE_ICON %></a>
+			</td>
+		</tr>
+		<%
+					ors.MoveNext
+				Loop
+				ors.Close
+			
+			Else
+		%>
+		<tr>
+			<td class="ErrorMessage">No records found.</td>
+		</tr>
+		<% 	
+			End If 
+			Set ors = Nothing
+		%>
+		</table>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("HeartRateID", HeartRateID) %>
+
+<%= formHidden("Template", Template) %>
+ <script>
+$(function() {
+$( "#HeartRateDate" ).datepicker();
+});
+</script>
+
+</form>

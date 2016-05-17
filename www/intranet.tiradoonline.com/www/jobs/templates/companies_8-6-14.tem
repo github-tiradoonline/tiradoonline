@@ -1,0 +1,441 @@
+<%
+	'Debugging = true
+	If JobCompanyNameSearch <> "" Then 
+		JobCompanyWebsite = "www." & LCase(JobCompanyNameSearch) & ".com"
+		JobCompanyWebsite = Replace(JobCompanyWebsite, " ", "")
+	End If
+	
+%>
+<form action="<%= SCRIPT_NAME %>" method="post" id="formJobsCompanies" name="formJobsCompanies">
+<table border="0" width="600">
+<tr>
+	<td align="right">
+		<%= Button("Button", "Create New Company", "Button", "margin:5px", "Create New Company", "location.href='" & SCRIPT_NAME & "?Template=company&JobCompanyName=" & Server.URLEncode(JobCompanyNameSearch) & "&JobCompanyWebsite=" & Server.URLEncode(JobCompanyWebsite) & "'") %><br />
+	</td>
+</tr>
+<tr>
+	<td>
+	 	<% If Request.ServerVariables("REQUEST_METHOD") = "POST" Then %>
+		
+				        <%
+							If Trim(Request("buttonCompanySearch")) = "Search Companies" Then
+						        sql = "sp_JobCompany_UserID_Search_get " & Session("UserID") & ", '" & SQLEncode(JobCompanyNameSearch) & "'"
+								errorMessage = "No Companies found for '" & JobCompanyNameSearch & "'"
+							ElseIf Trim(Request("buttonContactSearch")) = "Search Contacts" Then
+						        sql = "sp_JobCompanyContact_UserID_Search_get " & Session("UserID") & ", '" & SQLEncode(JobCompanyContactSearch) & "'"
+								errorMessage = "No Contacts found for '" & JobCompanyContactSearch & "'"
+							End If
+
+					        WriteDebugger sql, Debugging, 0
+					        Set ors = oConn.Execute(sql)
+				        %>
+				        <% If NOT ors.EOF Then %>
+				        <table cellspacing="0" cellpadding="10" class="GridViewAlteringRows" width="100%">
+				        <tr class="JobsTheme">
+					        <td align="right">Jobs</td>
+					        <td align="right">Company</td>
+					        <td>&nbsp;</td>
+					        <td>Website</td>
+				        </tr>
+					        <% 
+						        Do Until ors.EOF 
+									'TotalCompanies = ors("TotalCompanies")
+									TotalJobs = ors("TotalJobs")
+									TotalAddresses = ors("TotalAddresses")
+									TotalContacts = ors("TotalContacts")
+							        JobCompanyID = ors("JobCompanyID")
+							        JobCompanyName = ors("JobCompanyName")
+							        JobCompanyWebsite = ors("JobCompanyWebsite")
+							        If JobCompanyWebsite <> "" Then JobCompanyWebsite = "<a href='http://" & JobCompanyWebsite & "' target='_blank'><img src='/images/icons/firefox.gif'></a>"
+					        %>
+				        <tr bgcolor="#ffffff" class="GridViewRow" style="border-top: #000000 3px solid" valign="top">
+							<td style="border-top: #000000 3px solid" align="right">&nbsp;
+								<% If TotalContacts > 0 Then %> 	
+									<% If TotalJobs > 0 Then %> 	
+										<%= Button("Button", "Jobs (" & TotalJobs & ")", "Button", "", "Jobs (" & TotalJobs & ")", "showRow('jobRowALL" & JobCompanyID & "')") %><br />
+									<% Else %>
+										<%= Button("Button", "Add Job", "Button", "margin:5px", "Add Job", "location.href='" & SCRIPT_NAME & "?Template=jobs&JobCompanyID=" & JobCompanyID & "'") %>
+									<% End If %>
+								<% End If %>
+							</td>
+					        <td align="right" style="border-top: #000000 3px solid" align="right">
+								<a href="<%= SCRIPT_NAME %>?Template=company&JobCompanyID=<%= JobCompanyID %>"><b><%= HTMLFormat(JobCompanyName) %></b></a><br />
+							</td>
+							<td style="border-top: #000000 3px solid" align="right">
+								<%= Button("Button", "Addresses (" & TotalAddresses & ")", "Button", "", "Addresses (" & TotalAddresses & ")", "location.href='" & SCRIPT_NAME & "?Template=company_address&JobCompanyID=" & JobCompanyID & "'") %>
+								<p />
+								<%= Button("Button", "Contacts (" & TotalContacts & ")", "Button", "Contacts (" & TotalContacts & ")", "", "location.href='" & SCRIPT_NAME & "?Template=company_contact&JobCompanyID=" & JobCompanyID & "'") %>
+							</td>
+					        <td align="center" style="border-top: #000000 3px solid" valign="middle"><%= JobCompanyWebsite %>&nbsp;</td>
+				        </tr>
+						<%
+							sql = "sp_Jobs_JobCompanyID_get " & JobCompanyID
+					        WriteDebugger sql, Debugging, 0
+							Set orsJobs = oConn.Execute(sql)
+							rowName = "jobRowALL" & JobCompanyID
+						%>
+						<tr id="<%= rowName %>" name="<%= rowName %>" style="display:none">
+							<td colspan="3">
+								<table>
+								<tr valign="middle">
+									<td>
+										<%= Button("Button", "Add Job", "Button", "margin:5px", "Add Job", "location.href='" & SCRIPT_NAME & "?Template=jobs&JobCompanyID=" & JobCompanyID & "'") %>
+										
+									</td>
+									<td>
+						<%
+							If NOT orsJobs.EOF Then
+						%>
+										<table bgcolor="#000000">
+										<tr class="JobsTheme">
+											<td align="right">Posting&nbsp;Date</td>
+											<td>Position</td>
+											<td>Salary</td>
+										</tr>
+								<%
+										Do Until orsJobs.EOF
+											JobID = orsJobs("JobID")
+											PostingDate = orsJobs("JobDate")
+											Position = orsJobs("JobPosition")
+											Salary = orsJobs("JobSalary")
+								%>
+										<tr bgcolor="#ffffff">
+											<td align="right"><a href="<%= SCRIPT_NAME %>?Template=jobs&JobCompanyID=<%= JobCompanyID %>&JobID=<%= JobID %>"><%= FormatDateTime(PostingDate, 2) %></a></td>
+											<td><%= HTMLFormat(Position) %></td>
+											<td><%= Salary %></td>
+										</tr>
+								<%
+											orsJobs.MoveNext
+										Loop
+										orsJobs.Close
+								%>
+										</table>
+								<%
+									Else
+								%>
+									<div class="ErrorMessage">No Jobs found.</div>
+								<%
+									End If
+									Set orsJobs = Nothing
+								%>
+						</td>
+					</tr>
+					</table>
+							</td>
+						</tr>
+			        <%
+						        ors.MoveNext
+				   	        Loop
+				   	        ors.Close
+				   	        Set ors = Nothing
+			        %>
+				        </table>
+			        <%
+				        Else
+			        %>
+				        <div class="ErrorMessage"><%= errorMessage %></div>
+
+			        <%
+				        End If 
+			        %>
+		
+			
+			</p>
+		</div>
+		
+		<% End If %>
+		
+        <div id="tabs">
+         <ul>
+        	<li><a href="#tabs-1" title="New Companies Created">New Companies Created</a></li>
+        	<li><a href="#tabs-2" title="New Contacts Created">New Contacts Created</a></li>
+        	<li><a href="#tabs-3" title="New Jobs Created">New Jobs Created</a></li>
+        	<li><a href="#tabs-4" title="Job Queue">Job Queue</a></li>
+		 </ul>
+
+
+
+		<div id="tabs-1">
+			<p>
+		<%
+			sql = "sp_JobCompany_New_get " & Session("UserID")
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			
+			If NOT ors.EOF Then
+		%>
+		
+				        <table cellspacing="0" cellpadding="10" class="GridViewAlteringRows">
+				        <tr class="JobsTheme">
+					        <td align="right">Created</td>
+					        <td align="right">Company</td>
+					        <td>Website</td>
+					        <td>&nbsp;</td>
+				        </tr>
+					        <% 
+						        Do Until ors.EOF 
+									JobCompanyID = ors("JobCompanyID")
+									Created = ors("Created")
+									TotalJobs = ors("TotalJobs")
+									TotalAddresses = ors("TotalAddresses")
+									TotalContacts = ors("TotalContacts")
+							        JobCompanyName = ors("JobCompanyName")
+							        JobCompanyWebsite = ors("JobCompanyWebsite")
+							        If JobCompanyWebsite <> "" Then JobCompanyWebsite = "<a href='http://" & JobCompanyWebsite & "' target='_blank'><img src='/images/icons/firefox.gif'></a>"
+					        %>
+				        <tr bgcolor="#ffffff" class="GridViewRow" style="border-top: #000000 3px solid" valign="top">
+							<td style="border-top: #000000 3px solid" align="right" align="right"><%= FormatDateTime(Created, 2) %></td>
+					        <td align="right" style="border-top: #000000 3px solid" align="right">
+								<a href="<%= SCRIPT_NAME %>?Template=company&JobCompanyID=<%= JobCompanyID %>"><b><%= HTMLFormat(JobCompanyName) %></b></a><br />
+							</td>
+					        <td align="center" style="border-top: #000000 3px solid" valign="middle"><%= JobCompanyWebsite %>&nbsp;</td>
+							<td style="border-top: #000000 3px solid" align="right">
+								<%= Button("Button", "Addresses (" & TotalAddresses & ")", "Button", "", "Addresses (" & TotalAddresses & ")", "location.href='" & SCRIPT_NAME & "?Template=company_address&JobCompanyID=" & JobCompanyID & "'") %>
+								<%= Button("Button", "Contacts (" & TotalContacts & ")", "Button", "Contacts (" & TotalContacts & ")", "", "location.href='" & SCRIPT_NAME & "?Template=company_contact&JobCompanyID=" & JobCompanyID & "'") %>
+								<% If TotalContacts > 0 Then %>
+									<%= Button("Button", "Jobs (" & TotalJobs & ")", "Button", "Contacts (" & TotalContacts & ")", "", "location.href='" & SCRIPT_NAME & "?Template=jobs&JobCompanyID=" & JobCompanyID & "'") %>
+								<% End If %>
+							</td>
+				        </tr>
+				<%
+							ors.MoveNext
+						Loop
+						ors.Close
+				%>
+						</table>
+				<%
+					Else
+				%>
+				<div class="ErrorMessage">No New Companies found.</div>
+		
+				<%
+					End If 
+					
+					Set ors = Nothing
+				%>		
+					
+			</p>
+		</div>
+
+
+		<div id="tabs-2">
+			<p>
+		<%
+			sql = "sp_JobCompanyContact_New_get " & Session("UserID")
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			
+			If NOT ors.EOF Then
+		%>
+		
+				        <table cellspacing="0" cellpadding="10" class="GridViewAlteringRows">
+				        <tr class="JobsTheme">
+					        <td align="right">Created</td>
+					        <td align="right">Contact</td>
+					        <td>&nbsp;</td>
+				        </tr>
+					        <% 
+						        Do Until ors.EOF 
+									JobCompanyID = ors("JobCompanyID")
+									JobCompanyContactID = ors("JobCompanyContactID")
+									JobCompanyName = ors("JobCompanyName")
+									Created = ors("Created")
+									TotalJobs = ors("TotalJobs")
+									TotalAddresses = ors("TotalAddresses")
+							        JobCompanyContactName = ors("JobCompanyContactName")
+					        %>
+				        <tr bgcolor="#ffffff" class="GridViewRow" style="border-top: #000000 3px solid" valign="top">
+							<td style="border-top: #000000 3px solid" align="right" align="right"><%= FormatDateTime(Created, 2) %></td>
+					        <td align="right" style="border-top: #000000 3px solid" align="right">
+								<a href="<%= SCRIPT_NAME %>?Template=company_contact&JobCompanyID=<%= JobCompanyID %>&JobCompanyContactID=<%= JobCompanyContactID %>"><b><%= HTMLFormat(JobCompanyContactName) %></b></a><br />
+								<%= JobCompanyName %>
+							</td>
+							<td style="border-top: #000000 3px solid" align="right">
+								<%= Button("Button", "Addresses (" & TotalAddresses & ")", "Button", "", "Addresses (" & TotalAddresses & ")", "location.href='" & SCRIPT_NAME & "?Template=company_address&JobCompanyID=" & JobCompanyID & "'") %>
+								<%= Button("Button", "Jobs (" & TotalJobs & ")", "Button", "Contacts (" & TotalContacts & ")", "", "location.href='" & SCRIPT_NAME & "?Template=jobs&JobCompanyContactID=" & JobCompanyContactID & "&JobCompanyID=" & JobCompanyID & "'") %>
+							</td>
+				        </tr>
+				<%
+							ors.MoveNext
+						Loop
+						ors.Close
+				%>
+						</table>
+				<%
+					Set ors = Nothing
+					Else
+				%>
+				<div class="ErrorMessage">No New Companies found.</div>
+		
+				<%
+					End If %>		
+			</p>
+		</div>
+
+		<div id="tabs-3">
+			<p>
+		<%
+			sql = "sp_Jobs_New_get " & Session("UserID")
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			
+			If NOT ors.EOF Then
+		%>
+		
+				        <table cellspacing="0" cellpadding="10" class="GridViewAlteringRows">
+				        <tr class="JobsTheme">
+					        <td align="right">Created</td>
+					        <td align="right">Company</td>
+					        <td align="right">&nbsp;</td>
+				        </tr>
+					        <% 
+						        Do Until ors.EOF 
+									JobCompanyID = ors("JobCompanyID")
+									JobID = ors("JobID")
+									JobPosition = ors("JobPosition")
+									JobCompanyContactID = ors("JobCompanyContactID")
+									JobCompanyName = ors("JobCompanyName")
+									Created = ors("Created")
+									TotalJobs = ors("TotalJobs")
+									TotalAddresses = ors("TotalAddresses")
+							        JobCompanyContactName = ors("JobCompanyContactName")
+					        %>
+				        <tr bgcolor="#ffffff" class="GridViewRow" style="border-top: #000000 3px solid" valign="top">
+							<td style="border-top: #000000 3px solid" align="right" align="right">
+								<%= FormatDateTime(Created, 2) %><br />
+								<%= FormatDateTime(Created, 3) %>
+								
+							</td>
+					        <td align="right" style="border-top: #000000 3px solid" align="right">
+								<a href="<%= SCRIPT_NAME %>?Template=jobs&JobID=<%= JobID %>&JobCompanyID=<%= JobCompanyID %>&JobCompanyContactID=<%= JobCompanyContactID %>"><b><%= JobPosition %></b></a><br />
+								<%= JobCompanyName %><br />
+								<%= JobCompanyContactName %>
+							</td>
+							<td style="border-top: #000000 3px solid" align="right">
+								<%= Button("Button", "Addresses (" & TotalAddresses & ")", "Button", "", "Addresses (" & TotalAddresses & ")", "location.href='" & SCRIPT_NAME & "?Template=company_address&JobCompanyID=" & JobCompanyID & "'") %>
+								<%= Button("Button", "Jobs (" & TotalJobs & ")", "Button", "Contacts (" & TotalContacts & ")", "", "location.href='" & SCRIPT_NAME & "?Template=jobs&JobCompanyContactID=" & JobCompanyContactID & "&JobCompanyID=" & JobCompanyID & "'") %>
+							</td>
+				        </tr>
+				<%
+							ors.MoveNext
+						Loop
+						ors.Close
+				%>
+						</table>
+				<%
+					Set ors = Nothing
+					Else
+				%>
+				<div class="ErrorMessage">No New Companies found.</div>
+		
+				<%
+					End If %>		
+
+			</p>	
+		</div>		
+
+		<div id="tabs-4">
+			<p>
+			
+		<%
+			sql = "sp_JobQueue_New_get " & Session("UserID")
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			
+			If NOT ors.EOF Then
+		%>
+			<div style="text-align:right">
+			
+				<%= Button("Button", "Clear Queue", "Button", "", "Clear Queue", "JobQueueClear()") %>
+				&nbsp;&nbsp;
+				<%= Button("Button", "Delete from Queue", "DeleteButton", "", "Delete from Queue", "DeleteItems('Are you sure you want to delete these items', '')") %>
+			
+			</div>
+
+			<p />		
+				        <table cellspacing="0" cellpadding="10" class="GridViewAlteringRows" width="100%">
+				        <tr class="JobsTheme">
+					        <td align="right">Posted</td>
+					        <td align="right">Jobs</td>
+					        <td align="right">
+								<input type="checkbox" id="checkboxCheckAll" name="checkboxCheckAll" CHECKED value="1" />
+							</td>
+				        </tr>
+					        <% 
+						        Do Until ors.EOF 
+									JobCompanyID = ors("JobCompanyID")
+									JobQueueID = ors("JobQueueID")
+									JobID = ors("JobID")
+									JobPosition = ors("JobPosition")
+									JobCompanyContactID = ors("JobCompanyContactID")
+									JobCompanyName = ors("JobCompanyName")
+									Created = ors("Created")
+									TotalJobs = ors("TotalJobs")
+									TotalAddresses = ors("TotalAddresses")
+							        JobCompanyContactName = ors("JobCompanyContactName")
+					        %>
+				        <tr bgcolor="#ffffff" class="GridViewRow" style="border-top: #000000 3px solid" valign="top">
+							<td style="border-top: #000000 3px solid" align="right" align="right">
+								<%= FormatDateTime(Created, 2) %><br />
+								<%= FormatDateTime(Created, 3) %>
+							</td>
+					        <td align="right" style="border-top: #000000 3px solid" align="right">
+								<a href="<%= SCRIPT_NAME %>?Template=jobs&JobID=<%= JobID %>&JobCompanyID=<%= JobCompanyID %>&JobCompanyContactID=<%= JobCompanyContactID %>"><b><%= JobPosition %></b></a><br />
+								<%= JobCompanyName %><br />
+								<%= JobCompanyContactName %>
+							</td>
+							<td style="border-top: #000000 3px solid" align="right">
+								<input type="checkbox" id="JobQueueID" name="JobQueueID" value="<%= JobQueueID %>" CHECKED />
+							</td>
+				        </tr>
+				<%
+							ors.MoveNext
+						Loop
+						ors.Close
+				%>
+						</table>
+				<%
+					Set ors = Nothing
+					Else
+				%>
+				<div class="ErrorMessage">No New Companies found.</div>
+		
+				<%
+					End If %>		
+
+			</p>
+		</div>
+
+
+		</div>
+
+	</td>
+</tr>
+</table>
+<%= formHidden("Template", Template) %>
+</form>
+
+<script type="text/javascript">
+	function showRow(rowid)
+	{
+		$("#" + rowid).slideToggle();
+	}
+	
+	$( "#tabs" ).tabs();
+	
+	<% 
+		If Letter <> "" Then
+			SelectedTab = ASC(Letter) - 65
+	%>
+	$('#tabs').tabs('select', <%= SelectedTab %>);
+	<% End If %>
+
+	$('#checkboxCheckAll').click
+	(
+		function()
+		{
+			//alert($(this).val());
+	     	//$(this).closest('fieldset').find(':checkbox').prop('checked', this.checked);
+		}
+   );
+</script>

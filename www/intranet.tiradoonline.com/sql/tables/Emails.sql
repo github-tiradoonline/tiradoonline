@@ -1,0 +1,28 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Emails' AND TYPE = 'U')
+DROP TABLE Emails;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Emails' AND TYPE = 'U')
+	DROP TABLE Emails;
+GO
+
+CREATE TABLE Emails
+(
+	EmailID		IDENTITY (1001,1) INT  NOT NULL,
+	UserID		 INT  NOT NULL,
+	Email		 VARCHAR(100)  NULL,
+	Subject		 VARCHAR(100)  NULL,
+	BodyText		 VARCHAR(4000)  NULL,
+	create_dt		 SMALLDATETIME DEFAULT (getdate()) NOT NULL
+
+);
+GO
+
+
+
+
+GO
+
+
+GO
+

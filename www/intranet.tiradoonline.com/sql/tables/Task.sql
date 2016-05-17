@@ -1,0 +1,29 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Task' AND TYPE = 'U')
+DROP TABLE Task;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Task' AND TYPE = 'U')
+	DROP TABLE Task;
+GO
+
+CREATE TABLE Task
+(
+	TaskID		IDENTITY (1001,1) INT  NOT NULL,
+	TaskProjectID		 INT  NOT NULL,
+	TaskDate		 DATETIME  NOT NULL,
+	TaskName		 VARCHAR(100)  NOT NULL,
+	TaskDueDate		 DATE  NULL,
+	TaskDescription		 VARCHAR(MAX)  NULL,
+	create_dt		 DATETIME DEFAULT (getdate()) NOT NULL
+
+);
+GO
+
+
+
+
+GO
+
+
+GO
+

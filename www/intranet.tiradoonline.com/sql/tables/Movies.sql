@@ -1,0 +1,27 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Movies' AND TYPE = 'U')
+DROP TABLE Movies;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Movies' AND TYPE = 'U')
+	DROP TABLE Movies;
+GO
+
+CREATE TABLE Movies
+(
+	MovieID		IDENTITY (1001,1) INT  NOT NULL,
+	UserID		 INT  NOT NULL,
+	GenreID		 INT  NOT NULL,
+	MovieTitle		 VARCHAR(200)  NOT NULL,
+	create_dt		 DATETIME DEFAULT (getdate()) NOT NULL
+
+);
+GO
+
+
+
+
+GO
+
+
+GO
+

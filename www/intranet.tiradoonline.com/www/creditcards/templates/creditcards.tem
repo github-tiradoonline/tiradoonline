@@ -1,0 +1,442 @@
+<% If Trim(Request("CreditCardErrorMessage")) <> "" Then %>
+<div class="ErrorMessage"><%= Trim(Request("CreditCardErrorMessage")) %></div>
+<p></p>
+<% End If %>
+
+<%
+	If Action = "" Then 	
+
+	sql = "SELECT *, Balance = (CreditLimit - CreditAvailable) FROM CreditCard WHERE UserID = " & Session("UserID") & " ORDER BY " & OrderBy
+	Set ors = oConn.Execute(sql)
+	
+	If NOT ors.EOF Then
+%>
+<table bgcolor="#000000" cellpadding="10" id="GridView" name="GridView" class="shadow">
+<tr bgcolor="<%= CREDITCARDS_THEME %>" style="color:#ffffff">
+	<% 
+		AnchorLink = SCRIPT_NAME & "?Template=" & Template & "&OrderBy="
+	%>
+	<%
+		If OrderBy = "CreditCardName" Then
+			AnchorLink2 = AnchorLink & "CreditCardName DESC"
+			SortImage = "up"
+			Selected = true
+		Else
+			AnchorLink2 = AnchorLink & "CreditCardName"
+			SortImage = "down"
+		End If
+	%>
+	<td style="font-size:15px">
+		<a href="<%= AnchorLink2 %>" style="color:#ffffff"><b>Credit&nbsp;Card</b>
+	</td>
+	<%
+		If OrderBy = "CreditLimit" Then
+			AnchorLink2 = AnchorLink & "CreditLimit+DESC"
+			SortImage = "up"
+		Else
+			AnchorLink2 = AnchorLink & "CreditLimit"
+			SortImage = "down"
+		End If
+	%>
+	<td style="font-size:15px">
+		<b><a href="<%= AnchorLink2 %>" style="color:#ffffff">Credit<br>Limit</b></a>
+	</td>
+	<%
+		If OrderBy = "MinimumPayment" Then
+			AnchorLink2 = AnchorLink & "MinimumPayment DESC"
+			SortImage = "up"
+		Else
+			AnchorLink2 = AnchorLink & "MinimumPayment"
+			SortImage = "down"
+		End If
+	%>
+	<td style="font-size:15px">
+		<b><a href="<%= AnchorLink2 %>" style="color:#ffffff">Minimum<br>Payment</b></a>
+	</td>
+	<%
+		If OrderBy = "CreditAvailable" Then
+			AnchorLink2 = AnchorLink & "CreditAvailable DESC"
+			SortImage = "up"
+			Selected = true
+		Else
+			AnchorLink2 = AnchorLink & "CreditAvailable"
+			SortImage = "down"
+		End If
+	%>
+	<td style="font-size:15px">
+		<b><a href="<%= AnchorLink2 %>" style="color:#ffffff">Credit<br>Available</b></a>
+	</td>
+	<%
+		If OrderBy = "DueDate" Then
+			AnchorLink2 = AnchorLink & "DueDate DESC"
+			SortImage = "up"
+			Selected = true
+		Else
+			AnchorLink2 = AnchorLink & "DueDate"
+			SortImage = "down"
+		End If
+	%>
+	<td style="font-size:15px">
+		<b><a href="<%= AnchorLink2 %>" style="color:#ffffff">Due<br>Date</b></a>
+	</td>
+	<%
+		If OrderBy = "ClosingDate" Then
+			AnchorLink2 = AnchorLink & "ClosingDate DESC"
+			SortImage = "up"
+			Selected = true
+		Else
+			AnchorLink2 = AnchorLink & "ClosingDate"
+			SortImage = "down"
+		End If
+	%>
+	<td style="font-size:15px">
+		<b><a href="<%= AnchorLink2 %>" style="color:#ffffff">Closing<br>Date</b></a>
+	</td>
+	<%
+		If OrderBy = "Percentage" Then
+			AnchorLink2 = AnchorLink & "Percentage DESC"
+			SortImage = "up"
+			Selected = true
+		Else
+			AnchorLink2 = AnchorLink & "Percentage"
+			SortImage = "down"
+		End If
+	%>
+	<td align="center" style="font-size:15px">
+		<b><a href="<%= AnchorLink2 %>" style="color:#ffffff">%</b></a>
+	</td>
+	<%
+		If OrderBy = "Payments" Then
+			AnchorLink2 = AnchorLink & "Payments DESC"
+			SortImage = "up"
+			Selected = true
+		Else
+			AnchorLink2 = AnchorLink & "Payments"
+			SortImage = "down"
+		End If
+	%>
+	<td style="font-size:15px" align="right">
+		<b style="color:#ffffff">Old<br />Payment</b>
+	</td>
+	<td style="font-size:15px" align="right">
+		<b style="color:#ffffff">Last<br />Payment</b>
+	</td>
+	<%
+		If OrderBy = "Balance" Then
+			AnchorLink2 = AnchorLink & "Balance DESC"
+			SortImage = "up"
+			Selected = true
+		Else
+			AnchorLink2 = AnchorLink & "Balance"
+			SortImage = "down"
+		End If
+	%>
+	<td style="font-size:15px" align="right">
+		<a href="<%= AnchorLink2 %>" style="color:#ffffff"><b>Balance</b></a>
+	</td>
+	<td bgcolor="#ffffff">
+		&nbsp;
+	</td>
+</tr>
+
+<%
+		CreditLimitTotal = 0
+		MimimumPaymentTotal = 0
+		CreditAvailableTotal = 0
+		PaymentsTotal = 0
+		BalanceTotal = 0
+		Do Until ors.EOF
+			CreditCardID = ors("CreditCardID")
+			CreditCardName = ors("CreditCardName")
+			
+			CreditLimit = ors("CreditLimit")
+			If isNull(CreditLimit) Then CreditLimit = 0
+			CreditLimitTotal = CDbl(CreditLimitTotal) + CDbl(CreditLimit)
+			
+			MimimumPayment = ors("MinimumPayment")
+			If isNull(MimimumPayment) OR Trim(MimimumPayment) = "" Then MinimumPayment = 0
+			MimimumPaymentTotal = CDbl(MimimumPaymentTotal) + CDbl(MimimumPayment)
+			
+			CreditAvailable = ors("CreditAvailable")
+			If isNull(CreditAvailable) Then CreditAvailable = 0
+			CreditAvailableTotal = CDbl(CreditAvailableTotal) + CDbl(CreditAvailable)
+			
+			ClosingDate = ors("ClosingDate")
+			DueDate = ors("DueDate")
+			Percentage = ors("Percentage")
+			If isNull(Percentage) Then Percentage = 0.0
+			
+			OldPayments = ors("Payments")
+			If isNull(OldPayments) Then OldPayments = 0
+			PaymentsTotal = CDbl(PaymentsTotal) + CDbl(OldPayments)
+			
+			Balance = ors("Balance")
+			If isNull(Balance) Then Balance = 0
+			BalanceTotal = CDbl(BalanceTotal) + CDbl(Balance)
+			
+			sql = "SELECT TOP 1 * FROM CreditCardPayment WHERE CreditCardID = " & CreditCardID & " ORDER BY CreditCardPaymentDate DESC"
+			Set ors2 = oConn.Execute(sql)
+			If NOT ors2.EOF Then
+				CreditCardPaymentDate = ors2("CreditCardPaymentDate")
+				CreditCardPaymentAmount = ors2("CreditCardPaymentAmount")
+				CreditCardPaymentComment = ors2("CreditCardPaymentComment")
+				Payments = CreditCardPaymentDate & "&nbsp;-&nbsp;$" & FormatNumber(CreditCardPaymentAmount, 2)
+				ors2.Close
+			Else
+				Payments = "<span class='ErrorMessage'>N/A</span>"
+			End If
+			Set ors2 = Nothing
+%>
+<tr bgcolor="#ffffff" align="right" class="GridViewRow">
+	<td style="font-size:15px" align="left"<% If Instr(OrderBy, "CreditCardName") > 0 Then Response.Write " bgcolor='#dddddd'" %>><a href="<%= SCRIPT_NAME %>?Template=<%= Template	 %>&Action=Edit&CreditCardID=<%= CreditCardID %>" style="color:#000000"><b><%= HTMLFormat(CreditCardName) %></b></a></td>
+	<td style="font-size:15px"<% If Instr(OrderBy, "CreditLimit") > 0 Then Response.Write " bgcolor='#dddddd'" %>><%= FormatCurrency(CreditLimit) %></td>
+	<td style="font-size:15px"<% If Instr(OrderBy, "MinimumPayment") > 0 Then Response.Write " bgcolor='#dddddd'" %>><%= FormatCurrency(MimimumPayment) %></td>
+	<td style="font-size:15px"<% If Instr(OrderBy, "CreditAvailable") > 0 Then Response.Write " bgcolor='#dddddd'" %>><%= FormatCurrency(CreditAvailable) %></td>
+	<td style="font-size:15px" align="center"<% If Instr(OrderBy, "DueDate") > 0 Then Response.Write " bgcolor='#dddddd'" %>><%= DueDate %></td>
+	<td style="font-size:15px" align="center"<% If Instr(OrderBy, "ClosingDate") > 0 Then Response.Write " bgcolor='#dddddd'" %>><%= ClosingDate %></td>
+	<td style="font-size:15px"<% If Instr(OrderBy, "Percentage") > 0 Then Response.Write " bgcolor='#dddddd'" %>><%= Percentage %></td>
+	<td style="font-size:15px">$<%= FormatNumber(OldPayments, 2) %></td>
+	<td style="font-size:15px"<% If Instr(OrderBy, "Payments") > 0 Then Response.Write " bgcolor='#dddddd'" %>><a href="<%= SCRIPT_NAME %>?Action=CreditCardPayment&Template=<%= Template %>&CreditCardID=<%= CreditCardID %>"><%= Payments %></a></td>
+	<td style="font-size:15px"<% If Instr(OrderBy, "Balance") > 0 Then Response.Write " bgcolor='#dddddd'" %>><b>$<%= FormatNumber(Balance, 2) %></b></td>
+	<td>
+		<%= Button("Button", "Delete", "DeleteButton", "", "Delete", "DeleteItem('Are you sure you want to delete this CreditCard?', '" & SCRIPT_NAME & "?Template=" & Template & "&SubmitButton=Delete&CreditCardID=" & CreditCardID & "')") %>
+	</td>
+</tr>
+
+<%
+			ors.MoveNext
+		Loop
+		ors.Close
+%>
+<tr bgcolor="#ffffff" align="right">
+	<td>&nbsp;</td>
+	<td style="font-size:15px"<% If Instr(OrderBy, "CreditLimit") > 0 Then Response.Write " bgcolor='#dddddd'" %>><b><%= FormatCurrency(CreditLimitTotal) %></b></td>
+	<td style="font-size:15px"<% If Instr(OrderBy, "MinimumPayment") > 0 Then Response.Write " bgcolor='#dddddd'" %>><b><%= FormatCurrency(MimimumPaymentTotal) %></b></td>
+	<td style="font-size:15px"<% If Instr(OrderBy, "CreditAvailable") > 0 Then Response.Write " bgcolor='#dddddd'" %>><b><%= FormatCurrency(CreditAvailableTotal) %></b></td>
+	<td align="center"<% If Instr(OrderBy, "DueDate") > 0 Then Response.Write " bgcolor='#dddddd'" %>>&nbsp;</td></td>
+	<td align="center"<% If Instr(OrderBy, "ClosingDate") > 0 Then Response.Write " bgcolor='#dddddd'" %>>&nbsp;</td>
+	<td<% If Instr(OrderBy, "Percentage") > 0 Then Response.Write " bgcolor='#dddddd'" %>>&nbsp;</td>
+	<td style="font-size:15px"<% If Instr(OrderBy, "Payments") > 0 Then Response.Write " bgcolor='#dddddd'" %>><b><%= FormatCurrency(PaymentsTotal) %></b></td>
+	<td>&nbsp;</td>
+	<td style="font-size:15px"<% If Instr(OrderBy, "Balance") > 0 Then Response.Write " bgcolor='#dddddd'" %>><b>$<%= FormatNumber(BalanceTotal, 2) %></b></td>
+	<td>&nbsp;</td>
+</tr>
+</table>
+<% Else %>
+
+<div class="ErrorMessage">No records found.</div>
+<% 
+	End If 
+	Set ors = Nothing
+%>
+
+<% ElseIf Action = "Add" OR  Action = "Edit" Then %>
+<%
+	SubmitButtonValue = "Create"	
+
+	If CreditCardID <> "" Then
+		sql = "SELECT *, Balance = (CreditLimit - CreditAvailable) FROM CreditCard WHERE CreditCardID = " & CreditCardID
+		Set ors = oConn.Execute(sql)
+
+		If NOT ors.EOF Then
+			CreditCardName = ors("CreditCardName")
+			CreditLimit = ors("CreditLimit")
+			If isNull(CreditLimit) Then CreditLimit = 0
+			MimimumPayment = ors("MinimumPayment")
+			If isNull(MimimumPayment) OR Trim(MimimumPayment) = "" Then MinimumPayment = 0
+			CreditAvailable = ors("CreditAvailable")
+			If isNull(CreditAvailable) Then CreditAvailable = 0
+			ClosingDate = ors("ClosingDate")
+			DueDate = ors("DueDate")
+			Percentage = ors("Percentage")
+			If isNull(Percentage) Then Percentage = 0.0
+			Payments = ors("Payments")
+			If isNull(Payment) Then Payment = 0
+			Balance = ors("Balance")
+			SubmitButtonValue = "Save"
+			ors.Close
+		End If
+	
+		Set ors = Nothing
+	Else
+		CreditCardName = Trim(Request("CreditCardName"))
+		CreditLimit = Trim(Request("CreditLimit"))
+		MimimumPayment = Trim(Request("MinimumPayment"))
+		CreditAvailable = Trim(Request("CreditAvailable"))
+		ClosingDate = Trim(Request("ClosingDate"))
+		DueDate = Trim(Request("DueDate"))
+		Percentage = Trim(Request("Percentage"))
+		Payments = Trim(Request("Payments"))
+	End If
+%>
+<form action="<%= SCRIPT_NAME %>" method="post" id="formCreditCard" name="formCreditCard">
+<table cellpadding="5">
+<tr valign="top">
+	<td>
+
+		<!-- #include virtual="/creditcards/includes/payments.inc" -->
+		
+	</td>
+	<td>
+
+		<table cellpadding="5">
+		<tr>
+			<td class="frm_label">Credit&nbsp;Card:</b></td>
+			<td>
+				<%= formTextBox("CreditCardName", "30", CreditCardName, "CreditCardsElement", "Credit Card", "Invalid Credit Card Name") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Credit&nbsp;Limit:</td>
+			<td>
+				<%= formTextBox("CreditLimit", "10", CreditLimit, "CreditCardsElement", "Credit Limit", "Invalid Credit Limit") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Minimum&nbsp;Payment:</td>
+			<td>
+				<%= formTextBox("MinimumPayment", "10", MinimumPayment, "CreditCardsElement", "Minimum Payment", "Invalid Minimum Payment") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Credit&nbsp;Available:</td>
+			<td>
+				<%= formTextBox("CreditAvailable", "10", CreditAvailable, "CreditCardsElement", "Credit Available", "Invalid Credit Available") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Due&nbsp;Day:</td>
+			<td>
+				<%= DaysBox("DueDate", DueDate, "CreditCardsElement") %>
+				
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Closing&nbsp;Day:</b></td>
+			<td>
+				<%= DaysBox("ClosingDate", ClosingDate, "CreditCardsElement") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Percentage:</td>
+			<td>
+				<%= formTextBox("Percentage", "10", Percentage, "CreditCardsElement", "Percentage", "Invalid Percentage") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+<!-- 		<tr>
+			<td class="frm_label">Payments</td>
+			<td>
+				<%= formTextBox("Payments", "10", Payments, "CreditCardsElement", "Payments", "Invalid Payments") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+ -->		<tr>
+			<td class="frm_label">&nbsp;</b></td>
+			<td>
+				<%= Submit_Button("SubmitButton", SubmitButtonValue & " Credit Card", "Button", "", SubmitButtonValue & " Credit Card") %>&nbsp;&nbsp;&nbsp;
+				<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=CreditCards'") %>&nbsp;&nbsp;&nbsp;
+				<%= Button("Button", "Delete", "DeleteButton", "", "Delete", "DeleteItem('Are you sure you want to delete this CreditCard?', '" & SCRIPT_NAME & "?Template=" & Template & "&SubmitButton=Delete&CreditCardID=" & CreditCardID & "')") %>
+			</td>
+		</tr>
+		</table>
+
+	</td>
+</tr>
+</table>
+</form>
+<% 	ElseIf Action = "CreditCardPayment" Then %>
+
+<%
+	SubmitButtonValue = "Create"	
+
+	sql = "SELECT CreditCardName FROM CreditCard WHERE CreditCardID = " & CreditCardID
+	Set ors = oConn.Execute(sql)
+	If NOT ors.EOF Then
+		CreditCardName = ors("CreditCardName")
+		ors.Close
+	End If 
+	Set ors = Nothing
+	
+	If CreditCardPaymentID <> "" Then
+		sql = "SELECT * FROM CreditCardPayment WHERE CreditCardPaymentID = " & CreditCardPaymentID
+		Set ors = oConn.Execute(sql)
+
+		If NOT ors.EOF Then
+			CreditCardPaymentDate = ors("CreditCardPaymentDate")
+			CreditCardPaymentAmount = ors("CreditCardPaymentAmount")
+			CreditCardPaymentComment = ors("CreditCardPaymentComment")
+			SubmitButtonValue = "Save"
+			ors.Close
+		End If
+	
+		Set ors = Nothing
+	Else
+		CreditCardPaymentDate = Trim(Request("CreditCardPaymentDate"))
+		CreditCardPaymentAmount = Trim(Request("CreditCardPaymentAmount"))
+		CreditCardPaymentComment = Trim(Request("CreditCardPaymentComment"))
+	End If
+%>
+<form action="<%= SCRIPT_NAME %>" method="post" id="formCreditCardPayment" name="formCreditCardPayment">
+<table cellpadding="5">
+<tr valign="top">
+	<td>
+	<td>
+
+		<!-- #include virtual="/creditcards/includes/payments.inc" -->
+		
+	</td>
+	</td>
+	<td>
+		<table cellpadding="5">
+		<tr>
+			<td class="frm_label">Credit&nbsp;Card&nbsp;Name:</b></td>
+			<td style="font-size:15px">
+				<%= CreditCardName %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Payment&nbsp;Date:</b></td>
+			<td>
+				<%= formTextBox("CreditCardPaymentDate", "10", CreditCardPaymentDate, "CreditCardsElement", "Payment Date", "Invalid Credit Card Payment Date") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Amount:</td>
+			<td>
+				<%= formTextBox("CreditCardPaymentAmount", "10", CreditCardPaymentAmount, "CreditCardsElement", "Amount", "Invalid Credit Card Payment Amount") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td class="frm_label">Comment:</td>
+			<td>
+				<%= formTextArea("CreditCardPaymentComment", CreditCardPaymentComment, "350", "100", "CreditCardsElement", "Comment", "Invalid Comment") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">&nbsp;</td>
+			<td>
+				<%= Submit_Button("SubmitButton", SubmitButtonValue & " Credit Card Payment", "Button", "", SubmitButtonValue & " Credit Card Payment") %>&nbsp;&nbsp;&nbsp;
+				<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=CreditCards&CreditCardID=" & CreditCardID & "&Action=CreditCardPayment'") %>&nbsp;&nbsp;&nbsp;
+				<%= Button("Button", "Delete", "DeleteButton", "", "Delete", "DeleteItem('Are you sure you want to delete this CreditCard?', '" & SCRIPT_NAME & "?Template=" & Template & "&SubmitButton=DeleteCreditCardPayment&CreditCardID=" & CreditCardID & "&CreditCardPaymentID=" & CreditCardPaymentID & "')") %>
+			</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+</table>
+
+<script type="text/javascript">
+	
+	$('#CreditCardPaymentDate').datepicker();
+
+</script>
+
+
+
+<% End If %>
+
+<%= formHidden("Action", Action) %>
+
+<%= formHidden("CreditCardID", CreditCardID) %>
+<%= formHidden("CreditCardPaymentID", CreditCardPaymentID) %>
+<%= formHidden("Template", Template) %>
+</form>

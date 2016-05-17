@@ -1,0 +1,209 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formJobsInterview" name="formJobsInterview">
+<% 
+	sql = "SELECT JobCompanyName, JobCompanyWebsite FROM JobCompany WHERE JobCompanyID = " & JobCompanyID
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+	JobCompanyName = ors("JobCompanyName")
+	JobCompanyWebsite = ors("JobCompanyWebsite")
+	ors.Close
+	Set ors = Nothing
+	
+	SubmitButtonValue = "Create Job Interview"
+	
+	If JobInterviewID <> "" Then
+		SubmitButtonValue = "Save Job Interview"
+		sql = "SELECT * FROM JobInterview WHERE JobInterviewID = " & JobInterviewID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		JobInterview_DateTime = ors("JobInterviewDateTime")
+		JobInterviewDate = FormatDateTime(JobInterview_DateTime, 2)
+		JobInterviewTime = FormatDateTime(JobInterview_DateTime, 3)
+		JobInterviewClientID = ors("JobInterviewClientID")
+		JobInterviewTypeID = ors("JobInterviewTypeID")
+		JobInterviewClientContactID = ors("JobInterviewClientContactID")
+		JobInterviewAddress1 = ors("JobInterviewAddress1")
+		JobInterviewAddress2 = ors("JobInterviewAddress2")
+		JobInterviewCity = ors("JobInterviewCity")
+		JobInterviewStateID = ors("StateID")
+		if isNull(JobInterviewStateID) Then JobInterviewStateID = Application("StateID")
+		JobInterviewZipCode = ors("JobInterviewZipCode")
+		JobInterviewNotes = ors("JobInterviewNotes")
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<div class="JobsTheme" style="text-align:center;">
+	<h1 class="Header" style="padding: 5px;" style="float:left;">
+		<%= JobCompanyName %>&nbsp;-&nbsp;Interviews
+	</h1>
+</div>
+<table border=0>
+<tr valign="top">
+	<td>
+		<table border=0>
+		<tr valign="top">
+				
+			<td>
+				<table cellpadding="3" border="0">
+				<tr valign="top">
+					<td colspan="2">
+						<!-- #include virtual="/jobs/includes/company.inc" -->
+					</td>
+				</tr>
+				<tr valign="top">
+					<td>
+						<!-- #include virtual="/jobs/includes/addresses.inc" -->
+					</td>
+					<td>
+						<!-- #include virtual="/jobs/includes/contacts.inc" -->
+					</td>
+				</tr>
+				<tr valign="top">
+					<td>
+						<!-- #include virtual="/jobs/includes/interviews.inc" -->
+					</td>
+					<td>
+						<!-- #include virtual="/jobs/includes/phonecalls.inc" -->
+					</td>
+				</tr>
+				<tr valign="top">
+					<td colspan="2">
+						<!-- #include virtual="/jobs/includes/jobs.inc" -->
+					</td>
+				</tr>
+				</table>
+			</td>
+			<td valign="top">
+				<% If JobsErrorMessage <> "" Then %>
+				<div class="ErrorMessage"><%= JobsErrorMessage %></div>
+				<% End If %>
+				<table cellpadding="3">
+				<tr>
+					<td class="frm_label">Date:</td>
+					<td>
+						<%= formTextBox("JobInterviewDate", "10", JobInterviewDate, "JobsElement", "Date", "Invalid Date") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>
+					<td class="frm_label">Time:</td>
+					<td>
+						<%= formTextBox("JobInterviewTime", "10", JobInterviewTime, "JobsElement", "Time", "Invalid Time") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Type:</b></td>
+					<td>
+						<%= SelectBox(oConn, "sp_JobInterviewType_get", "JobInterviewTypeID", JobInterviewTypeID, "JobsTheme", "Interview Type") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Client:</b></td>
+					<td>	
+						<%= SelectBox(oConn, "sp_JobInterview_ClientID_get " & JobCompanyID, "JobInterviewClientID", JobInterviewClientID, "JobsTheme", "Client") %>
+			<script type="text/javascript">
+				
+				<% If JobInterviewClientID = "" Then %>
+				$("#JobInterviewClientID").prepend("<option value='' selected='selected' style='text-align: center'><%= Server.HTMLEncode("<  ") %>Select Company<%= Server.HTMLEncode("  >") %></option>");
+				<% End If %>
+
+				$("#JobInterviewClientID").change
+					(
+						function()
+						{
+							var $JobInterviewClientID = $('#JobInterviewClientID').val();
+							var $JobInterviewDate = $('#JobInterviewDate').val();
+							var $JobInterviewTime = $('#JobInterviewTime').val();
+							var $JobInterviewTypeID = $('#JobInterviewTypeID').val();
+							location.href = "<%= SCRIPT_NAME %>?Template=<%= Template %>&JobInterviewClientID=" + $JobInterviewClientID + "&JobCompanyID=<%= JobCompanyID %>&JobInterviewDate=" + encodeURIComponent($JobInterviewDate) + "&JobInterviewTime=" + encodeURIComponent($JobInterviewTime) + "&JobInterviewTypeID=" + encodeURIComponent($JobInterviewTypeID) + "&PopulateAddress=1";
+							}
+					);
+			</script>
+					</td>
+				</tr>
+				<% If JobInterviewClientID <> "" Then %>
+				<%
+					PopulateAddress = Trim(Request("PopulateAddress"))
+					If PopulateAddress = "1" Then
+						sql = "SELECT TOP 1 * FROM JobCompanyAddress WHERE JobCompanyID = " & JobInterviewClientID
+						Set ors = oConn.Execute(sql)
+						If NOT ors.EOF Then
+							JobInterviewAddress1 = ors("JobCompanyAddress1")
+							JobInterviewAddress2 = ors("JobCompanyAddress2")
+							JobInterviewCity = ors("JobCompanyAddressCity")
+							JobInterviewStateID = ors("StateID")
+							JobInterviewZipCode	 = ors("JobCompanyAddressZipCode")
+							ors.Close
+						End If
+						Set ors = Nothing
+					End If
+				%>
+				<tr>
+					<td align="right"><b>Contact:</b></td>
+					<td>
+						<%= SelectBox(oConn, "sp_JobCompanyContact_JobCompanyID_get " & JobInterviewClientID, "JobInterviewClientContactID", JobInterviewClientContactID, "JobsElement", "Contact") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Address:</b></td>
+					<td>
+						<%= formTextBox("JobInterviewAddress1", "30", JobInterviewAddress1, "JobsTheme", "JobInterviewAddress1", "Invalid Address1") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right">&nbsp;</td>
+					<td>
+						<%= formTextBox("JobInterviewAddress2", "30", JobInterviewAddress2, "JobsTheme", "JobInterviewAddress2", "Invalid Address2") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>City:</b></td>
+					<td>
+						<%= formTextBox("JobInterviewCity", "20", JobInterviewCity, "JobsTheme", "City", "Invalid City") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>State:</b></td>
+					<td>
+						<%= SelectBox(oConn, "SELECT * FROM States ORDER by State", "JobInterviewStateID", JobInterviewStateID, "JobsTheme", "State") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Zip&nbsp;Code:</b></td>
+					<td>
+						<%= formTextBox("JobInterviewZipCode", "20", JobInterviewZipCode, "JobsTheme", "Zip Code", "Invalid Zip Code") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr valign="top">
+					<td align="right"><b>Notes:</b></td>
+					<td>
+						<%= formTextArea("JobInterviewNotes", JobInterviewNotes, "450", "150", "JobsElement", "Notes", "Invalid Notes") %>
+					</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>
+						<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+
+					</td>
+				</tr>
+				<% End If %>
+				</table>
+			</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("JobCompanyID", JobCompanyID) %>
+<%= formHidden("JobInterviewID", JobInterviewID) %>
+
+<%= formHidden("Template", Template) %>
+</form>
+
+<script type="text/javascript">
+
+	$('#JobInterviewAddress1').focus();
+	$('#JobInterviewDate').datepicker();
+
+</script>

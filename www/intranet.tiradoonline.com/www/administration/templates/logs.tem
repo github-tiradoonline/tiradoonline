@@ -1,0 +1,97 @@
+<%
+	CurrentDate = Trim(Request("CurrentDate"))
+	If CurrentDate = "" Then 
+		CurrentDate = Date
+	Else
+		CurrentDate = CDate(CurrentDate)
+	End If
+	CurrentDay = Day(CurrentDate)
+	CurrentMonth = Month(CurrentDate)
+	CurrentYear = Year(CurrentDate)
+
+	sql = "sp_Logs_LogDate '" & CurrentDate & "'"
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+%>
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0>
+<tr>
+	<td><font face="Verdana,Arial" size="2" color="#ffffff">&nbsp;&nbsp;</td>
+	<td><a href="<%= Request.ServerVariables("SCRIPT_NAME") %>?Template=<%= Template %>&CurrentDate=<%= DateAdd("d", -1, CurrentDate) %>"><img src="images/previous.gif" width=13 height=16 hspace=0 vspace=0 border=0></a></td>
+	<td align=center width="100%"><font face="Arial,Verdana" size="2" color="#ffffff">&nbsp;&nbsp;<b>Log&nbsp;files&nbsp;for&nbsp;<%= FormatDateTime(CurrentDate, vbLongDate) %></td>
+	<td align=right><a href="<%= Request.ServerVariables("SCRIPT_NAME") %>?Template=<%= Template %>&CurrentDate=<%= DateAdd("d", 1, CurrentDate) %>"><img src="images/next.gif" width=13 height=16 hspace=0 vspace=0 border=0></a></td>
+	<td><font face="Verdana,Arial" size="2" color="#ffffff">&nbsp;&nbsp;</td>
+</tr>
+</table>
+<table cellspacing=1 cellpadding=4 border=0 width="100%">
+<%
+	If NOT ors.EOF Then
+		Do Until ors.EOF
+			Response.Write "<tr>" & vbCrLF
+			Response.Write "	<td bgcolor=""#ffffff""><font face=""Verdana,Arial"" size=""1"">" & Replace(FormatDateTime(ors("LogDate"), 3), " ", "&nbsp;") & "</td>"  & vbCrLF
+			Response.Write "	<td bgcolor=""#ffffff"" width=""100%""><font face=""Verdana,Arial"" size=""1"">" & ors("LogDesc") & "</td>" & vbCrLF
+			Response.Write "</tr>" & vbCrLF
+			ors.MoveNext
+		Loop
+		ors.Close
+		Set ors = Nothing
+	Else
+		Response.Write "<tr>" & vbCrLF
+		Response.Write "	<td bgcolor=""#ffffff"" colspan=2 align=center><font face=""Verdana,Arial"" size=""2"">No logs found.</td>"  & vbCrLF
+		Response.Write "</tr>" & vbCrLF
+	End If
+%>
+<tr>
+	<td align=center colspan=2><font face="Arial,Verdana" size="2" color="#ffffff">&nbsp;<b>Backups</b>&nbsp;</td>
+</tr>
+<%
+	sql = "sp_Backups_BackupDate '" & CurrentDate & "'"
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+
+	If NOT ors.EOF Then
+		Do Until ors.EOF
+			Response.Write "<tr>" & vbCrLF
+			Response.Write "	<td bgcolor=""#ffffff""><font face=""Verdana,Arial"" size=""1"">" & Replace(FormatDateTime(ors("BackupDate"), 3), " ", "&nbsp;") & "</td>"  & vbCrLF
+			Response.Write "	<td bgcolor=""#ffffff"" width=""100%""><font face=""Verdana,Arial"" size=""1"">Database backed up by " & ors("UserName") & "</td>" & vbCrLF
+			Response.Write "</tr>" & vbCrLF
+			ors.MoveNext
+		Loop
+		ors.Close
+		Set ors = Nothing
+	Else
+		Response.Write "<tr>" & vbCrLF
+		Response.Write "	<td bgcolor=""#ffffff"" colspan=2 align=center><font face=""Verdana,Arial"" size=""2"">No backups found.</td>"  & vbCrLF
+		Response.Write "</tr>" & vbCrLF
+	End If
+%>
+<tr>
+	<td align=center colspan=2><font face="Arial,Verdana" size="2" color="#ffffff">&nbsp;<b>Logins</b>&nbsp;</td>
+</tr>
+<%
+	sql = "SELECT a.LoginDate, b.UserName, a.Browser, a.IPAddress FROM Logins a, Users b " & _ 
+		  "WHERE a.UserID = b.UserID AND " & _
+		  "DATEPART(day, LoginDate) = " & CurrentDay & " AND " & _
+		  "DATEPART(month, LoginDate) = " & CurrentMonth & " AND " & _
+		  "DATEPART(year, LoginDate) = " & CurrentYear & " ORDER BY a.LoginDate DESC"
+	sql = "sp_Logins_LoginDate '" & CurrentDate & "'"
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+
+	If NOT ors.EOF Then
+		Do Until ors.EOF
+			Response.Write "<tr>" & vbCrLF
+			Response.Write "	<td bgcolor=""#ffffff""><font face=""Verdana,Arial"" size=""1"">" & Replace(FormatDateTime(ors("LoginDate"), 3), " ", "&nbsp;") & "</td>"  & vbCrLF
+			Response.Write "	<td bgcolor=""#ffffff"" width=""100%""><font face=""Verdana,Arial"" size=""1"">" & ors("UserName") & "&nbsp;-&nbsp;" & ors("Browser") & "<br />" & ors("IPAddress") & "</td>" & vbCrLF
+			Response.Write "</tr>" & vbCrLF
+			ors.MoveNext
+		Loop
+		ors.Close
+		Set ors = Nothing
+	Else
+		Response.Write "<tr>" & vbCrLF
+		Response.Write "	<td bgcolor=""#ffffff"" colspan=2 align=center><font face=""Verdana,Arial"" size=""2"">No logins found.</td>"  & vbCrLF
+		Response.Write "</tr>" & vbCrLF
+	End If
+%>
+</table>

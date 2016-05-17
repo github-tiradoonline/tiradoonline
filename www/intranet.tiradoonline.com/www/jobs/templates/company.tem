@@ -1,0 +1,173 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formJobsCompany" name="formJobsCompany">
+<% 
+	SubmitButtonValue = "Create Company"
+	company_header = "Companies"
+	If JobCompanyID <> "" Then
+		SubmitButtonValue = "Save Company"
+		sql = "SELECT * FROM JobCompany WHERE JobCompanyID = " & JobCompanyID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		JobCompanyName = ors("JobCompanyName")
+		JobCompanyPhone = ors("JobCompanyPhone")
+		JobCompanyPhone2 = ors("JobCompanyPhone2")
+		JobCompanyFax = ors("JobCompanyFax")
+		JobCompanyEmail = ors("JobCompanyEmail")
+		JobCompanyWebsite = ors("JobCompanyWebsite")
+		JobCompanyLinkedIn = ors("JobCompanyLinkedIn")
+		JobCompanyTwitter = ors("JobCompanyTwitter")
+		JobCompanyFacebook = ors("JobCompanyFacebook")
+		JobCompanyGooglePlus = ors("JobCompanyGooglePlus")
+		JobCompanyYouTube = ors("JobCompanyYouTube")
+		JobCompanyInstagram = ors("JobCompanyInstagram")
+		JobCompanyPinterest = ors("JobCompanyPinterest")
+		ors.Close
+		Set ors = Nothing
+		company_header = JobCompanyName & "&nbsp;-&nbsp;Information"
+	End If
+%>
+<div class="JobsTheme" style="text-align:center;">
+	<h1 class="Header" style="padding: 5px;" style="float:left;">
+		<%= company_header %>
+	</h1>
+</div>
+<table>
+<tr valign="top">
+	<td>
+		<table>
+		<tr valign="top">
+			<% If JobCompanyID <> "" Then %>
+			<td>
+				<table cellpadding="3" border="0">
+				<tr valign="top">
+					<td colspan="2">
+						<!-- #include virtual="/jobs/includes/company.inc" -->
+					</td>
+				</tr>
+				<tr valign="top">
+					<td>
+						<!-- #include virtual="/jobs/includes/addresses.inc" -->
+					</td>
+					<td>
+						<!-- #include virtual="/jobs/includes/contacts.inc" -->
+					</td>
+				</tr>
+				<tr valign="top">
+					<td>
+						<!-- #include virtual="/jobs/includes/interviews.inc" -->
+					</td>
+					<td>
+						<!-- #include virtual="/jobs/includes/phonecalls.inc" -->
+					</td>
+				</tr>
+				<tr valign="top">
+					<td colspan="2">
+						<!-- #include virtual="/jobs/includes/jobs.inc" -->
+					</td>
+				</tr>
+				</table>
+			</td>
+			<% End If %>
+			<td>
+				<table cellpadding="3" border="0">
+				<% If JobsErrorMessage <> "" Then %>
+				<tr>
+					<td colspan="2" class="ErrorMessage"><%= JobsErrorMessage %><br />&nbsp;<br /></td>
+				</tr>
+				<% End If %>
+				<tr>
+					<td align="right"><b>Company&nbsp;Name:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyName", "40", JobCompanyName, "JobsElement", "Company Name", "Invalid Company Name") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Website:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyWebsite", "50", JobCompanyWebsite, "JobsElement", "Website", "Invalid Website") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Email:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyEmail", "50", JobCompanyEmail, "JobsElement", "Email", "Invalid Email") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Phone:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyPhone", "20", JobCompanyPhone, "JobsElement", "Phone", "Invalid Phone") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Phone2:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyPhone2", "20", JobCompanyPhone2, "JobsElement", "Phone", "Invalid Phone2") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Fax:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyFax", "20", JobCompanyFax, "JobsElement", "Fax", "Invalid Fax") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>LinkedIn:</b><br /><%= LINKEDIN_ICON %></td>
+					<td>
+						<%= formTextBox("JobCompanyLinkedIn", "50", JobCompanyLinkedIn, "JobsElement", "LinkedIn", "Invalid LinkedIn") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Facebook:</b><br /><%= FACEBOOK_ICON %></td>
+					<td>
+						<%= formTextBox("JobCompanyFacebook", "50", JobCompanyFacebook, "JobsElement", "Facebook", "Invalid Facebook") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Twitter:</b><br /><%= TWITTER_ICON %></td>
+					<td>
+						<%= formTextBox("JobCompanyTwitter", "50", JobCompanyTwitter, "JobsElement", "Twitter", "Invalid Twitter") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Google&nbsp;Plus:</b><br /><%= GOOGLEPLUS_ICON %></td>
+					<td>
+						<%= formTextBox("JobCompanyGooglePlus", "50", JobCompanyGooglePlus, "JobsElement", "GooglePlus", "Invalid GooglePlus") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>You&nbsp;Tube:</b><br /><%= YOUTUBE_ICON %></td>
+					<td>
+						<%= formTextBox("JobCompanyYouTube", "50", JobCompanyYouTube, "JobsElement", "YouTube", "Invalid YouTube") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Instagram:</b><br /><%= INSTAGRAM_ICON %></td>
+					<td>
+						<%= formTextBox("JobCompanyInstagram", "50", JobCompanyInstagram, "JobsElement", "YouTube", "Invalid Instagram") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Pinterest:</b><br /><%= PINTEREST_ICON %></td>
+					<td>
+						<%= formTextBox("JobCompanyPinterest", "50", JobCompanyPinterest, "JobsElement", "YouTube", "Invalid Pinterest") %>
+					</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>
+						<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("JobCompanyID", JobCompanyID) %>
+
+<%= formHidden("Template", Template) %>
+</form>

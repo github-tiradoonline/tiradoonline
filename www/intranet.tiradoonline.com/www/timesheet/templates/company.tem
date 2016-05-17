@@ -1,0 +1,162 @@
+<!-- #include virtual="/timesheet/includes/subnav.inc" -->
+
+<form action="<%= SCRIPT_NAME %>" method="post" id="formTimesheetCompany" name="formTimesheetCompany">
+<% 
+	SubmitButtonValue = "Create Company"
+
+	If TimeSheetCompanyID <> "" Then
+		SubmitButtonValue = "Save Company"
+		sql = "SELECT * FROM TimeSheetCompany WHERE TimeSheetCompanyID = " & TimeSheetCompanyID
+		WriteDebugger sql, Debugging, 0
+		
+		Set ors = oConn.Execute(sql)
+		If NOT ors.EOF Then
+			TimesheetCompanyName = ors("TimesheetCompanyName")
+			TimesheetCompanyAddress1 = ors("TimesheetCompanyAddress1")
+			TimesheetCompanyAddress2 = ors("TimesheetCompanyAddress2")
+			TimesheetCompanyCity = ors("TimesheetCompanyCity")
+			TimesheetCompanyStateID = ors("TimesheetCompanyStateID")
+			TimesheetCompanyZipCode = ors("TimesheetCompanyZipCode")
+			TimeSheetCompanyPhone = ors("TimeSheetCompanyPhone")
+			
+			ors.Close	
+			Set ors = Nothing
+		End If
+	End If
+%>
+<table>
+<tr valign="top">
+		<%
+			sql = "sp_Timehseet_UserID_Company_get " & Session("UserID")
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+		%>
+	<td>
+		<table cellpadding="3" class="GridViewAlteringRows">
+		<tr>
+			<td bgcolor="#dddddd">
+				<b>Company</b>
+			</td>
+		</tr>
+		<%
+				Do Until ors.EOF
+					v_TimeSheetCompanyID = ors("TimeSheetCompanyID")
+					v_TimeSheetCompanyName = ors("TimeSheetCompanyName")
+					v_TimeSheetTotalTimesheets = ors("TotalTimesheets")
+					v_TimeSheetTotalPaychecks = ors("TotalPaychecks")
+					v_TimesheetCompanyAddress1 = ors("TimesheetCompanyAddress1")
+					v_TimesheetCompanyAddress2 = ors("TimesheetCompanyAddress2")
+					v_TimesheetCompanyCity = ors("TimesheetCompanyCity")
+					v_TimesheetCompanyStateName = ors("TimesheetCompanyStateName")
+					v_TimesheetCompanyZipCode = ors("TimesheetCompanyZipCode")
+					'v_TimeSheetCompanyPhone = ors("TimeSheetCompanyPhone")
+					
+					Address = ""
+					If v_TimesheetCompanyAddress1 <> "" AND v_TimesheetCompanyCity <> "" AND v_TimesheetCompanyStateName <> "" AND v_TimesheetCompanyZipCode <> "" Then
+						Address = v_TimesheetCompanyAddress1 & " " & v_TimesheetCompanyCity & ", " & v_TimesheetCompanyStateName & " " & v_TimesheetCompanyZipCode
+					End If
+					
+		%>
+		<tr class="GridViewRow">
+			<td>
+				<a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&TimeSheetCompanyID=<%= v_TimeSheetCompanyID %>"><span style="text-shadow: 1px 1px #000000;color:<%= PERSONAL_INFORMATION_THEME %>;"><%= HTMLFormat(v_TimeSheetCompanyName) %></a></span><br />
+				<% If Address <> "" Then %>
+				
+			<div style="float:right">
+				<%= ShowMap(Address) %>
+			</div>
+				
+				<% End If %>
+				
+				[&nbsp;<a href="<%= SCRIPT_NAME %>?Template=timesheet&TimeSheetCompanyID=<%= v_TimeSheetCompanyID %>">Timesheets&nbsp;(<%= v_TimeSheetTotalTimesheets %>)</a>&nbsp;]&nbsp;
+[&nbsp;<a href="<%= SCRIPT_NAME %>?Template=paycheck&TimeSheetCompanyID=<%= v_TimeSheetCompanyID %>">Paychecks&nbsp;(<%= v_TimeSheetTotalPaychecks  %>)</a>&nbsp;]
+			</td>
+		</tr>
+		<%
+					ors.MoveNext
+				Loop
+				ors.Close
+		%>
+		</table>
+	</td>
+	<% 
+		End If
+		Set ors = Nothing
+		
+	%>
+	<td>
+		<div class="TimeSheetTheme">
+			<h1 class="Header" style="padding: 5px;">Companies
+				<span style="float:right;display:inline;">
+					<%= Button("Button", "Create New Company", "Button", "", "Create New Company", "location.href='" & SCRIPT_NAME & "?Template=company'") %>
+				</span>&nbsp;&nbsp;
+			</h1>	
+		</div>
+		<p>
+		<% If TimesheetErrorMessage <> "" Then %>
+		<div class="ErrorMessage"><%= TimesheetErrorMessage %></div>
+		<% End If %>
+		<p>
+		<table cellpadding="3">
+		<tr>
+			<td class="frm_label">Company&nbsp;Name:</td>
+			<td>
+				<%= formTextBox("TimeSheetCompanyName", "40", TimeSheetCompanyName, "TimeSheetElement", "Company Name", "Invalid Company Name") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Address1:</td>
+			<td>
+				<%= formTextBox("TimeSheetCompanyAddress1", "40", TimeSheetCompanyAddress1, "TimeSheetElement", "Address", "Invalid Address") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label"></td>
+			<td>
+				<%= formTextBox("TimeSheetCompanyAddress2", "40", TimeSheetCompanyAddress2, "TimeSheetElement", "Address", "Invalid Address") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">City:</td>
+			<td>
+				<%= formTextBox("TimeSheetCompanyCity", "40", TimeSheetCompanyCity, "TimeSheetElement", "City", "Invalid City") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">State:</td>
+			<td>
+				<%= SelectBox(oConn, "sp_States_get", "TimeSheetCompanyStateID", TimeSheetCompanyStateID, "TimesheetElement", "State") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Zip&nbsp;Code:</td>
+			<td>
+				<%= formTextBox("TimeSheetCompanyZipCode", "5", TimeSheetCompanyZipCode, "TimeSheetElement", "Zip Code", "Invalid Zip Code") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Phone:</td>
+			<td>
+				<%= formTextBox("TimeSheetCompanyPhone", "30", TimeSheetCompanyPhone, "TimeSheetElement", "Phone", "Invalid Phone") %>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+				<% If TimesheetCompanyID <> "" Then %>
+				<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+				<% End If %>
+
+			</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+</table>
+<%= formHidden("Template", Template) %>
+
+<%= formHidden("TimesheetCompanyID", TimesheetCompanyID) %>
+
+</form>

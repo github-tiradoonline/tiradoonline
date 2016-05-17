@@ -1,0 +1,21 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'sp_Server_delete' AND TYPE = 'P')
+	DROP PROCEDURE sp_Server_delete;
+GO
+
+CREATE PROCEDURE sp_Server_delete
+	@ServerID		INT
+AS
+
+	BEGIN TRANSACTION DELETE_SERVER
+
+	DELETE FROM ServerInformation WHERE ServerID = @ServerID;
+	DELETE FROM Server WHERE ServerID = @ServerID;
+
+	IF @@ERROR = 0
+		COMMIT TRANSACTION DELETE_SERVER;
+	ELSE
+		ROLLBACK TRANSACTION DELETE_SERVER;
+
+GO
+
+--EXEC sp_Server_delete 1006, 'test3', 'test';

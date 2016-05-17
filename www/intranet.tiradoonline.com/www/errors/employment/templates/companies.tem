@@ -1,0 +1,129 @@
+<%
+	Action = Trim(Request("Action"))
+	CompanyID = Trim(Request("CompanyID"))
+	ErrorMessage = Trim(Request("ErrorMessage"))
+	CompanyID = Trim(Request("CompanyID"))
+	CompanyName = Trim(Request("CompanyName"))
+	SubmitButton = Trim(Request("SubmitButton"))
+	
+	If SubmitButton = "Cancel" Then Response.Redirect Request.ServerVariables("SCRIPT_NAME") & "?Template=" & Template
+
+	If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
+		If SubmitButton = "Add" Then
+			If CompanyName = "" Then
+				ErrorMessage = "Please enter a Company"
+			Else
+				sql = "SELECT CompanyID FROM Companies WHERE UserID = " & Session("UserID") & " AND " & _
+				 	  "CompanyName = '" & Replace(CompanyName, "'", "''") & "'"
+				WriteDebugger sql, Debugging, 0
+				Set ors = oConn.Execute(sql)
+				If ors.EOF Then
+					ors.Close
+					Set ors = Nothing
+					sql = "INSERT INTO Companies (UserID, CompanyName) VALUES (" & _
+						  Session("UserID") & ", " & _
+						  "'" & Replace(CompanyName, "'", "''") & "')"
+					WriteDebugger sql, Debugging, 0
+					oConn.Execute sql
+					ErrorMessage = "Company added"
+					Response.Redirect Request.ServerVariables("SCRIPT_NAME") & "?Template=Companies&CompanyID=" & CompanyID & "&ErrorMessage=" & Server.URLEncode(ErrorMessage)
+				Else
+					ors.Close
+					Set ors = Nothing
+					ErrorMessage = "Company already exists"
+				End If
+			End If
+		ElseIf SubmitButton = "Edit" Then
+			If CompanyName = "" Then
+				ErrorMessage = "Please enter a Company"
+			Else
+				sql = "SELECT CompanyID FROM Companies WHERE UserID = " & Session("UserID") & " AND " & _
+				 	  "CompanyName = '" & CompanyName & "' AND CompanyID <> " & CompanyID
+				WriteDebugger sql, Debugging, 0
+				Set ors = oConn.Execute(sql)
+				If ors.EOF Then
+					ors.Close
+					Set ors = Nothing
+					sql = "UPDATE Companies SET CompanyName = '" & CompanyName & "' WHERE CompanyID = " & CompanyID
+					WriteDebugger sql, Debugging, 0
+					oConn.Execute sql
+					ErrorMessage = "Company updated"
+					Response.Redirect Request.ServerVariables("SCRIPT_NAME") & "?Template=Companies&CompanyID=" & CompanyID & "&ErrorMessage=" & Server.URLEncode(ErrorMessage)
+				Else
+					ors.Close
+					Set ors = Nothing
+					ErrorMessage = "Company already exists"
+				End If
+			End If
+		End If
+	End If
+	
+%>
+
+<table cellspacing=0 cellpadding=0 border=0 width="100%">
+<tr>
+	<td align=center colspan=2><font face="Arial,Verdana" size=2 color="#ffffff"><b>Companies</td>
+</tr>
+<tr>
+	<td bgcolor="#ffffff" valign=top>
+		<table>
+		<%
+			sql = "sp_Companies_CompanyID_CompanyName " & Session("UserID")
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If  NOT ors.EOF Then
+		%>
+		<tr>
+			<td bgcolor="#0000aa" align="center"><font face="Arial" size=2 color="#ffffff">&nbsp;<b>Companies</b>&nbsp;</td>
+		</tr>
+		<%
+			End If
+			Do Until ors.EOF
+		%>
+		<tr>
+			<% If CStr(ors("CompanyID")) = CStr(CompanyID) Then %>
+			<td align="right" bgcolor="#639AFF"><font face="Verdana" size=1 color="#ffffff">&nbsp;&nbsp;<b><%= ors("CompanyName") %></b>&nbsp;&nbsp;</td>
+			<% Else %>
+			<td align="right"><font face="Verdana" size=1>&nbsp;&nbsp;<a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&CompanyID=<%= ors("CompanyID") %>"><%= ors("CompanyName") %></a>&nbsp;&nbsp;</td>
+			<% End If %>
+		</tr>
+		<%
+				ors.MoveNext
+			Loop
+			ors.Close
+			Set ors = Nothing
+			
+			If CompanyID <> "" Then
+				sql = "sp_Companies_get_CompanyID " & CompanyID
+				Set ors = oConn.Execute(sql)
+				CompanyName = ors("CompanyName")
+				ors.Close
+				Set ors = Nothing
+			End If
+		%>
+		<tr>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+		</tr>
+		</table>
+	</td>
+	<td bgcolor="#ffffff" valign=top>
+		<table>
+		<tr>
+			<td colspan=2><font face="Verdana" size=2 color="#ff0000"><b>&nbsp;<%= ErrorMessage %>&nbsp;</b></font></td>
+		</tr>
+		<tr>
+			<td><font face="Verdana" size=2>Company</td>
+			<td><input type="text" name="CompanyName" size="30" maxlength="30" value="<%= CompanyName %>" class="EmploymentElement"></td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td><input type="submit" name="SubmitButton" value="<% If CompanyID = "" Then %>Add<% Else %>Edit<% End If %>" class="EmploymentElement"></td>
+		</tr>
+		</table>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("Action", Action) %>
+<%= formHidden("CompanyID", CompanyID) %>
+<%= formHidden("Template", Template) %>

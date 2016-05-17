@@ -1,0 +1,27 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Logins' AND TYPE = 'U')
+DROP TABLE Logins;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Logins' AND TYPE = 'U')
+	DROP TABLE Logins;
+GO
+
+CREATE TABLE Logins
+(
+	LoginID		IDENTITY (1,1) INT  NOT NULL,
+	UserID		 INT  NOT NULL,
+	LoginDate		 SMALLDATETIME DEFAULT (getdate()) NOT NULL,
+	Browser		 VARCHAR(100)  NULL,
+	IPAddress		 VARCHAR(15)  NOT NULL
+
+);
+GO
+
+
+
+
+GO
+
+
+GO
+

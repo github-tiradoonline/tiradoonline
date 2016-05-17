@@ -1,0 +1,507 @@
+<!-- <form action="<%= SCRIPT_NAME %>" method="post" id="formCreateAccount" name="formCreateAccount"> -->
+<form action="<%= SCRIPT_NAME %>" method="post">
+<%
+	UserID = Trim(Request("UserID"))
+	CreateAccountUserName = Trim(Request.Form("CreateAccountUserName"))
+	CreateAccountPassword = Trim(Request.Form("CreateAccountPassword"))
+	CreateAccountConfirmPassword = Trim(Request.Form("CreateAccountConfirmPassword"))
+	CreateAccountFirstName = Trim(Request("CreateAccountFirstName"))
+	CreateAccountLastName = Trim(Request("CreateAccountLastName"))
+	CreateAccount_Email = Trim(Request("CreateAccount_Email"))
+	MobileEmail = Trim(Request("MobileEmail"))
+	AdministratorBorder = ""
+
+	UserTypeID = Trim(Request("UserTypeID"))
+	If UserTypeID = "" Then UserTypeID = "0"
+
+	Contacts = Trim(Request("Contacts"))
+	If Contacts = "" Then Contacts = "0"
+
+	PersonalInformation = Trim(Request("PersonalInformation"))
+	If PersonalInformation = "" Then PersonalInformation = "0"
+
+	Documents = Trim(Request("Documents"))
+	If Documents = "" Then Documents = "0"
+
+	Banking = Trim(Request("Banking"))
+	If Banking = "" Then Banking = "0"
+
+	CreditCards = Trim(Request("CreditCards"))
+	If CreditCards = "" Then CreditCards = "0"
+
+	MonthlyExpenses = Trim(Request("MonthlyExpenses"))
+	If MonthlyExpenses = "" Then MonthlyExpenses = "0"
+
+	CollectionAgency = Trim(Request("CollectionAgency"))
+	If CollectionAgency = "" Then CollectionAgency = "0"
+
+	Photos = Trim(Request("Photos"))
+	If Photos = "" Then Photos = "0"
+
+	Music = Trim(Request("Music"))
+	If Music = "" Then Music = "0"
+
+	MovieCollection = Trim(Request("MovieCollection"))
+	If MovieCollection = "" Then MovieCollection = "0"
+
+	Movies = Trim(Request("Movies"))
+	If Movies = "" Then Movies = "0"
+
+	Snippets = Trim(Request("Snippets"))
+	If Snippets = "" Then Snippets = "0"
+
+	Health = Trim(Request("Health"))
+	If Health = "" Then Health = "0"
+
+	Jobs = Trim(Request("Jobs"))
+	If Jobs = "" Then Jobs = "0"
+
+	Recovery = Trim(Request("Recovery"))
+	If Recovery = "" Then Recovery = "0"
+
+	Timesheet = Trim(Request("Timesheet"))
+	If Timesheet = "" Then Timesheet = "0"
+
+	Notes = Trim(Request("Notes"))
+	If Notes = "" Then Notes = "0"
+
+	ServerInformation = Trim(Request("ServerInformation"))
+	If ServerInformation = "" Then ServerInformation = "0"
+
+	tiradoonline = Trim(Request("tiradoonline"))
+	If tiradooline = "" Then tiradoonline = "0"
+	
+	If SubmitButton = "Cancel" Then Response.Redirect Request.ServerVariables("SCRIPT_NAME") & "?Template=" & Template
+
+	If SubmitButton = "Delete User" Then
+		'sql = "sp_DeleteUser " & UserID
+		sql = "UPDATE Users SET Active = 0 WHERE UserID = " & UserID
+		WriteDebugger sql, Debugging, 0
+		'sql = "sp_DeleteUser " & UserID
+		'WriteDebugger sql, Debugging, 0
+		oConn.Execute sql
+		AdministrationErrorMessage = "User deleted."
+		If NOT Debugging Then Response.Redirect Request.ServerVariables("SCRIPT_NAME") & "?Template=users&AdministrationErrorMessage=" & Server.URLEncode(AdministrationErrorMessage)
+	ElseIf SubmitButton = "Create User" Then
+		sql = "sp_Users_insert " & _
+				"'" & CreateAccountUserName & "', " & _
+				"'" & CreateAccountPassword & "', " & _
+				"'" & CreateAccountFirstName & "', " & _
+				"'" & CreateAccountLastName & "', " & _
+				"'" & CreateAccount_Email & "', " & _
+				"'" & Mobile_Email & "', " & _
+				UserTypeID & ", " & _
+				Contacts & ", " & _ 
+				PersonalInformation & ", " & _ 
+				Documents & ", " & _ 
+				Banking & ", " & _ 
+				CreditCards & ", " & _ 
+				MonthlyExpenses & ", " & _ 
+				CollectionAgency & ", " & _
+				Photos & ", " & _ 
+				Music & ", " & _ 
+				MovieCollection & ", " & _ 
+				Movies & ", " & _ 
+				Snippets & ", " & _ 
+				Health & ", " & _ 
+				Jobs & ", " & _ 
+				Recovery & ", " & _ 
+				Timesheet & ", " & _ 
+				Notes & ", " & _ 
+				ServerInformation & ", " & _ 
+				tiradoonline 
+		WriteDebugger sql, Debugging, 0
+		oConn.Execute sql
+		AdministrationErrorMessage = Server.URLEncode("User " & UserName & " - " & FirstName & " " & LastName & " created.")
+		Response.Redirect Request.ServerVariables("SCRIPT_NAME") & "?Template=Users&AdministrationErrorMessage=" & AdministrationErrorMessage
+	ElseIf SubmitButton = "Save User" Then
+		sql = "UPDATE Users SET " & _
+				"UserName = '" & CreateAccountUserName & "', " & _
+				"Password = '" & CreateAccountPassword & "', " & _
+				"FirstName = '" & CreateAccountFirstName & "', " & _
+				"LastName = '" & CreateAccountLastName & "', " & _
+				"Email = '" & CreateAccount_Email & "', " & _
+				"MobileEmail = '" & MobileEmail & "', " & _
+				"UserTypeID = " & UserTypeID & ", " & _
+				"Contacts = " & Contacts & ", " & _ 
+				"PersonalInformation = " & PersonalInformation & ", " & _ 
+				"Documents = " & Documents & ", " & _ 
+				"Banking = " & Banking & ", " & _ 
+				"CreditCards = " & CreditCards & ", " & _ 
+				"MonthlyExpenses = " & MonthlyExpenses & ", " & _ 
+				"CollectionAgency = " & CollectionAgency & ", " & _
+				"Photos = " & Photos & ", " & _ 
+				"Music = " & Music & ", " & _ 
+				"MovieCollection = " &  MovieCollection & ", " & _ 
+				"Movies = " & Movies & ", " & _ 
+				"Snippets = " & Snippets & ", " & _ 
+				"Health = " & Health & ", " & _ 
+				"Jobs = " & Jobs & ", " & _ 
+				"Recovery = " & Recovery & ", " & _ 
+				"Timesheet = " & Timesheet & ", " & _ 
+				"Notes = " & Notes & ", " & _ 
+				"ServerInformation = " & ServerInformation & ", " & _ 
+				"tiradoonline = " & tiradoonline & ", " & _ 
+				"update_by = '" & Session("UserName") & "', " & _
+				"update_dt = getdate() " & _
+				"WHERE UserID = " & UserID
+		WriteDebugger sql, Debugging, 0
+		oConn.Execute sql
+		AdministrationErrorMessage = Server.URLEncode("User saved.")
+		Response.Redirect SCRIPT_NAME & "?Template=users&AdministrationErrorMessage=" & AdministrationErrorMessage
+	End If
+%>
+<% If AdministrationErrorMessage <> "" Then %>
+<div class="ErrorMessage"><%= AdministrationErrorMessage %></div>
+&nbsp;<br />
+<% End If %>
+<table cellspacing=0 cellpadding=0 width="100%" border=0>
+<tr>
+	<td class="Header">
+		<table cellspacing=0 cellpadding=5 width="100%" border=0 class="AdministrationTheme">
+		<tr>
+			<td>Users</td>
+			<td align="right">
+				<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>&nbsp;&nbsp;
+
+				<% If Action <> "Add" Then %>
+					<%= Button("Button", "Create A New User", "Button", "", "Create A New User", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&Action=Add'") %>&nbsp;&nbsp;
+				<% End If %>
+			</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+<tr>
+	<td>
+		
+		<%
+			listofimages = ""
+			If Action = "" Then
+				sql = "SELECT * FROM Users WHERE Active = 1 ORDER BY FirstName"
+				WriteDebugger sql, Debugging, 0
+				Set ors = oConn.Execute(sql)
+		%>
+			
+			<table border=0 width="100%" cellspacing=0 cellpadding=0>
+			<tr>
+				<td valign=top>
+					<% If NOT ors.EOF Then
+							Do Until ors.EOF
+								UserID = ors("UserID")
+								UserName = ors("UserName")
+								FirstName = ors("FirstName")
+								LastName = ors("LastName")
+								FullName = FirstName & "&nbsp;" & LastName
+								FullName2 = FirstName & "&nbsp;" & LastName
+								If FullName = "&nbsp;" Then 
+									FullName = UserName
+								Else
+									FullName = UserName & "<br />" & FullName
+								End If
+								AdministratorBorder = ""
+								UserTypeID = ors("UserTypeID")
+								If CStr(UserTypeID) = "1" Then AdministratorBorder = "border:#ff0000 solid 5px"
+								Email = ors("Email")
+					listofimages = listofimages & "<a href='/default.asp?SubmitButton=Logout&UserID=" & UserID & "'>" & FullName2 & "</a>;" & vbCrLF
+					'Response.Write 
+					%>
+					<div style="float:left;padding:10px;<%= AdministratorBorder %>;margin:5px;text-align:center">
+						<% If UserTypeID Then %><div style="text-align:center;width:140px;background-color:#ff0000;color:#ffffff;font-weight:bold;padding:5px;border:#000000 solid 3px">ADMINISTRATOR</div><% End If %>
+						<a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&UserID=<%= UserID %>&Action=Edit">
+							<img src="/images/icons/users_off.gif" FullName="<%= FullName2 %>" UserID="<%= UserID %>" id="image<%= UserID %>" title="" width="55" height="66" hspace="0" vspace="0" border="0" class="icon">
+						</a>
+						<div class="iconName_sm"><%= FullName %></div>
+					</div>	
+					
+					<%
+								ors.MoveNext
+							Loop
+							ors.Close
+					%>
+					<% Else  %>
+						<div class="ErrorMessage">No Users found.</div>
+					<% 
+						End If
+						Set ors = Nothing
+					%>
+				</td>
+			</tr>
+			</table>
+			<% Else %>
+			
+			<%
+				SubmitButtonValue = "Create"
+				If UserID <> "" Then				
+					sql = "SELECT * FROM Users WHERE UserID = " & UserID
+					WriteDebugger sql, Debugging, 0
+					Set ors = oConn.Execute(sql)
+					If NOT ors.EOF Then	
+						CreateAccountUserName = ors("UserName")
+						CreateAccountPassword = ors("Password")
+						CreateAccountFirstName = ors("FirstName")
+						CreateAccountLastName = ors("LastName")
+						AdministratorBorder = ""
+						UserTypeID = ors("UserTypeID")
+						CreateAccount_Email = ors("Email")
+						MobileEmail = ors("MobileEmail")
+						Contacts = ors("Contacts")
+						PersonalInformation = ors("PersonalInformation")
+						Banking = ors("Banking")
+						Documents = ors("Documents")
+						CreditCards = ors("CreditCards")
+						MonthlyExpenses = ors("MonthlyExpenses")
+						CollectionAgency = ors("CollectionAgency")
+						Photos = ors("Photos")
+						Music = ors("Music")
+						MovieCollection = ors("MovieCollection")
+						Movies = ors("Movies")
+						Snippets = ors("Snippets")
+						Health = ors("Health")
+						Jobs = ors("Jobs")
+						Recovery = ors("Recovery")
+						Notes = ors("Notes")
+						ServerInformation = ors("ServerInformation")
+						tiradoonline = ors("tiradoonline")
+						SubmitButtonValue = "Save"
+						ors.Close
+					End If
+					Set ors = Nothing
+				End If
+			%>
+			<table border=0 cellpadding=3>
+			<% If AdministrationErrorMessage <> "" Then %>
+			<tr>
+				<td colspan=2><%= AdministrationErrorMessage %></td>
+			</tr>
+			<% End If %>
+			<tr>
+				<td class="frm_label">Username:</td>
+				<td>
+					<%= formTextBox("CreateAccountUserName", "20", CreateAccountUserName, "AdministrationElement", "UserName", "Invalid Username") %>
+				</td>
+			</tr>
+			<tr>
+				<td class="frm_label">Password:</td>
+				<td>
+					<%= formTextBox("CreateAccountPassword", "20", CreateAccountPassword, "AdministrationElement", "Password", "Invalid Password") %>
+				</td>
+			</tr>
+			<tr>
+				<td class="frm_label">Confirm&nbsp;Password:</td>
+				<td>
+					<%= formTextBox("CreateAccountConfirmPassword", "20", CreateAccountConfirmPassword, "AdministrationElement", "Confirm Password", "Invalid Password") %>
+				</td>
+			</tr>
+			<tr>
+				<td class="frm_label">First&nbsp;name:</td>
+				<td>
+					<%= formTextBox("CreateAccountFirstName", "30", CreateAccountFirstName, "AdministrationElement", "First name", "Invalid First Name") %>
+				</td>
+			</tr>
+			<tr>
+				<td class="frm_label">Last&nbsp;name:</td>
+				<td>
+					<%= formTextBox("CreateAccountLastName", "30", CreateAccountLastName, "AdministrationElement", "Last name", "Invalid Last Name") %>
+				</td>
+			</tr>
+			<tr>
+				<td class="frm_label">Email:</td>
+				<td>
+					<%= formTextBox("CreateAccount_Email", "50", CreateAccount_Email, "AdministrationElement", "Emnail", "Invalid Email") %>
+				</td>
+			</tr>
+			<tr>
+				<td class="frm_label">Mobile&nbsp;Email:</td>
+				<td>
+					<%= formTextBox("MobileEmail", "50", MobileEmail, "AdministrationElement", "Emnail", "Invalid Mobile Email Address") %>
+				</td>
+			</tr>
+			<% If Session("UserTypeID") = "1" Then %>
+			<tr>
+				<td align="right"><b>Administrator:</b>&nbsp;</td>
+				<td>
+					<select name="UserTypeID" class="AdministrationElement" title="Administrative Priveleges">
+						<option value="1"<% If CStr(UserTypeID) = "1" Then Response.Write " SELECTED" %>>YES</option>
+						<option value="0"<% If CStr(UserTypeID) = "0" Then Response.Write " SELECTED" %>>NO</option>
+					</select>
+				</td>
+				</tr>
+			<% End If %>
+			<%= formHidden("SendReports", SendReports) %>
+
+<!-- 			<tr>
+				<td align="right"><b>Send&nbsp;Reports:</b></td>
+				<td>
+					<select name="SendReports" class="AdministrationElement" title="Send Daily Reports">
+						<option value="1"<% If CStr(SendReports) = "1" Then Response.Write " SELECTED" %>>YES</option>
+						<option value="0"<% If CStr(SendReports) = "0" Then Response.Write " SELECTED" %>>NO</option>
+					</select>
+				</td>
+			</tr>
+ -->
+			<tr class="AdministrationElement">
+				<td colspan="2" align="center" class="Header"><b>PERMISSIONS</b></td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<table>
+					<tr valign="top">
+						<td>
+							<table cellspacing="0" cellpadding="5">
+							<tr class="ContactsTheme shadow">
+								<td align="right"><input type="checkbox" id="Contacts" name="Contacts" value="1"<% If Contacts Then Response.Write " CHECKED" %> /></td>
+								<td>Contacts</td>
+							</tr>
+							<tr class="PersonalInformationTheme shadow">
+								<td align="right"><input type="checkbox" id="PersonalInformation" name="PersonalInformation" value="1"<% If PersonalInformation Then Response.Write " CHECKED" %> /></td>
+								<td>Personal&nbsp;Information</td>
+							</tr>
+							<tr class="DocumentsTheme shadow">
+								<td align="right"><input type="checkbox" id="Documents" name="Documents" value="1"<% If Documents Then Response.Write " CHECKED" %> /></td>
+								<td>Documents</td>
+							</tr>
+							<tr class="BankingTheme shadow">
+								<td align="right"><input type="checkbox" id="Banking" name="Banking" value="1"<% If Banking Then Response.Write " CHECKED" %> /></td>
+								<td>Banking</td>
+							</tr>
+							<tr class="CreditCardsTheme shadow">
+								<td align="right"><input type="checkbox" id="CreditCards" name="CreditCards" value="1"<% If CreditCards Then Response.Write " CHECKED" %> /></td>
+								<td>Credit&nbsp;Cards</td>
+							</tr>
+							<tr class="BankingMonthlyExpensesTheme shadow">
+								<td align="right"><input type="checkbox" id="MonthlyExpenses" name="MonthlyExpenses" value="1"<% If MonthlyExpenses Then Response.Write " CHECKED" %> /></td>
+								<td>Monthly&nbsp;Expenses</td>
+							</tr>
+							<tr class="BankingMonthlyExpensesTheme shadow">
+								<td align="right"><input type="checkbox" id="CollectionAgency" name="CollectionAgency" value="1"<% If CollectionAgency Then Response.Write " CHECKED" %> /></td>
+								<td>Collection&nbsp;Agency</td>
+							</tr>
+							
+							<tr class="PhotosTheme shadow">
+								<td align="right"><input type="checkbox" id="Photos" name="Photos" value="1"<% If Photos Then Response.Write " CHECKED" %> /></td>
+								<td>Photos</td>
+							</tr>
+							<tr class="MusicTheme shadow">
+								<td align="right"><input type="checkbox" id="Music" name="Music" value="1"<% If Music Then Response.Write " CHECKED" %> /></td>
+								<td>Music</td>
+							</tr>
+							<tr class="TimesheetTheme shadow">
+								<td align="right"><input type="checkbox" id="Timesheet" name="Timesheet" value="1"<% If Timesheet Then Response.Write " CHECKED" %> /></td>
+								<td>Timesheet</td>
+							</tr>
+							</table>
+						</td>
+						<td>&nbsp;&nbsp;&nbsp;</td>
+						<td>
+							<table cellspacing="0" cellpadding="5">
+							<tr class="MovieCollectionTheme shadow">
+								<td align="right"><input type="checkbox" id="MovieCollection" name="MovieCollection" value="1"<% If MovieCollection Then Response.Write " CHECKED" %> /></td>
+								<td>Movie&nbsp;Collection</td>
+							</tr>
+							<tr class="MoviesTheme shadow">
+								<td align="right"><input type="checkbox" id="Movies" name="Movies" value="1"<% If Movies Then Response.Write " CHECKED" %> /></td>
+								<td>Movies</td>
+							</tr>
+							<tr class="SnippetsTheme shadow">
+								<td align="right"><input type="checkbox" id="Snippets" name="Snippets" value="1"<% If Snippets Then Response.Write " CHECKED" %> /></td>
+								<td>Snippets</td>
+							</tr>
+							<tr class="HealthTheme shadow">
+								<td align="right"><input type="checkbox" id="Health" name="Health" value="1"<% If Health Then Response.Write " CHECKED" %> /></td>
+								<td>Health</td>
+							</tr>
+							<tr class="JobsTheme shadow">
+								<td align="right"><input type="checkbox" id="Jobs" name="Jobs" value="1"<% If Jobs Then Response.Write " CHECKED" %> /></td>
+								<td>Jobs</td>
+							</tr>
+							<tr class="RecoveryTheme shadow">
+								<td align="right"><input type="checkbox" id="Recovery" name="Recovery" value="1"<% If Recovery Then Response.Write " CHECKED" %> /></td>
+								<td>Recovery</td>
+							</tr>
+							<tr class="NotesTheme shadow">
+								<td align="right"><input type="checkbox" id="Notes" name="Notes" value="1"<% If Notes Then Response.Write " CHECKED" %> /></td>
+								<td>Notes</td>
+							</tr>
+							<tr class="ServerInfoTheme shadow">
+								<td align="right"><input type="checkbox" id="ServerInformation" name="ServerInformation" value="1"<% If ServerInformation Then Response.Write " CHECKED" %> /></td>
+								<td>Server&nbsp;Information</td>
+							</tr>
+							<tr class="tiradoonlineTheme shadow">
+								<td align="right"><input type="checkbox" id="tiradoonline" name="tiradoonline" value="1"<% If tiradoonline Then Response.Write " CHECKED" %> /></td>
+								<td>tiradoonline.com</td>
+							</tr>
+							</table>
+						</td>
+					</tr>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+				<td>
+					<%= Submit_Button("SubmitButton", SubmitButtonValue & " User", "Button", "", SubmitButtonValue & " User") %>&nbsp;&nbsp;
+					<% If UserID <> "" AND (CStr(Session("UserID")) <> CStr(UserID)) Then %>
+						<%= Button("Button", "Inactivate User", "Button", "", "Inactivate User", "DeleteItem('Are you sure you want to disable this user?', '" & SCRIPT_NAME & "?Template=" & Template & "&UserID=" & UserID & "&SubmitButton=" & Server.URLEncode("Delete User") & "')") %>
+					<% End If %>
+				</td>
+			</tr>
+			</table>							
+			
+			
+		<% End If %>	
+	</td>
+</tr>
+</table>
+
+
+<%= formHidden("UserID", UserID) %>
+<%= formHidden("Action", Action) %>
+<%= formHidden("Template", Template) %>
+</form>
+
+
+
+<script type="text/javascript">
+	var usernameArray = [];
+	var emailArray = [];
+	<%
+		sql = "sp_Users_get"
+		Set ors = oConn.Execute(sql)
+		
+		If NOT ors.EOF Then				
+			Do Until ors.EOF
+				UserName = ors("UserName")
+				Email = ors("Email")
+	%>
+	usernameArray.push( "<%= Username %>" );
+	<% If Trim(Email) <> "" Then %>
+	emailArray.push( "<%= Email %>" );
+	<% End If %>
+	<%
+				ors.MoveNext
+			Loop
+			ors.Close
+		End If 
+		Set ors = Nothing
+	%>
+
+$('.icon').mousedown(
+	function(evt)
+	{
+		if(evt.button == 2) 
+		{
+			promptMessage = "Do you want to log in as " + $(this).attr('FullName') + "?";
+			redirectURL = "/default.asp?SubmitButton=LoginAs&UserID=" + $(this).attr('UserID')
+			if(confirm(promptMessage))
+			{
+				location.href = redirectURL;
+				return true;
+			}
+			else
+				return false;
+		}
+	}
+)
+</script>
+

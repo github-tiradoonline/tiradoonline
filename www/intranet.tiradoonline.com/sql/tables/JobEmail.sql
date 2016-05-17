@@ -1,0 +1,25 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'JobEmail' AND TYPE = 'U')
+DROP TABLE JobEmail;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'JobEmail' AND TYPE = 'U')
+	DROP TABLE JobEmail;
+GO
+
+CREATE TABLE JobEmail
+(
+	JobEmailID		IDENTITY (1001,1) INT  NOT NULL,
+	JobID		 INT  NOT NULL,
+	create_dt		 DATETIME DEFAULT (getdate()) NOT NULL
+
+);
+GO
+
+
+
+
+GO
+
+
+GO
+

@@ -1,0 +1,318 @@
+<%
+	DebuggingSetting = Trim(Request("DebuggingSetting"))
+	If DebuggingSetting = "" Then DebuggingSetting = "0"
+	AdministratorEmail = Trim(Request("AdministratorEmail"))
+	ContactsPhotosDirectory = Trim(Request("ContactsPhotosDirectory"))
+	DocumentsDirectory = Trim(Request("DocumentsDirectory"))
+	PhotosDirectory = Trim(Request("PhotosDirectory"))
+	MusicDirectory = Trim(Request("MusicDirectory"))
+	MoviesDirectory = Trim(Request("MoviesDirectory"))
+	SMTPServer = Trim(Request("SMTPServer"))
+	SMTPServerPort = Trim(Request("SMTPServerPort"))
+	SMTPServerUserName = Trim(Request("SMTPServerUserName"))
+	SMTPServerPassword = Trim(Request("SMTPServerPassword"))
+	POP3Server = Trim(Request("POP3Server"))
+	POP3ServerPort = Trim(Request("POP3ServerPort"))
+	POP3ServerUserName = Trim(Request("POP3ServerUserName"))
+	POP3ServerPassword = Trim(Request("POP3ServerPassword"))
+	
+	SelectedTab = Trim(Request("SelectedTab"))
+	If SelectedTab = "" Then SelectedTab = "0"
+	
+	If SubmitButton = "Save" Then
+		DirectoryExists = true
+		Set objFileSystem = CreateObject("Scripting.FileSystemObject")
+		
+		If DocumentsDirectory <> "" Then
+	    	If NOT objFileSystem.FolderExists(DocumentsDirectory) Then 
+				SettingsErrorMessage = SettingsErrorMessage & "<li>Documents Directory '" & DocumentsDirectory & "' does not exist.</li>"
+				DirectoryExists = false
+				'DocumentsDirectory = ""
+			End If
+		End If
+		
+		If ContactsPhotosDirectory <> "" Then
+	    	If NOT objFileSystem.FolderExists(ContactsPhotosDirectory) Then 
+				SettingsErrorMessage = SettingsErrorMessage & "<li>Contacts Photos Directory '" & ContactsPhotosDirectory & "' does not exist.</li>"
+				DirectoryExists = false
+				'ContactsPhotosDirectory = ""
+			End If
+		End If
+		
+		If PhotosDirectory <> "" Then 
+	    	If NOT objFileSystem.FolderExists(PhotosDirectory) Then 
+				SettingsErrorMessage = SettingsErrorMessage & "<li>Photos Directory '" & PhotosDirectory & "' does not exist.</li>"
+				PhotosDirectory = ""
+				'DirectoryExists = false
+			End If
+		End If
+
+		If MusicDirectory <> "" Then
+	    	If NOT objFileSystem.FolderExists(MusicDirectory) Then 
+				SettingsErrorMessage = SettingsErrorMessage & "<li>Music Directory '" & MusicDirectory & "' does not exist.</li>"
+				DirectoryExists = false
+				'MusicDirectory = ""
+			End If
+		End If
+		
+		If MoviesDirectory <> "" Then
+	    	If NOT objFileSystem.FolderExists(MoviesDirectory) Then 
+				SettingsErrorMessage = SettingsErrorMessage & "<li>Movies Directory '" & MoviesDirectory & "' does not exist.</li>"
+				DirectoryExists = false
+				'MoviesDirectory = ""
+			End If
+		End If
+		Set objFileSystem = Nothing 
+		
+		If DirectoryExists Then
+			sql = "sp_Settings_update " & _
+			Session("UserID") & ", " & _ 
+			DebuggingSetting & ", " & _
+			"'" & SQLEncode(AdministratorEmail) & "', " & _
+			"'" & SQLEncode(ContactsPhotosDirectory) & "', " & _
+			"'" & SQLEncode(DocumentsDirectory) & "', " & _
+			"'" & SQLEncode(PhotosDirectory) & "', " & _
+			"'" & SQLEncode(MusicDirectory) & "', " & _
+			"'" & SQLEncode(MoviesDirectory) & "', " & _
+			"'" & SQLEncode(SMTPServer) & "', " & _
+			SQLEncode(SMTPServerPort) & ", " & _
+			"'" & SQLEncode(SMTPServerUserName) & "', " & _
+			"'" & SQLEncode(SMTPServerPassword) & "', " & _
+			"'" & SQLEncode(POP3Server) & "', " & _
+			SQLEncode(POP3ServerPort) & ", " & _
+			"'" & SQLEncode(POP3ServerUserName) & "', " & _
+			"'" & SQLEncode(POP3ServerPassword) & "'"
+			WriteDebugger sql, Debugging, 0
+			oConn.Execute sql
+			SettingsErrorMessage = Server.URLEncode("Settings saved.")
+			Response.Redirect SCRIPT_NAME & "?Template=" & Template & "&SettingsErrorMessage=" & SettingsErrorMessage
+		End If	
+	End If
+	
+	sql = "sp_Settings_get " & Session("UserID")
+	Set ors = oConn.Execute(sql)
+	If NOT ors.EOF Then
+		DebuggingSetting = ors("DebuggingSetting")
+		AdministratorEmail = ors("AdministratorEmail")
+		DocumentsDirectory = ors("DocumentsDirectory")
+		ContactsPhotosDirectory = ors("ContactsPhotosDirectory")
+		PhotosDirectory = ors("PhotosDirectory")
+		MusicDirectory = ors("MusicDirectory")
+		MoviesDirectory = ors("MoviesDirectory")
+		SMTPServer = ors("SMTPServer")
+		SMTPServerPort = ors("SMTPServerPort")
+		SMTPServerUserName = ors("SMTPServerUserName")
+		SMTPServerPassword = ors("SMTPServerPassword")
+		POP3Server = ors("POP3Server")
+		POP3ServerPort = ors("POP3ServerPort")
+		POP3ServerUserName = ors("POP3ServerUserName")
+		POP3ServerPassword = ors("POP3ServerPassword")
+		ors.Close
+	End If
+	Set ors = Nothing
+%>
+
+<form action="<%= SCRIPT_NAME %>" method="post">
+<table cellspacing=0 cellpadding=0 width="100%" border=0>
+<tr>
+	<td class="Header">
+		<table cellspacing=0 cellpadding=5 width="100%" border=0 class="SettingsTheme">
+		<tr>
+			<td>Settings</td>
+			<td align="right">
+				<%= Submit_Button("SubmitButton", "Save", "Button", "", "Save") %>
+				&nbsp;&nbsp;&nbsp;
+			</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+<tr>
+	<td bgcolor="#ffffff">
+		<table width="100%" border=0>
+		<tr>
+			<td class="ErrorMessage">
+			<% If SettingsErrorMessage <> "" Then %>
+				<%= SettingsErrorMessage %>
+			<% End If %>&nbsp;
+			</td>
+		</tr>
+		<tr>	
+			<td>
+				<div id="tabs">
+					<ul>
+					<% If Session("Administrator") Then %>
+						<li><a href="#tabs-1">Administrator&nbsp;Settings</a></li>
+					<% End If %>
+						<li><a href="#tabs-2">Directories</a></li>
+						<li><a href="#tabs-3">POP3/SMTP&nbsp;Server&nbsp;Settings</a></li>
+					</ul>
+					<!--
+					**********************************
+					ADMINISTRATORS TAB
+					**********************************
+					-->
+					<% If Session("Administrator") Then %>
+					<div id="tabs-1" name="tabs-1">
+					<p>
+
+						<table cellpadding=5>
+						<tr>
+							<td class="frm_label">Debugging:</td>
+							<td>
+								<input type="checkbox" id="DebuggingSetting" name="DebuggingSetting" value="1" <% If DebuggingSetting Then Response.Write "CHECKED" %>/>
+							</td>
+						</tr>
+						<tr>
+							<td class="frm_label">Administrator&nbsp;Email:</td>
+							<td>
+								<%= formTextBox("AdministratorEmail", "50", AdministratorEmail, "SettingsElement", "Administrator Email", "Invalid Email") %>
+							</td>
+						</tr>
+						<tr>
+							<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+							<td>
+								<%= Submit_Button("SubmitButton", "Save", "Button", "Save", SubmitButtonValue) %>
+								<input type="submit" name="SubmitButton" value="Save" class="Button">&nbsp;&nbsp;&nbsp;
+								<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+								&nbsp;&nbsp;
+							</td>
+						</tr>
+								</table>
+					</p>
+					</div>
+					<% End If %>
+						
+					<div id="tabs-2" name="tabs-2">
+					<p>
+
+						<table cellpadding=5>
+						<tr>
+							<td class="frm_label">Documents&nbsp;Directory:</td>
+							<td>
+								<%= formTextBox("DocumentsDirectory", "100", DocumentsDirectory, "SettingsElement", "Documents Directory", "Invalid Documents Directory") %>
+							</td>
+						</tr>
+						<tr>
+							<td class="frm_label">Contacts&nbsp;Photos&nbsp;Directory:</td>
+							<td>
+								<%= formTextBox("ContactsPhotosDirectory", "100", ContactsPhotosDirectory, "SettingsElement", "Contacts Photos Directory", "Invalid Contacts Photos Directory") %>
+							</td>
+						</tr>
+						<tr>
+							<td class="frm_label">Photos&nbsp;Directory:</td>
+							<td>
+								<%= formTextBox("PhotosDirectory", "100", PhotosDirectory, "SettingsElement", "Photos Directory", "Invalid Photos Directory") %>
+							</td>
+						</tr>
+						<tr>
+							<td class="frm_label">Music&nbsp;Directory:</td>
+							<td>
+								<%= formTextBox("MusicDirectory", "100", MusicDirectory, "SettingsElement", "Music Directory", "Invalid Music Directory") %>
+							</td>
+						</tr>
+						<tr>
+							<td class="frm_label">Movies&nbsp;Directory:</td>
+							<td>
+								<%= formTextBox("MoviesDirectory", "100", MoviesDirectory, "SettingsElement", "Movies Directory", "Invalid Movies Directory") %>
+							</td>
+						</tr>
+						<tr>
+							<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+							<td>
+								<%= Submit_Button("SubmitButton", "Save", "Button", "Save", SubmitButtonValue) %>&nbsp;&nbsp;&nbsp;
+								<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+							</td>
+						</tr>
+						</table>
+					</p>
+					</div>
+
+					<div id="tabs-3" name="tabs-3">
+					<p>
+
+						<table cellpadding=5>
+						<tr>
+							<td class="frm_label">SMTP&nbsp;Server:</td>
+							<td>
+								<%= formTextBox("SMTPServer", "50", SMTPServer, "SettingsElement", "SMTP Server", "Invalid SMTP Server") %>
+							</td>
+						</tr>
+						<tr>
+							<td class="frm_label">SMTP&nbsp;Server&nbsp;Port:</td>
+							<td>
+								<%= formTextBox("SMTPServerPort", "50", SMTPServerPort, "SettingsElement", "SMTPServer Port", "Invalid SMTP Server Port") %>
+							</td>
+						</tr>
+						<tr>
+							<td class="frm_label">SMTP&nbsp;Server&nbsp;Username:</td>
+							<td>
+								<%= formTextBox("SMTPServerUserName", "50", SMTPServerUserName, "SettingsElement", "SMTPServer UserName", "Invalid SMTP Server Username") %>
+							</td>
+						</tr>
+						<tr>
+							<td class="frm_label">SMTP&nbsp;Server&nbsp;Password:</td>
+							<td>
+								<%= formTextBox("SMTPServerPassword", "50", SMTPServerPassword, "SettingsElement", "SMTPServer Password", "Invalid SMTP Server Password") %>
+							</td>
+						</tr>
+						<tr>
+							<td class="frm_label">POP3&nbsp;Server:</td>
+							<td>
+								<%= formTextBox("POP3Server", "50", POP3Server, "SettingsElement", "POP3 Server", "Invalid POP3 Server") %>
+							</td>
+						</tr>
+						<tr>
+							<td class="frm_label">POP3&nbsp;Server&nbsp;Port:</td>
+							<td>
+								<%= formTextBox("POP3ServerPort", "50", POP3ServerPort, "SettingsElement", "POP3Server Port", "Invalid POP3 Server Port") %>
+							</td>
+						</tr>
+						<tr>
+							<td class="frm_label">POP3&nbsp;Server&nbsp;Username:</td>
+							<td>
+								<%= formTextBox("POP3ServerUserName", "50", POP3ServerUserName, "SettingsElement", "POP3Server UserName", "Invalid POP3 Server Username") %>
+							</td>
+						</tr>
+						<tr>
+							<td class="frm_label">POP3&nbsp;Server&nbsp;Password:</td>
+							<td>
+								<%= formTextBox("POP3ServerPassword", "50", POP3ServerPassword, "SettingsElement", "POP3Server Password", "Invalid POP3 Server Password") %>
+							</td>
+						</tr>
+						<tr>
+							<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+							<td>
+								<%= Submit_Button("SubmitButton", "Save", "Button", "Save", SubmitButtonValue) %>&nbsp;&nbsp;&nbsp;
+								<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+							</td>
+						</tr>
+						</table>
+					</p>
+					</div>
+			</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+</table>
+<%= formHidden("Template", Template) %>
+<% If Session("Administrator") = "0" Then %>
+
+<%= formHidden("DebuggingSetting", DebuggingSetting) %>
+
+<%= formHidden("AdministratorEmail", AdministratorEmail) %>
+
+<% End If %>
+</form>
+
+<script type="text/javascript">
+
+	$("#tabs").tabs(
+		{
+  			active: <%= SelectedTab %>
+		}
+	);
+	
+</script>
+

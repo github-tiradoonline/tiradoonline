@@ -1,0 +1,222 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formHospitalStaff" name="formHospitalStaff">
+<% 
+	SubmitButtonValue = "Create Staff"
+	If HospitalStaffID <> "" Then
+		SubmitButtonValue = "Save Staff"
+		sql = "SELECT * FROM HospitalStaff WHERE HospitalStaffID = " & HospitalStaffID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		HospitalID = ors("HospitalID")
+		HospitalPositionID = ors("HospitalPositionID")
+		FirstName = ors("FirstName")
+		LastName = ors("LastName")
+		Notes = ors("Notes")
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<table>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td>
+		<div style="text-align:right">
+			<%= Button("Button", "Hospitals", "Button", "", "Hospitals", "location.href='" & SCRIPT_NAME & "?Template=hospital'") %>&nbsp;&nbsp;
+			<%= Button("Button", "Positions", "Button", "", "Positions", "location.href='" & SCRIPT_NAME & "?Template=hospitalposition'") %>&nbsp;&nbsp;
+		</div>
+		<div class="HealthTheme"><h1 class="Header" style="padding: 5px;">Hospital&nbsp;Staff</h1></div>
+		<p>
+		<p>
+		<div class="ErrorMessage" id="HealthErrorMessage" name="HealthErrorMessage"><%= HealthErrorMessage %></div>
+		<table cellpadding="3">
+		<tr>
+			<td class="frm_label" valign="top"><div style="padding-top:10px">Hospital:</div></td>
+			<td>
+				<%
+					sql = "SELECT HospitalID, HospitalName FROM Hospital ORDER BY HospitalName"
+				%>
+				<%= SelectBox(oConn, sql, "HospitalID", HospitalID, "HealthElement", "Hospital") %>&nbsp;
+				<%= Button("Button", "Add Hospital", "Button", "", "Add Hospital", "location.href='" & SCRIPT_NAME & "?Template=hospital'") %>&nbsp;&nbsp;
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Position:</td>
+			<td>
+				<%
+					sql = "SELECT HospitalPositionID, HospitalPositionName FROM HospitalPosition ORDER BY HospitalPositionName"
+				%>
+				<%= SelectBox(oConn, sql, "HospitalPositionID", HospitalPositionID, "HealthElement", "Hospital Position") %>&nbsp;
+				<%= Button("Button", "Add Position", "Button", "", "Add Position", "location.href='" & SCRIPT_NAME & "?Template=hospitalposition'") %>&nbsp;&nbsp;
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">First&nbsp;Name:</td>
+			<td>
+				<%= formTextBox("FirstName", "20", FirstName, "HealthElement", "First Name", "Invalid First Name") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Last&nbsp;Name:</td>
+			<td>
+				<%= formTextBox("LastName", "20", LastName, "HealthElement", "Last Name", "Invalid Last Name") %>
+			</td>
+		</tr>
+		<tr valign="top">
+			<td class="frm_label">Notes:</td>
+			<td>
+				<%= formTextArea("Notes", Notes, "400", "100", "HealthElement", "Notes", "Invalid Notes") %>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+
+				<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+				
+			</td>
+		</tr>
+		</table>
+		&nbsp;<br />
+		&nbsp;<br />
+		
+		<%= formHidden("HospitalStaffID", HospitalStaffID) %>
+
+		<%= formHidden("Template", Template) %>
+		</form>		
+<form action="<%= SCRIPT_NAME %>" method="post" id="formHospitalStaffSearch" name="formHospitalStaffSearch">
+		<!-- SEARCH -->
+		<div class="PersonalInformationTheme"><h1 class="Header" style="padding: 5px;">
+		Search:&nbsp;<%= formTextBox("HospitalStaffName", "30", HospitalStaffName, "HealthElement", "Search Staff", "Enter Staff Name") %>&nbsp;&nbsp;
+		<%= Submit_Button("SubmitButton", "Search", "Button", "", "Search") %>&nbsp;&nbsp;
+		<%= Button("Button", "View All", "Button", "", "View All", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+		</div>
+<%= formHidden("Template", Template) %>
+		</form>		
+<form action="<%= SCRIPT_NAME %>" method="post">
+		<!-- END OF SEARCH -->
+		
+		<!-- ******************************* -->
+		<!-- ************* TABS HEADERS ************ -->
+		<!-- ******************************* -->
+		 <div id="tabs">
+	         <ul>
+<%
+			sql = "SELECT hospitalid, hospitalname FROM hospital WHERE UserID = " & Session("UserID") & " and hospitalid in (SELECT hospitalid FROM hospitalstaff)"
+			WriteDebugger sql, Debugging, 0
+			Set tabs = oConn.Execute(sql)
+			If NOT tabs.EOF Then
+				tabCounter = 1
+				Do Until tabs.EOF
+					v_HospitalID = tabs("HospitalID")
+					v_HospitalName = tabs("HospitalName")
+					totalTabs = tabCounter
+
+		%>
+		        <li><a href="#tabs-<%= v_HospitalID %>" title="<%= v_HospitalName %>"><%= v_HospitalName %></a></li>
+		<%
+					tabCounter = tabCounter + 1
+					tabs.MoveNext
+				Loop
+				tabs.Close
+			End If
+			Set tabs = Nothing
+		%>
+    	    </ul>
+		<!-- ******************************* -->
+		<!-- ******** END OF TABS HEADERS ************ -->
+		<!-- ******************************* -->
+
+
+
+
+
+		<!-- ******************************* -->
+		<!-- ************* TABS RESULTS ************ -->
+		<!-- ******************************* -->
+<%
+			sql = "SELECT HospitalID FROM Hospital ORDER BY HospitalName"
+			WriteDebugger sql, Debugging, 0
+			Set tabs = oConn.Execute(sql)
+			If NOT tabs.EOF Then
+				tabCounter = 1
+				Do Until tabs.EOF
+					v_HospitalID = tabs("HospitalID")
+					
+					If SubmitButton = "Search" Then 
+						sql = "sp_HospitalStaff_Search_HospitalID_get " & v_HospitalID & ", '" & SQLEncode(HospitalStaffName) & "'"
+					Else
+						sql = "sp_HospitalStaff_HospitalID_get " & v_HospitalID
+					End If
+					WriteDebugger sql, Debugging, 0
+					Set ors = oConn.Execute(sql)
+					If NOT ors.EOF Then
+%>
+		<div id="tabs-<%= v_HospitalID %>">
+			<p>
+			<table cellpadding="3" class="GridViewAlteringRows">
+			<tr class="HealthTheme">
+				<td><b>Name</b></td>
+				<td><b>Position</b></td>
+				<td bgcolor="#ffffff">&nbsp;</td>
+			</tr>
+<%
+				Do Until ors.EOF
+					HospitalStaffID = ors("HospitalStaffID")
+					FullName = ors("FullName")
+					Position = ors("Position")
+		%>
+		<tr class="GridViewRow">
+			<td><%= FullName %></td>
+			<td><%= Position %></td>
+			<td>
+				<!-- <%= Button("Button", "Edit", "Button", "", "Edit", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&HospitalStaffID=" & HospitalStaffID & "'") %> -->
+				<a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&HospitalStaffID=<%= HospitalStaffID %>"><%= EDIT_ICON %></a>
+				&nbsp;&nbsp;
+				<%= DELETE_ICON %>
+			</td>
+		</tr>
+<%		
+					ors.MoveNext
+				Loop
+				ors.Close
+%>
+			</table>			
+			<p>
+		</div>
+		<%
+					End If
+					tabCounter = tabCounter + 1
+					tabs.MoveNext
+				Loop
+				tabs.Close
+			End If
+			Set tabs = Nothing
+		%>
+
+		<!-- ******************************* -->
+		<!-- ************* END TABS RESULTS ************ -->
+		<!-- ******************************* -->
+		</div>
+		
+		
+		<script>
+			$( "#tabs" ).tabs();
+		</script>
+		
+		
+		
+		<%
+			If SubmitButton = "Search" Then 
+				sql = "sp_HospitalStaff_Search_UserID_get " & Session("UserID") & ", '" & SQLEncode(HospitalStaffName) & "'"
+			Else
+				sql = "sp_HospitalStaff_UserID_get " & Session("UserID")
+			End If
+		%>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("HospitalStaffID", HospitalStaffID) %>
+
+<%= formHidden("Template", Template) %>
+</form>

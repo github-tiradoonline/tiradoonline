@@ -1,0 +1,28 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Backups' AND TYPE = 'U')
+DROP TABLE Backups;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Backups' AND TYPE = 'U')
+	DROP TABLE Backups;
+GO
+
+CREATE TABLE Backups
+(
+	BackupID		IDENTITY (1001,1) INT  NOT NULL,
+	UserID		 INT  NOT NULL,
+	BackupDate		 SMALLDATETIME DEFAULT (getdate()) NOT NULL
+
+);
+GO
+
+
+
+
+GO
+
+
+GO
+
+
+GO
+

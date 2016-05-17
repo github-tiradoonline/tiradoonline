@@ -1,0 +1,27 @@
+
+<!-- <div class="iconSubNav">
+	<a href="/monthly_expense/monthly_expense.asp?Template=reports"><img src="/images/icons/reports_off.gif" title="Reports" hspace="0" vspace="0" border="0" class="icon"></a>
+	<div class="iconName">Reports</div>
+</div>	
+ -->
+<%
+	sql = "SELECT * FROM BankingMonthlyExpense WHERE UserID = " & Session("UserID")
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+	If NOT ors.EOF Then
+		Do Until ors.EOF
+			v_BankingMonthlyExpenseID = ors("BankingMonthlyExpenseID")
+			v_BankingMonthlyExpenseName = ors("BankingMonthlyExpenseName")
+			v_BankingMonthlyExpenseAmount = ors("BankingMonthlyExpenseAmount")
+%>
+<div class="iconSubNav">
+	<a href="<%= SCRIPT_NAME %>?Template=&BankingMonthlyExpenseID=<%= v_BankingMonthlyExpenseID %>"><img src="/images/icons/monthly_expenses_off.gif" title="<%= v_BankingMonthlyExpenseName %>" hspace="0" vspace="0" border="0" class="icon"></a>
+	<div class="iconName"><%= v_BankingMonthlyExpenseName %><br />$<%= v_BankingMonthlyExpenseAmount %></div>
+</div>	
+<%
+			ors.MoveNext
+		Loop
+		ors.Close
+	End If
+	Set ors = Nothing
+%>

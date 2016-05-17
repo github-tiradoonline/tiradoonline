@@ -1,0 +1,27 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'POP3EmailRule' AND TYPE = 'U')
+DROP TABLE POP3EmailRule;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'POP3EmailRule' AND TYPE = 'U')
+	DROP TABLE POP3EmailRule;
+GO
+
+CREATE TABLE POP3EmailRule
+(
+	POP3EmailRuleID		IDENTITY (1001,1) INT  NOT NULL,
+	POP3EmailAccountID		 INT  NOT NULL,
+	POP3EmailFolderID		 INT  NOT NULL,
+	POP3EmailEmailAddress		 VARCHAR(50)  NOT NULL,
+	create_dt		 DATETIME DEFAULT (getdate()) NOT NULL
+
+);
+GO
+
+
+
+
+GO
+
+
+GO
+

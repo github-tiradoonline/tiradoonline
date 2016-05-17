@@ -1,0 +1,107 @@
+<table width="600">
+<tr>
+    <td>
+      
+      
+        <div id="tabs">
+         <ul>
+        <% For x = 65 to 90 %>
+        <li><a href="#tabs-<%= x %>" title="<%= Chr(x) %>"><%= Chr(x) %></a></li>
+        <% Next %>
+        </ul>
+
+
+        <% For x = 65 to 90 %>
+
+			        <div id="tabs-<%= x %>">
+			 	        <p>
+				
+				        <%
+					        sql = "sp_PersonalInformation_get " & Session("UserID") & ", '" & Chr(x) & "'"
+					        WriteDebugger sql, Debugging, 0
+					        Set ors = oConn.Execute(sql)
+				        %>
+				        <% If NOT ors.EOF Then %>
+				        <table cellspacing="0" class="GridViewAlteringRows">
+				        <tr class="PersonalInformationTheme">
+					        <td align="right">Account</td>
+					        <td align="center">Username</td>
+					        <td align="center">Password</td>
+					        <td align="center">Account#</td>
+<!-- 					        
+							<td align="center">Pin</td>
+					        <td align="center">Phone</td>
+					        <td align="center">Email</td>
+					        <td align="center">Serial#</td>
+ -->
+ 					        <td align="center">Website</td>
+							<td>&nbsp;</td>
+				        </tr>
+					        <% 
+						        Do Until ors.EOF 
+							        PersonalInformationID = ors("PersonalInformationID")
+							        AccountName = ors("AccountName")
+									AccountNameEncoded = Server.URLEncode(AccountNmae) 
+							        UserName = ors("UserName") 
+							        Password = ors("Password") 
+							        AccountNumber = ors("AccountNumber") 
+							        Phone = ors("Phone") 
+							        Pin = ors("Pin") 
+							        SerialNumber = ors("SerialNumber") 
+							        Website = ors("Website") 
+							        If Website <> "" Then Website = "<a href='" & Website & "' target='_blank'><img src='/images/icons/firefox.gif'></a>"
+					        %>
+				        <tr bgcolor="#ffffff" class="GridViewRow">
+					        <td align="right"><a href="<%= SCRIPT_NAME %>?PersonalInformationID=<%= PersonalInformationID %>"><b><%= HTMLFormat(AccountName) %></b></a></td>
+					        <td align="center"><%= Username %>&nbsp;</td>
+					        <td align="center"><%= Password %>&nbsp;</td>
+					        <td align="center"><%= AccountNumber %>&nbsp;</td>
+<!-- 					        
+							<td align="center"><%= Pin %>&nbsp;</td>
+					        <td align="center"><%= Phone %>&nbsp;</td>
+					        <td align="center"><%= Email %>&nbsp;</td>
+					        <td align="center"><%= SerialNumber %>&nbsp;</td>
+ -->					        
+ 							<td align="center"><%= Website %>&nbsp;</td>
+							<td><%= Button("Button", "Delete", "DeleteButton", "", "Delete", "DeleteItem('Are you sure you want to delete this account?', '" & SCRIPT_NAME & "?Template=View&SubmitButton=Delete&PersonalInformationID=" & PersonalInformationID & "&AccountName=" & AccountNameEncoded & "')") %></td>
+				        </tr>
+			        <%
+						        ors.MoveNext
+				   	        Loop
+				   	        ors.Close
+				   	        Set ors = Nothing
+			        %>
+				        </table>
+			        <%
+				        Else
+			        %>
+				        <div class="ErrorMessage">No records found.</div>
+
+			        <%
+				        End If 
+			        %>
+			 	        </p>
+			        </div>
+
+
+        <% Next %>
+        </div>
+
+
+    </td>
+  </tr>
+</table>
+
+<script>
+	$( "#tabs" ).tabs();
+	
+	<% 
+		If Letter <> "" Then
+			SelectedTab = ASC(Letter) - 65
+	%>
+	$('#tabs').tabs('select', <%= SelectedTab %>);
+	<% End If %>
+	
+</script>
+
+      

@@ -1,0 +1,58 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formMedia" name="formMedia">
+<% 
+%>
+<table width="100%">
+<tr>
+	<td>
+		<div class="HealthTheme"><h1 class="Header" style="padding: 5px;">Media</h1>	</div>
+		<p>
+		<div class="ErrorMessage" id="HealthErrorMessage" name="HealthErrorMessage"><%= HealthErrorMessage %></div>
+	</td>
+</tr>
+</table>
+<table cellspacing=0 cellpadding=2 border=0 bgcolor="#ffffff" width="100%">
+<tr>
+	<td class="frm_label">Search:</td>
+	<td>
+		<%= formTextBox("MediaFileName", "40", MediaFileName, "HealthElement", "Media File", "Invalid Media File") %>&nbsp;&nbsp;
+		<%= Submit_Button("SubmitButton", "Search", "Button", "", "Search") %>&nbsp;&nbsp;
+	</td>
+</tr>
+</table>
+
+<%
+	If SubmitButton = "Search" Then
+		sql = "sp_MediaFile_UserID_search " & Session("UserID") & ", '" & SQLEncode(MediaFileName) & "'"
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		If NOT ors.EOF Then
+%>
+		<table class="GridViewAlteringRows">
+		<tr class="HealthTheme">
+			<td>Directory</td>
+			<td>FileName</td>
+		</tr>
+<%
+			Do Until ors.EOF
+				MediaFileDirectory = ors("MediaFileDirectory")
+				MediaFileName = ors("MediaFileName")
+%>
+		<tr class="GridViewRow" valign="top">
+			<td><%= HTMLFormat(MediaFileDirectory) %></td>
+			<td><%= HTMLFormat(MediaFileName) %></td>
+		</tr>
+<%
+				ors.MoveNext
+			Loop
+			ors.Close
+%>
+		</table>
+<%
+		Else
+%>
+	<div class="ErrorMessage">No records found</div>
+<%
+		End If
+	End If
+%>
+</form>

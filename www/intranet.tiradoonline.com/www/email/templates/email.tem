@@ -1,0 +1,66 @@
+<% 
+	If POP3EmailFolderID <> "" Then
+		sql = "sp_POP3Email_POP3EmailID_get " & POP3EmailFolderID
+		Set ors = oConn.Execute(sql)
+		
+		If NOT ors.EOF Then
+%>
+<form action="<%= SCRIPT_NAME %>" method="post" id="frmEmail" name="frmEmail">
+<table class="GridViewAlteringRows" width="800">
+<tr class="EmailTheme" valign="top">
+	<td>&nbsp;</td>
+	<td align="right"><b>Date</b></td>
+	<td><b>From</b></td>
+	<td><b>Subject</b></td>
+	<td>&nbsp;</td>
+</tr>
+<%
+			Counter = 1
+			Do Until ors.EOF
+			
+				POP3EmailID = ors("POP3EmailID")
+				POP3EmailMessageDateTime = ors("POP3EmailMessageDateTime")
+				POP3EmailFromName = ors("POP3EmailFromName")
+				From = POP3EmailFromName
+				If From <> "" Then From = "<b>" & From & "</b><br />"
+				POP3EmailFromEmail = ors("POP3EmailFromEmail")
+				If POP3EmailFromEmail <> "" Then From = From & Server.HTMLEncode("<" & POP3EmailFromEmail & ">")
+				POP3EmailSubject = ors("POP3EmailSubject")
+%>
+
+<tr class="GridViewRow" valign="top">
+	<td align="right"><b><%= Counter %>)</b></td>
+	<td align="right"><b><%= POP3EmailMessageDateTime %></b></td>
+	<td><%= From %></td>		
+	<td><%= POP3EmailSubject %></td>		
+	<td align="center">
+		<input type="checkbox" id="POP3EmailID" name="POP3EmailID" value="<%= POP3EmailID %>" />
+	</td>
+</tr>
+<%		
+				Counter = Counter + 1
+				ors.MoveNext
+			Loop
+			
+			ors.Close
+%>
+</table>
+
+<%= formHidden("POP3EmailAccountID", POP3EmailAccountID) %>
+<%= formHidden("POP3EmailFolderID", POP3EmailFolderID) %>
+
+</form>
+<%				
+		Else
+%>
+
+
+<div class="ErrorMessage">No Emails Found.</div>
+
+
+<% 
+		End If 
+		
+		Set ors = Nothing
+	End If
+%>

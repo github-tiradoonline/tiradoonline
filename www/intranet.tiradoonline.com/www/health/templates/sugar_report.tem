@@ -1,0 +1,100 @@
+<% 
+	SugarStartDate = Trim(Request("SugarStartDate"))
+	If SugarStartDate = "" Then SugarStartDate = DateAdd("d", -7, Date)
+	SugarEndDate = Trim(Request("SugarEndDate"))
+	If SugarEndDate = "" Then SugarEndDate = Date
+	SubmitButtonValue = "Sugar Report"
+	SugarDepth = Trim(Request("SugarDepth"))
+	If SugarDepth = "" Then SugarDepth = "20"
+
+	SubmitButtonValue = "Sugar Report"
+%>
+<form action="<%= SCRIPT_NAME %>" method="post" id="formSugarReport" name="formSugarReport">
+
+<table>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td>
+		<div class="HealthTheme"><h1 class="Header" style="padding: 5px;">Sugar (<%= SugarStartDate %>&nbsp;-&nbsp;<%= SugarEndDate %>)</h1></div>
+		<p>
+		<table class="GridViewAlteringRows">
+		<tr class="HealthTheme" valign="top">
+			<td align="right"><b>Start&nbsp;Date</b></td>
+			<td align="right"><b>End&nbsp;Date</b></td>
+			<td align="right"><b>Depth</b></td>
+			<td align="right">&nbsp;</td>
+		</tr>
+		<tr>
+			<td>
+				<%= formTextBox("SugarStartDate", "10", SugarStartDate, "HealthElement", "Bottom", "Invalid Sugar Start Date") %><%= REQUIRED_ICON %>
+			</td>
+			<td>
+				<%= formTextBox("SugarEndDate", "10	", SugarEndDate, "HealthElement", "Bottom", "Invalid Sugar End Date") %><%= REQUIRED_ICON %>
+			</td>
+			<td>
+				<%= formTextBox("SugarDepth", "5", SugarDepth, "HealthElement", "Depth", "Invalid Sugar Depth") %><%= REQUIRED_ICON %>
+			</td>
+			<td>
+				<%= Submit_Button("SubmitButton", "Report", "Button", "", "Report") %>&nbsp;&nbsp;
+			</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+</table>
+<div class="ErrorMessage" style="font-size:20px" id="divMaxSugar"></div>
+<canvas id="graph" width="800" height="400" style="border:1px solid #000000;">
+</canvas>
+<div class="ErrorMessage" style="font-size:20px" id="divMinSugar"></div>
+<script type="text/javascript">
+
+    $(document).ready
+    (
+        function () 
+		{
+            distance = 0
+            totalDistance = <%= SugarDepth %>;
+            graph = $('#graph');
+            var c = graph[0].getContext('2d');
+            c.lineWidth = 2;
+            c.strokeStyle = '#333';
+			c.tickmarks = "circle";
+            c.font = 'italic 8pt sans-serif';
+            c.beginPath();
+            c.moveTo(distance, distance);
+			<%
+			sql = "sp_Sugar_report " & Session("UserID") & ", '" & FormatDateTime(SugarStartDate) & "', '" & FormatDateTime(SugarEndDate) & "'"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+				tempSugarDate = ""
+				MinSugar = ors("MinSugar")
+				MaxSugar = ors("MaxSugar") 
+				Do Until ors.EOF
+					SugarDate = FormatDateTime(ors("SugarDateTime"), 2)
+					Sugar = ors("Sugar")
+					Response.Write "c.lineTo(distance += totalDistance, " & Sugar & ");" & vbCrLF
+					ors.MoveNext
+				Loop
+				ors.Close
+			
+			End If 
+			Set ors = Nothing
+		%>
+			c.stroke();
+		}
+	);
+</script>
+<%= formHidden("Template", Template) %>
+
+<%= formHidden("SugarID", SugarID) %>
+
+
+<script>
+	$( "#SugarStartDate" ).datepicker();
+	$( "#SugarEndDate" ).datepicker();
+	$( '#divMinSugar' ).html('Low (<%= MinSugar %>)');	
+	$( '#divMaxSugar' ).html('High (<%= MaxSugar %>)');	
+</script>
+
+</form>

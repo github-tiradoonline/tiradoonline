@@ -1,0 +1,38 @@
+<%
+	sql = "sp_RecoveryTypes_get"
+	Set ors = oConn.Execute(sql)
+	Do Until ors.EOF
+		v_Template = ""
+		vRecoveryTypeID = ors("RecoveryTypeID")
+		vRecoveryTypeName = ors("RecoveryTypeName")
+		
+		If vRecoveryTypeID = 1003 Then v_Template = "AA"
+%>
+		<div style="float:left;padding:30px;text-align:center">
+			<a href="/recovery/recovery.asp?Template=<%= v_Template %>&RecoveryType=<%= RecoveryType %>"><img src="/images/icons/rehabs_off.gif" title="" width="105" height="116" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName"><%= vRecoveryTypeName %></div>
+		</div>	
+<%
+		ors.MoveNext
+	Loop
+	ors.Close
+	Set ors = Nothing
+%>
+
+<!-- 
+		<div style="float:left;padding:30px;text-align:center">
+			<a href="/recovery/recovery.asp?Template=recovery_programs"><img src="/images/icons/rehabs_off.gif" title="" width="105" height="116" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm">Outpatient Programs</div>
+		</div>	
+
+		<div class="iconSubNav">
+			<a href="/recovery/recovery.asp?Template=recovery_programs&RecoveryTypeID=1002"><img src="/images/icons/rehabs_off.gif" title="" width="105" height="116" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm">Inpatient Programs</div>
+		</div>	
+
+		<div style="float:left;padding:30px;text-align:center">
+			<a href="/recovery/recovery.asp?Template=AA&RecoveryTypeID=3"><img src="/images/icons/AA_off.gif" title="" width="105" height="116" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm">A&nbsp;A</div>
+		</div>	
+	
+ -->

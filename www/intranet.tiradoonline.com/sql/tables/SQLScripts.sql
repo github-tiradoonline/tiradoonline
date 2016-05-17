@@ -1,0 +1,26 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'SQLScripts' AND TYPE = 'U')
+DROP TABLE SQLScripts;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'SQLScripts' AND TYPE = 'U')
+	DROP TABLE SQLScripts;
+GO
+
+CREATE TABLE SQLScripts
+(
+	SQLScriptID		IDENTITY (1001,1) INT  NOT NULL,
+	UserID		 INT  NOT NULL,
+	SQLScript		 VARCHAR(1000)  NOT NULL,
+	create_dt		 SMALLDATETIME DEFAULT (getdate()) NOT NULL
+
+);
+GO
+
+
+
+
+GO
+
+
+GO
+

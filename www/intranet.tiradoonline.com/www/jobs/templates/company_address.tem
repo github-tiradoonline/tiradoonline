@@ -1,0 +1,151 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formJobsCompanyAddress" name="formJobsCompanyAddress">
+<% 
+	sql = "SELECT JobCompanyName, JobCompanyWebsite FROM JobCompany WHERE JobCompanyID = " & JobCompanyID
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+	JobCompanyName = ors("JobCompanyName")
+	JobCompanyWebsite = ors("JobCompanyWebsite")
+	ors.Close
+	Set ors = Nothing
+	
+	SubmitButtonValue = "Create Company Address"
+	
+	If JobCompanyAddressID <> "" Then
+		SubmitButtonValue = "Save Company Address"
+		sql = "SELECT * FROM JobCompanyAddress WHERE JobCompanyAddressID = " & JobCompanyAddressID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		JobCompanyAddress1 = ors("JobCompanyAddress1")
+		JobCompanyAddress2 = ors("JobCompanyAddress2")
+		JobCompanyAddressCity = ors("JobCompanyAddressCity")
+		StateID = ors("StateID")
+		if isNull(StateID) Then StateID = Application("StateID")
+		JobCompanyAddressZipCode = ors("JobCompanyAddressZipCode")
+		JobCompanyAddressPhone = ors("JobCompanyAddressPhone")
+		JobCompanyAddressFax = ors("JobCompanyAddressFax")
+		JobCompanyAddressEmail = ors("JobCompanyAddressEmail")
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<div class="JobsTheme" style="text-align:center;">
+	<h1 class="Header" style="padding: 5px;" style="float:left;">
+		<%= JobCompanyName %>&nbsp;-&nbsp;Addresses
+	</h1>
+</div>
+<table border=0>
+<tr valign="top">
+	<td>
+		<table border=0>
+		<tr valign="top">
+				
+			<td>
+				<table cellpadding="3" border="0">
+				<tr valign="top">
+					<td colspan="2">
+						<!-- #include virtual="/jobs/includes/company.inc" -->
+					</td>
+				</tr>
+				<tr valign="top">
+					<td>
+						<!-- #include virtual="/jobs/includes/addresses.inc" -->
+					</td>
+					<td>
+						<!-- #include virtual="/jobs/includes/contacts.inc" -->
+					</td>
+				</tr>
+				<tr valign="top">
+					<td>
+						<!-- #include virtual="/jobs/includes/interviews.inc" -->
+					</td>
+					<td>
+						<!-- #include virtual="/jobs/includes/phonecalls.inc" -->
+					</td>
+				</tr>
+				<tr valign="top">
+					<td colspan="2">
+						<!-- #include virtual="/jobs/includes/jobs.inc" -->
+					</td>
+				</tr>
+				</table>
+			</td>
+			<td valign="top">
+				<% If JobsErrorMessage <> "" Then %>
+				<div class="ErrorMessage"><%= JobsErrorMessage %></div>
+				<% End If %>
+				<table cellpadding="3">
+				<tr>
+					<td align="right"><b>Company&nbsp;Address:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyAddress1", "30", JobCompanyAddress1, "JobsTheme", "Address1", "Invalid Address1") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right">&nbsp;</td>
+					<td>
+						<%= formTextBox("JobCompanyAddress2", "30", JobCompanyAddress2, "JobsTheme", "Address2", "Invalid Address2") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>City:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyAddressCity", "20", JobCompanyAddressCity, "JobsTheme", "City", "Invalid City") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>State:</b></td>
+					<td>
+						<%= SelectBox(oConn, "SELECT * FROM States ORDER by State", "StateID", StateID, "JobsTheme", "State") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Zip&nbsp;Code:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyAddressZipCode", "20", JobCompanyAddressZipCode, "JobsTheme", "Zip Code", "Invalid Zip Code") %><%= REQUIRED_ICON %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Phone:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyAddressPhone", "20", JobCompanyAddressPhone, "JobsTheme", "Phone", "Invalid Phone") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Fax:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyAddressFax", "20", JobCompanyAddressFax, "JobsTheme", "Fax", "Invalid Fax") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Email:</b></td>
+					<td>
+						<%= formTextBox("JobCompanyAddressEmail", "50", JobCompanyAddressEmail, "JobsTheme", "Email", "Invalid Email") %>
+					</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>
+						<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("JobCompanyID", JobCompanyID) %>
+
+<%= formHidden("JobCompanyAddressID", JobCompanyAddressID) %>
+
+<%= formHidden("Template", Template) %>
+</form>
+
+<script type="text/javascript">
+
+	$('#JobCompanyAddress1').focus();
+
+</script>

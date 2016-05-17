@@ -1,0 +1,287 @@
+<% 
+	SubmitButtonValue = "Create Test Type"
+	If TestTypeID <> "" Then
+		SubmitButtonValue = "Save Test Type"
+		sql = "SELECT TestTypeName FROM TestType WHERE TestTypeID = " & TestTypeID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		TestTypeName = ors.Fields(0).Value
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<table>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td>
+		<form action="<%= SCRIPT_NAME %>" method="post" id="formTests" name="formTests">
+		<div class="HealthTheme"><h1 class="Header" style="padding: 5px;">Tests</h1></div>
+		<p>
+		<div class="ErrorMessage" id="HealthErrorMessage" name="HealthErrorMessage"><%= HealthErrorMessage %></div>
+		<table cellpadding="3">
+		<tr>
+			<td align="right"><b>Test&nbsp;Type:</b></td>
+			<td>
+				<%= formTextBox("TestTypeName", "50", TestTypeName, "HealthElement", "Test Type", "Invalid Test Type") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+				
+				<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+			</td>
+		</tr>
+		</table>
+		
+		<%= formHidden("TestTypeID", TestTypeID) %>
+
+		<%= formHidden("Template", Template) %>					
+		</form>
+		<p>
+		<% If TestID <> "" Then 
+			sql = "SELECT * FROM Test WHERE TestID = " & TestID
+			Set ors = oConn.Execute(sql)
+			vTestTypeID = ors("TestTypeID")
+			vTestDate = ors("TestDate")
+			vTestLocation = ors("TestLocation")
+			vTestResultID = ors("TestResultID")
+			vTestComments = ors("TestComments")
+			ors.Close
+			Set ors = Nothing
+		%>
+		<form action="<%= SCRIPT_NAME %>" method="post">
+		<table border="0" cellpadding="10">
+		<tr class="HealthTheme">
+			<td colspan="3" class="SubHeader">Tests</td>
+		</tr>
+		<tr>
+			<td colspan="3">
+				<table cellpadding="3">
+				<tr>
+					<td align="right"><b>Type:</b></td>
+					<td>
+						<%= SelectBox(oConn, "SELECT TestTypeID, TestTypeName FROM TestType ORDER BY TestTypeName", "TestTypeID", vTestTypeID, "HealthElement", "Type") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Test&nbsp;Date:</b></td>
+					<td>
+						<%= formTextBox("TestDate", "10", vTestDate, "HealthElement", "Date", "Invalid Test Date") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Location:</b></td>
+					<td>
+						<%= formTextBox("TestLocation", "30", vTestLocation, "HealthElement", "Location", "Invalid Location") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right"><b>Result:</b></td>
+					<td>
+						<%= SelectBox(oConn, "SELECT TestResultID, TestResultName FROM TestResult", "TestResultID", vTestResultID, "HealthElement", "Result") %>
+					</td>
+				</tr>
+				<tr>
+					<td align="right" valign="top"><b>Comments:</b></td>
+					<td>
+						<%= formTextArea("TestComments", vTestComments, "300", "100", "HealthElement", "Comments", "Invalid Comments") %>
+					</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td>
+						<%= Submit_Button("SubmitButton", "Save Test", "Button", "", "Save Test") %>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		</table>
+		
+		<%= formHidden("TestID", TestID) %>
+
+		<%= formHidden("Template", Template) %>					
+		</form>
+		
+		<script type="text/javascript">
+		
+			$('#TestDate').datepicker();
+		
+		</script>
+		<% End If %>
+		&nbsp;<br />
+		&nbsp;<br />
+		<table cellspacing="0" cellpadding="10">
+		<%
+			Counter = 0
+			sql = "SELECT * FROM TestType WHERE UserID = " & Session("UserID") & " ORDER BY TestTypeName"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			TestDateJQuery = ""
+			If NOT ors.EOF Then
+		%>
+		<%
+				Do Until ors.EOF
+					TestTypeID = ors("TestTypeID")
+					TestTypeName = ors("TestTypeName")
+					
+					If Counter > 0 Then
+		%>
+		<tr>
+			<td colspan="2"><hr width="100%" size="2" noshade /></td>
+		</tr>
+		<%
+					End If
+		%>
+<!-- 		<tr class="HealthTheme">
+			<td align="center" class="SubHeader">Test&nbsp;Name</td>
+			<td bgcolor="#ffffff">&nbsp;</td>
+		</tr>
+ -->		
+		<form action="<%= SCRIPT_NAME %>" method="post" id="formTestFunction" name="formTestFunction">
+ 		<tr class="GridViewRow">
+			<td align="center" bgcolor="#dddddd"><b><%= TestTypeName %></b></td>
+			<td>
+				<!-- <%= Button("Button", "Edit", "Button", "", "Edit", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&TestTypeID=" & TestTypeID & "'") %> -->
+				<a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&TestTypeID=<%= TestTypeID %>"><%= EDIT_ICON %></a>
+				&nbsp;&nbsp;
+				<!-- <%= DELETE_ICON %> -->
+			</td>
+		</tr>
+		<tr>
+			<td bgcolor="#dddddd">&nbsp;</td>
+			<td colspan="2">
+				<table border="0" cellpadding="10">
+				<tr class="HealthTheme">
+					<td colspan="3" class="SubHeader">Tests</td>
+				</tr>
+				<tr>
+					<td colspan="3">
+						<%
+							TestDateJQuery = TestDateJQuery & "$('#TestDate_" & TestTypeID & "').datepicker();" & vbCrLF
+						%>
+						<table cellpadding="3">
+						<tr>
+							<td align="right"><b>Test&nbsp;Date:</b></td>
+							<td>
+								<%= formTextBox("TestDate_" & TestTypeID, "10", TestDate, "HealthElement", "Date", "Invalid Test Date") %><%= REQUIRED_ICON %>
+							</td>
+						</tr>
+						<tr>
+							<td align="right"><b>Location:</b></td>
+							<td>
+								<%= formTextBox("TestLocation_" & TestTypeID, "30", TestLocation, "HealthElement", "Location", "Invalid Location") %><%= REQUIRED_ICON %>
+							</td>
+						</tr>
+						<tr>
+							<td align="right"><b>Result:</b></td>
+							<td>
+								<%= SelectBox(oConn, "SELECT TestResultID, TestResultName FROM TestResult", "TestResult_" & TestTypeID, TestResultID, "HealthElement", "Result") %>
+							</td>
+						</tr>
+						<tr>
+							<td align="right" valign="top"><b>Comments:</b></td>
+							<td>
+								<%= formTextArea("TestComments_" & TestTypeID, TestComments, "300", "100", "HealthElement", "Comments", "Invalid Comments") %>
+							</td>
+						</tr>
+						<tr>
+							<td>&nbsp;</td>
+							<td>
+								<%= Submit_Button("SubmitButton", "Create Test", "Button", "", "Create Test") %>&nbsp;&nbsp;
+								<!-- <%= Button("Button", "Create Test", "Button", "", "Create Test", "add_Test('" & TestTypeID & "')") %> -->
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				<%= formHidden("Template", Template) %>
+				
+				<%= formHidden("Counter", Counter) %>
+
+				<%= formHidden("TestTypeID", TestTypeID) %>
+
+			</form>
+				<tr>
+					<td colspan="3">&nbsp;</td>
+				</tr>
+		<% 
+					sql = "SELECT a.*, b.TestResultName FROM Test a, TestResult b WHERE a.TestResultID = b.TestResultID AND a.TestTypeID = " & TestTypeID & " ORDER by a.TestDate DESC"
+			
+					WriteDebugger sql, Debugging, 0
+					Set ors2 = oConn.Execute(sql)
+					If NOT ors2.EOF Then
+		%>
+				<tr bgcolor="#dddddd">
+					<td align="right"><b>Date</b></td>
+					<td><b>Location</b></td>
+					<td><b>Result</b></td>
+					<td>&nbsp;</td>
+				</tr>
+		<%
+						Do Until ors2.EOF
+							TestID = ors2("TestID")
+							TestDate = ors2("TestDate")
+							TestLocation = ors2("TestLocation")
+							TestResultName = ors2("TestResultName")
+		%>
+				<tr class="GridViewRow">
+					<td align="right"><%= TestDate %></td>
+					<td><%= TestLocation %></td>
+					<td><%= TestResultName %></td>
+					<td>
+						<!-- <%= Button("Button", "Edit", "Button", "", "Edit", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&TestID=" & TestID & "'") %> -->
+						<a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&TestID=<%= TestID %>"><%= EDIT_ICON %></a>&nbsp;&nbsp;<%= DELETE_ICON %>
+					</td>
+				</tr>
+		<%
+							ors2.MoveNext
+						Loop
+						ors2.Close
+		%>
+		
+		<%
+					Else
+		%>
+		<tr>
+			<td colspan="3" class="ErrorMessage">No&nbsp;<%= TestTypeName  %>&nbsp;tests&nbsp;found</td>
+		</tr>
+
+		<%	
+					End If 
+		%>
+				</table>
+			</td>
+		</tr>
+		<%
+					Counter = Counter + 1
+					ors.MoveNext
+		%>
+		<%
+				Loop
+				ors.Close
+			
+			Else
+		%>
+		<tr>
+			<td class="ErrorMessage">No records found.</td>
+		</tr>
+		<% 	
+			End If 
+			Set ors = Nothing
+		%>
+		</table>
+	</td>
+</tr>
+</table>
+
+<script type="text/javascript">
+
+<%= TestDateJQuery %>
+
+</script>
+
+<%= formHidden("Template", Template) %>
+

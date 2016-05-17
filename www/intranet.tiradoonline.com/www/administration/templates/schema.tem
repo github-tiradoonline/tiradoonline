@@ -1,0 +1,294 @@
+<%
+	'ON error resume next
+	ObjectID = Trim(Request("ObjectID"))
+	ObjectName = Trim(Request("ObjectName"))
+	ObjectText = Trim(Request("ObjectText"))
+	ObjectType = Trim(Request("ObjectType"))
+	If ObjectType = "" Then ObjectType = "P"
+	
+	'If SubmitButton = "Cancel" Then Response.Redirect "../Banking/banking.asp?UserID=" & Session("UserID")
+	
+	dim ObjectTypeArray(5, 1)
+	ObjectTypeArray(0, 0) = "P"
+	ObjectTypeArray(0, 1) = "PROCEDURE"
+	ObjectTypeArray(1, 0) = "V"
+	ObjectTypeArray(1, 1) = "VIEW"
+	ObjectTypeArray(2, 0) = "TR"
+	ObjectTypeArray(2, 1) = "TRIGGER"
+	ObjectTypeArray(3, 0) = "U"
+	ObjectTypeArray(3, 1) = "TABLE"
+	ObjectTypeArray(4, 0) = "PK"
+	ObjectTypeArray(4, 1) = "PRIMARY KEY"
+	ObjectTypeArray(5, 0) = "FK"
+	ObjectTypeArray(5, 1) = "FOREIGN KEY"
+	
+	Function GetDataType(data_type, default)
+		If UCase(data_type) = "INT IDENTITY" Then 
+			sql = "SELECT SEED = IDENT_SEED('" & ObjectName & "'), INCREMENT = IDENT_INCR('" & ObjectName & "')"
+			WriteDebugger sql, Debugging, 0
+			Set rs = oConn.Execute(sql)
+			If NOT rs.EOF Then
+				data_type = data_type & "(" & rs("SEED") & "," & rs("INCREMENT") & ")" 
+				rs.Close
+			End If
+			Set rs = Nothing
+		ElseIf UCase(data_type) = "VARCHAR" Then 
+			data_type = data_type & "(" & ors("length") & ")"
+		ElseIf UCase(data_type) = "NUMERIC" OR UCase(data_type) = "DECIMAL" Then 
+			data_type = data_type & "(" & ors("precision") & "," & ors("scale") & ")"
+		End If
+		if NOT isNull(default) AND default <> "" Then 
+			data_type = data_type & " DEFAULT " & default
+		End IF 
+		GetDataType = data_type
+		
+	End Function
+	
+	Function GetObjectType(object_type)
+		For y = 0 To UBound(ObjectTypeArray)
+			If ObjectTypeArray(y, 0) = object_type Then GetObjectType = ObjectTypeArray(y, 1)
+		Next
+	End Function
+	
+	Function GetObjectName(object_id)
+		sql = "SELECT OBJECT_NAME(" & object_id & ")"
+		WriteDebugger sql, Debugging, 0
+		Set ors2 = oConn.Execute(sql)
+		ObjectName_v = ors2.Fields(0).value
+		ors2.Close
+		Set ors2 = Nothing
+		GetObjectName = ObjectName_v
+	End Function
+	
+	Function GetObjectID(object_id)
+		sql = "SELECT USER_NAME(UID) FROM SYSOBJECTS WHERE ID = " & object_id
+		WriteDebugger sql, Debugging, 0
+		Set ors2 = oConn.Execute(sql)
+		ObjectID_v = ors2.Fields(0).value
+		ors2.Close
+		Set ors2 = Nothing
+		GetObjectID = ObjectID_v
+	End Function
+	
+	'Response.WRite InStr(SubmitButton, " Procedure")
+	If InStr(SubmitButton, " Procedure") > 0 Then
+		sql = ObjectText
+		WriteDebugger sql, Debugging, 0
+		Set cmd = Server.CreateObject("ADODB.Command")
+		Set cmd.ActiveConnection = oConn
+		cmd.CommandText = sql
+		WriteDebugger sql, Debugging, 0
+		cmd.Execute
+		Set cmd = Nothing
+			
+		If SubmitButton = "Create Procedure" Then 
+			AdministrationErrorMessage = Server.URLEncode("Procedure created")
+		Else
+			AdministrationErrorMessage = Server.URLEncode("Procedure: " & GetObjectName(ObjectID) & " saved")
+		End If
+	
+		redirectURL = SCRIPT_NAME & "?Template=" & Template & "&AdministrationErrorMessage=" & AdministrationErrorMessage & "&ObjectType=" & ObjectType & "&ObjectID=" & ObjectID
+		
+		'Response.Write redirectURL
+		Response.Redirect redirectURL
+		
+		'ObjectName = GetObjectName(ObjectID)
+		'FileName = Server.MapPath("/teddy") & "\sql\" & LCase(GetObjectType(ObjectType)) & "s\" & ObjectName & ".sql"
+		'Response.Write FileName
+		'FileWrite FileName, ObjectText
+	End If
+%>
+
+<form action="<%= SCRIPT_NAME %>" method="post" id="formSchema" name="formSchema">
+<table cellspacing=0 cellpadding=5 border=0>
+<tr class="AdministrationTheme">
+	<td align=center class="SubHeader">Schema</td>
+</tr>
+<tr>
+	<td valign=top>
+		<% If AdministrationErrorMessage <> "" Then %>
+		<div class="ErrorMessage"><%= AdministrationErrorMessage %></div>
+		<% End If %>
+		<table>
+		<tr>
+			<td>
+				<select id="ObjectType" name="ObjectType" class="AdministrationTheme">
+				<% If ObjectType = "" Then %><option>SELECT AN OBJECT</option><% End If %>
+				<%
+					For x = 0 to UBound(ObjectTypeArray)
+				%>
+						<% If ObjectTypeArray(x, 0) = ObjectType Then %>
+							<option value="<%= ObjectTypeArray(x, 0) %>" SELECTED><%= ObjectTypeArray(x, 1) %></option>
+						<% Else %>
+							<option value="<%= ObjectTypeArray(x, 0) %>"><%= ObjectTypeArray(x, 1) %></option>
+						<% End If %>
+				<%
+					Next
+				%>
+				</select>
+			</td>
+		</tr>
+		<%
+			If ObjectType = "PK" OR ObjectType = "FK" Then
+				sql = "sp_administration_schema_type 'U'"
+			Else
+				sql = "sp_administration_schema_type '" & ObjectType & "'"
+			End If
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+		%>
+		<% If ObjectType <> "" Then %>
+		<tr>
+			<td>
+				<table cellspacing=0 cellpadding=0 border=0>
+				<tr>
+					<td>
+				<select id="ObjectID" name="ObjectID" class="AdministrationTheme" onChange="this.form.ObjectText.value='Loading...';this.form.submit()">
+				<% If ObjectType = "P" Then %>
+					<option value="">CREATE NEW PROCEDURE</option>
+				<% End If %>
+				<% If ObjectID = "" Then %>
+					<!-- <option value="">SELECT A <%= GetObjectType(ObjectType) %></option> -->
+				<% End If %>
+				<%
+					Do Until ors.EOF
+				%>
+						<% If CStr(ors("ObjectID")) = ObjectID Then %>
+							<option value="<%= ors("ObjectID") %>" SELECTED><%= ors("ObjectName") %></option>
+						<% Else %>
+							<option value="<%= ors("ObjectID") %>"><%= ors("ObjectName") %></option>
+						<% End If %>
+				<%
+						ors.MoveNext
+					Loop
+					ors.Close
+					Set ors = Nothing
+				%>
+				</select>
+					</td>
+					<td>&nbsp;</td>
+					<td align="right">
+						<% If ObjectType = "P" AND ObjectID <> "" Then %>
+							<%= Submit_Button("SubmitButton", "Save Procedure", "Button", "", "Save Procedure") %>
+						<% ElseIf ObjectType = "P" Then %>
+							<%= Submit_Button("SubmitButton", "Create Procedure", "Button", "", "Create Procedure") %>
+						<% End If %>
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		<% 
+			If ObjectID <> "" Then 
+				If ObjectType = "U" Then
+					ObjectName = GetObjectName(ObjectID)
+					ObjectText = ""
+					'ObjectText = ObjectText & "CREATE TABLE " & GetObjectID(ObjectID) & "." & ObjectName & vbCrLF
+					ObjectText = ObjectText & "CREATE TABLE " & ObjectName & vbCrLF
+					ObjectText = ObjectText & "(" & vbCrLF
+					sql = "sp_columns " & ObjectName
+					WriteDebugger sql, Debugging, 0
+					Set ors = oConn.Execute(sql)
+					Counter = 0
+					Do Until ors.EOF
+						ObjectText = ObjectText & vbTab
+						ColumnName = ors("column_name")
+						'Response.Write ors("type_name") & "<br />"
+						DataType = GetDataType(ors("type_name"), ors("column_def"))
+						Comma = ","
+						Nullable = ors("nullable")
+						TAB = vbTab
+						If Len(ors("column_name")) <= 7 Then TAB = vbTab & vbTab
+						If Nullable Then
+							Nullable = "NULL"
+						Else
+							Nullable = "NOT NULL"
+						End If
+						ObjectText = ObjectText & Comment & ColumnName & TAB & UCase(DataType) & " " & Nullable & Comma & vbCrLF
+						ors.MoveNext
+					Loop
+					ors.Close
+					Set ors = Nothing
+					ObjectText = Left(ObjectText, Len(ObjectText) - 3) & vbCrLF
+					ObjectText = ObjectText & ");" & vbCrLF
+				ElseIf ObjectType = "PK" Then
+					ObjectName = GetObjectName(ObjectID)
+					ObjectText = ""
+					sql = "sp_pkeys " & ObjectName
+					WriteDebugger sql, Debugging, 0
+					Set ors = oConn.Execute(sql)
+					ConstraintName_tmp = ""
+					ColumnName_tmp = ""
+					If NOT ors.EOF Then
+						Do Until ors.EOF
+							ConstraintName = ors("PK_NAME")
+							ColumnName = ors("COLUMN_NAME")
+							If ConstraintName <> ConstraintName_tmp Then
+								If ConstraintName_tmp <> "" Then ObjectText = ObjectText & ColumnName_tmp & ")" & vbCrLF
+								ObjectText = ObjectText & "ALTER TABLE " & ObjectName & " "
+								ObjectText = ObjectText & "ADD CONSTRAINT " & ConstraintName & " PRIMARY KEY "
+								ObjectText = ObjectText & "NONCLUSTERED ("
+								ConstraintName_tmp = ConstraintName
+								ColumnName_tmp = ColumnName
+							Else
+								ColumnName_tmp = ColumnName_tmp & ", " & ColumnName
+							End If
+							ors.MoveNext
+						Loop
+						ObjectText = ObjectText & ColumnName_tmp & ")" & vbCrLF
+					End If
+					ors.Close
+					Set ors = Nothing
+				ElseIf ObjectType = "FK" Then
+					ObjectName = GetObjectName(ObjectID)
+					ObjectText = "ALTER TABLE " & ObjectName & " ADD CONSTRAINT"
+				ElseIf ObjectType <> "" Then
+					sql = "sp_administration_schema_objectid " & ObjectID
+					WriteDebugger sql, Debugging, 0
+					Set ors = oConn.Execute(sql)
+					ObjectText = ""
+					Do Until ors.EOF
+						ObjectText = ObjectText & ors.Fields(0).value
+						ors.MoveNext
+					Loop
+					ors.Close
+					Set ors = Nothing
+					ObjectText = Replace(UCase(ObjectText), "CREATE PROCEDURE", "ALTER PROCEDURE")
+
+				Else
+					ObjectText = "CREATE " & GetObjectType(ObjectType)
+				End If
+			Else
+			End If
+		%>
+		<tr valign="top">
+			<td>
+				<%= formTextArea("ObjectText", ObjectText, "600", "200", "AdministrationElement", "SQL", "Invalid SQL") %>
+			</td>
+		</tr>
+		<% End If %>
+		</table>
+	</td>
+</tr>
+</table>
+<script type="text/javascript">
+	$("#ObjectType").change(
+		function() {
+			redirectURL = "<%= SCRIPT_NAME %>?Template=<%= Template %>&ObjectType=" + $(this).val();
+			//alert(redirectURL);
+  	       	location.href = redirectURL;
+		}
+	);
+
+	$("#ObjectID").change(
+		function() {
+			redirectURL = "<%= SCRIPT_NAME %>?Template=<%= Template %>&ObjectID=" + $(this).val() + "&ObjectType=" + $("#ObjectType").val();
+			//alert(redirectURL);
+  	       	location.href = redirectURL;
+		}
+	);
+
+</script>
+
+<%= formHidden("Template", Template) %>
+</form>

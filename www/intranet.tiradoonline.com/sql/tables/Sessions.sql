@@ -1,0 +1,29 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Sessions' AND TYPE = 'U')
+DROP TABLE Sessions;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Sessions' AND TYPE = 'U')
+	DROP TABLE Sessions;
+GO
+
+CREATE TABLE Sessions
+(
+	SessionID		IDENTITY (1001,1) INT  NOT NULL,
+	Session_ID		 VARCHAR(50)  NULL,
+	Application		 VARCHAR(100)  NOT NULL,
+	SCRIPT_NAME		 VARCHAR(500)  NOT NULL,
+	IPAddress		 VARCHAR(20)  NOT NULL,
+	Browser		 VARCHAR(500)  NOT NULL,
+	Referer		 VARCHAR(1000)  NULL,
+	create_dt		 DATETIME DEFAULT (getdate()) NOT NULL
+
+);
+GO
+
+
+
+
+GO
+
+GO
+

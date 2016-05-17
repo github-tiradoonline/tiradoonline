@@ -1,0 +1,7 @@
+<%
+	AudioFile = Trim(Request("AudioFile"))
+	
+	
+%>
+
+<%= AudioFile %>

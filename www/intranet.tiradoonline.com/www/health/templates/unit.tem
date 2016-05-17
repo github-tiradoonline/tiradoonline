@@ -1,0 +1,85 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formUnit" name="formUnit">
+<% 
+	SubmitButtonValue = "Create Unit"
+	If UnitID <> "" Then
+		SubmitButtonValue = "Save Unit"
+		sql = "SELECT * FROM Unit WHERE UnitID = " & UnitID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		UnitName = ors("UnitName")
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<table>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td>
+		<div class="HealthTheme"><h1 class="Header" style="padding: 5px;">Unit</h1></div>
+		<p>
+		<p>
+		<div class="ErrorMessage" id="HealthErrorMessage" name="HealthErrorMessage"><%= HealthErrorMessage %></div>
+		<table cellpadding="3">
+		<tr>
+			<td class="frm_label">Unit:</td>
+			<td>
+				<%= formTextBox("UnitName", "10", UnitName, "HealthElement", "Unit", "Invalid Unit") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+
+				<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+				
+			</td>
+		</tr>
+		</table>
+		&nbsp;<br />
+		&nbsp;<br />
+		<table cellpadding="3" class="GridViewAlteringRows">
+		<%
+			sql = "SELECT * FROM Unit WHERE UserID = " & Session("UserID") & " ORDER BY UnitName"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+		%>
+		<tr class="HealthTheme">
+			<td align="center"><b>Unit</b></td>
+			<td bgcolor="#ffffff">&nbsp;</td>
+		</tr>
+		<%
+				Do Until ors.EOF
+					Unit_ID = ors("UnitID")
+					UnitName = ors("UnitName")
+		%>
+		<tr class="GridViewRow">
+			<td align="center"><%= UnitName %></td>
+			<td>
+				<!-- <%= Button("Button", "Edit", "Button", "", "Edit", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&UnitID=" & Unit_ID & "'") %> -->
+				<a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&UnitID=<%= Unit_ID %>"><%= EDIT_ICON %></a>
+			</td>
+		</tr>
+		<%
+					ors.MoveNext
+				Loop
+				ors.Close
+			
+			Else
+		%>
+		<tr>
+			<td class="ErrorMessage">No records found.</td>
+		</tr>
+		<% 	
+			End If 
+			Set ors = Nothing
+		%>
+		</table>
+	</td>
+</tr>
+</table>
+<%= formHidden("UnitID", UnitID) %>
+
+<%= formHidden("Template", Template) %>
+</form>

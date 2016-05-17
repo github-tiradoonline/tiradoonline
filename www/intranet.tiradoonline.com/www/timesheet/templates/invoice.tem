@@ -1,0 +1,11 @@
+<%
+	CompanyName = "night agency"
+	
+%>
+<table width="800">
+<tr>
+	<td bgcolor="#000000">
+		Night Agency
+	</td>
+</tr>
+</table>

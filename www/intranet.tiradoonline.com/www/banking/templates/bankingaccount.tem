@@ -1,0 +1,228 @@
+<form action="<%= SCRIPT_NAME %>" method="post">
+<%
+	AccountName = Trim(Request("AccountName"))
+	BankingAccountID = Trim(Request("BankingAccountID"))
+	ReceiveEmails = Trim(Request("ReceiveEmails"))	
+	If ReceiveEmails = "" Then ReceiveEmails = "0"
+	
+	If SubmitButton = "Save" Then
+		sql = "UPDATE BankingAccount SET " & _
+		      "BankingAccountName = '" & SQLEncode(AccountName) & "', " & _
+			  "ReceiveEmails = " & ReceiveEmails & _
+			  "WHERE BankingAccountID = " & BankingAccountID
+		WriteDebugger sql, Debugging, 0
+		oConn.Execute(sql)
+		BankingErrorMessage = Server.URLEncode("Account saved.")
+		redirectURL = SCRIPT_NAME & "?Template=" & Template & "&BankingAccountID=" & BankingAccountID & "&BankingErrorMessage=" & BankingErrorMessage
+		Response.Redirect redirectURL
+	End If
+	
+	sql = "sp_BankingAccount_BankingAccountID_get " & BankingAccountID
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+	If NOT ors.EOF Then	
+		AccountName = ors("BankingAccountName")
+		ReceiveEmails = ors("ReceiveEmails")
+		ors.Close
+	End If
+	Set ors = Nothing
+	
+%>
+<table cellpadding="5">
+<tr class="BankingTheme">
+	<td colspan="2" class="SubHeader">Bank&nbsp;Account</td>
+</tr>
+<% If BankingErrorMessage <> "" Then %>
+<tr>
+	<td colspan="2" class="ErrorMessage">
+		<%= BankingErrorMessage %>
+	</td>
+</tr>
+<% End If %>
+<tr>
+	<td class="frm_label">Account&nbsp;Name:</td>
+	<td>
+		<%= formTextBox("AccountName", "40", AccountName, "BankingElement", "Account Name", "Invalid Account Name") %>
+	</td>
+</tr>
+<tr>
+	<td class="frm_label">Receive&nbsp;Daily&nbsp;Monthly&nbsp;Emails:</td>
+	<td>
+		<input type="checkbox" id="ReceiveEmails" class="BankingElement" name="ReceiveEmails" value="1" <% If ReceiveEmails Then Response.Write "CHECKED" %> />
+	</td>
+</tr>
+<tr>
+	<td>&nbsp;</td>
+	<td>
+		<%= Submit_Button("SubmitButton", "Save", "Button", "", "Save") %>&nbsp;&nbsp;
+		<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=view_accounts'") %>&nbsp;&nbsp;
+		<%= Button("Button", "Archive", "Button", "", "Archive", "DeleteItem('Are you sure you want to delete \'" & AccountName & "\'?','" & SCRIPT_NAME & "?SubmitButton=DeleteBankingAccount&BankingAccountID=" & BankingAccountID & "')") %>
+	</td>
+</tr>
+</table>
+<p>
+
+<fieldset>
+<legend>Linked Accounts</legend>
+<%
+	sql = "sp_BankingAccountLinked_UserID_get " & Session("UserID") & ", " & BankingAccountID
+%>
+	<%= SelectBox(oConn, sql, "LinkedUserID", LinkedUserID, "BankingElement", "User") %>
+	<%= Submit_Button("SubmitButton", "Add User to Account", "Button", "", "Add User to Account") %>&nbsp;&nbsp;
+
+	<p />
+	&nbsp;<br />
+	&nbsp;<br />
+	<ul>
+<%
+	sql = "sp_BankingAccountLinked_get " & BankingAccountID
+	Set ors = oConn.Execute(sql)
+	
+	If NOT ors.EOF Then
+			Do Until ors.EOF
+				BankingAccountLinkedID = ors("BankingAccountLinkedID")
+				FullName = ors("FullName")
+%>
+	<li>
+		<%= FullName %><br />
+		[ <a href="javascript:DeleteItem('Are you sure you want to delete this user from this account?', '<%= SCRIPT_NAME %>?SubmitButton=DeleteBalanceAccountLinked&BankingAccountLinkedID=<%= BankingAccountLinkedID %>&BankingAccountID=<%= BankingAccountID %>&Template=<%= Template %>')">DELETE</a> ]
+	</li>
+<%
+			ors.MoveNext
+		Loop
+		ors.Close
+%>
+	</ul>
+<%
+	Else
+%>
+<div class="ErrorMessage">No Linked Account found.</div>
+<%
+	End If
+%>
+
+</fieldset>
+<!-- 
+<table cellpadding="5">
+<tr class="BankingTheme">
+	<td colspan="2" class="SubHeader">Monthly&nbsp;Bills</td>
+</tr>
+<% If MonthlyBankingErrorMessage <> "" Then %>
+<tr>
+	<td colspan="2" class="ErrorMessage">
+		<%= MonthlyBankingErrorMessage %>
+	</td>
+</tr>
+<% End If %>
+<tr>
+	<td colspan="2">
+	<%
+		SubmitButtonValue = "Add Bill"
+
+		If MonthlyBillID <> "" Then 
+			sql = "sp_MonthlyBills_get " & BankingAccountID & ", " & MonthlyBillID
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+				MonthlyBillID = ors("MonthlyBillID")
+				MonthlyBillStartDate = ors("MonthlyBillStartDate")
+				MonthlyBillDate = ors("MonthlyBillDate")
+				MonthlyBillDesc = ors("MonthlyBillDesc")
+				MonthlyBillAmount = ors("MonthlyBillAmount")
+				ors.Close
+			End If
+			Set ors = Nothing
+			
+			SubmitButtonValue = "Update Bill"
+		End If	
+	%>
+	
+		<table>
+		<tr>
+			<td class="frm_label">Billing&nbsp;Start&nbsp;Date:</td>
+			<td>
+				<%= formTextBox("MonthlyBillStartDate", "10", MonthlyBillStartDate, "BankingElement", "Start Date", "") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Date:</td>
+			<td>
+				<%= formTextBox("MonthlyBillDate", "10", MonthlyBillDate, "BankingElement", "Bill Date", "") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Description:</td>
+			<td>
+				<%= formTextArea("MonthlyBillDesc", MonthlyBillDesc, "100", "100", "BankingElement", "Bill Description", "") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Amount:</td>
+			<td>
+				<%= formTextBox("MonthlyBillAmount", "10", MonthlyBillAmount, "BankingElement", "Bill Amount", "") %>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<%= formHidden("MonthlyBillID", MonthlyBillID) %>
+
+				<input type="submit" id="SubmitButton" name="SubmitButton" class="Button" value="<%= SubmitButtonValue %>"  />&nbsp;&nbsp;&nbsp;
+				<input type="button" id="SubmitButton" name="SubmitButton" class="Button" value="Cancel" onclick="location.href='<%= SCRIPT_NAME %>?BankingAccountID=<%= BankingAccountID %>&Action=Edit'" />
+			</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+<tr>
+	<td colspan="2">			
+	<%
+		sql = "sp_MonthlyBills_get " & BankingAccountID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+					
+		If NOT ors.EOF Then
+	%>
+		<table cellspacing="3" cellpadding="3" style="border:1px solid #000000">
+		<tr bgcolor="#639a63" style="border:1px solid #000000">
+			<td align="right" style="border:1px solid #000000"><font face="Verdana,Arial" size=2 color="#ffffff"><b>Billing&nbsp;Start&nbsp;Date</b></td>
+			<td align="right" style="border:1px solid #000000"><font face="Verdana,Arial" size=2 color="#ffffff"><b>Date</b></td>
+			<td style="border:1px solid #000000"><font face="Verdana,Arial" size=2 color="#ffffff"><b>Description</b></td>
+			<td align="right" style="border:1px solid #000000"><font face="Verdana,Arial" size=2 color="#ffffff"><b>Amount</b></td>
+			<td align="right" style="border:0px none #ffffff">&nbsp;</td>
+		</tr>
+	<%					
+		Do Until ors.EOF
+			MonthlyBillID = ors("MonthlyBillID")
+			MonthlyBillStartDate = ors("MonthlyBillStartDate")
+			MonthlyBillDate = ors("MonthlyBillDate")
+			MonthlyBillDesc = ors("MonthlyBillDesc")
+			MonthlyBillAmount = ors("MonthlyBillAmount")
+	%>
+		<tr>
+			<td><%= MonthlyBillStartDate %></td>
+			<td><%= MonthlyBillDate %></td>
+			<td><a href="<%= SCRIPT_NAME %>?BankingAccountID=<%= BankingAccountID %>&MonthlyBillID=<%= MonthlyBillID %>&Action=Edit"><%= MonthlyBillDesc %></a></td>
+			<td><%= FormatNumber(MonthlyBillAmount, 2) %></td>
+			<td><input type="button" name="SubmitButton" class="Button" value="Delete" onClick="DeleteItem('Are you sure you want to delete this monthly bill?', '<%= SCRIPT_NAME %>?MonthlyBillID=<%= MonthlyBillID %>&BankingAccountID=<%= BankingAccountID %>&Action=Edit&SubmitButton=DeleteBill')"
+		</tr>
+	<%
+			ors.MoveNext
+		Loop
+	Else
+	
+	%>
+		<tr>
+			<td colspan="2" class="ErrorMessage">No monthly bills found.</td>
+		</tr>
+	<%
+		End If
+		Set ors = Nothing   
+	%>
+
+		</table> -->
+
+<%= formHidden("BankingAccountID", BankingAccountID) %>
+<%= formHidden("Template", Template) %>
+
+</form>

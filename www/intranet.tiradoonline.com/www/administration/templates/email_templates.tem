@@ -1,0 +1,140 @@
+<%
+	CreateAccountSubject = Trim(Request("CreateAccountSubject"))
+	CreateAccountEmail = Trim(Request("CreateAccountEmail"))
+	ForgotPasswordSubject = Trim(Request("ForgotPasswordSubject"))
+	ForgotPasswordEmail = Trim(Request("ForgotPasswordEmail"))
+
+	If SubmitButton = "Save Templates" Then 
+		sql = "sp_EmailTemplates_update " & _
+			Session("UserID") & ", " & _
+			"'" & SQLEncode(CreateAccountSubject) & "', " & _
+			"'" & SQLEncode(CreateAccountEmail) & "', " & _
+			"'" & SQLEncode(ForgotPasswordSubject) & "', " & _
+			"'" & SQLEncode(ForgotPasswordEmail) & "'"
+		WriteDebugger sql, Debugging, 0
+		oConn.Execute sql
+		
+		AdministrationErrorMessage = Server.URLEncode("Email Templates saved.")
+		Response.Redirect SCRIPT_NAME & "?Template=" & Template & "&AdministrationErrorMessage=" & AdministrationErrorMessage
+	End If
+%>
+<form action="<%= SCRIPT_NAME %>" method="post" id="formEmailTemplates" name="formEmailTemplates">
+<table cellspacing=0 cellpadding=5 border=0>
+<tr class="AdministrationTheme">
+	<td align=center class="SubHeader">
+	Email&nbsp;Templates
+	
+	<%= Submit_Button("SubmitButton", "Save Templates", "Button", "float:right", "Save Templates") %>
+	</td>
+</tr>
+<tr>
+	<td valign=top>
+		<% If AdministrationErrorMessage <> "" Then %>
+		&nbsp;<br />
+		<div class="ErrorMessage"><%= AdministrationErrorMessage %></div>
+		&nbsp;<br />
+		<% End If %>
+
+		<div id="tabs">
+			<ul>
+				<li><a href="#tabs-1">Create&nbsp;Account&nbsp;Email</a></li>
+				<li><a href="#tabs-2">Forgot&nbsp;Password&nbsp;Email</a></li>
+			</ul>
+					
+			<!--
+			**********************************
+			CREATE ACCOUNT EMAIL
+			**********************************
+			-->
+<%
+	sql = "sp_EmailTemplates_get " & Session("UserID")
+	WriteDebugger sql, Debugging, 0
+	Set ors = oConn.Execute(sql)
+	If NOT ors.EOF Then
+		CreateAccountSubject = ors("CreateAccountSubject")
+		CreateAccountEmail = ors("CreateAccountEmail")
+		ForgotPasswordSubject = ors("ForgotPasswordSubject")
+		ForgotPasswordEmail = ors("ForgotPasswordEmail")
+		ors.Close
+	End If
+	Set ors = Nothing	
+%>			
+			<div id="tabs-1" name="tabs-1">
+			<p>
+				<fieldset style="border:1px solid #000000">
+    				<legend>LEGEND</legend>
+					<table align="center">
+					<tr>
+						<td align="right">First name:</td><td><b>###FIRSTNAME###</b></td>
+					</tr>
+					<tr>
+    					<td align="right">Last name:</td><td><b>###LASTNAME###</b></td>
+					</tr>
+					<tr>
+    					<td align="right">Username:</td><td><b>###USERNAME###</b></td>
+					</tr>
+					<tr>
+    					<td align="right">Password:</td><td><b>###PASSWORD###</b></td>
+					</tr>
+					</table>
+  				</fieldset>
+				<p />
+				<table>
+				<tr>
+					<td>
+						<b>Subject:</b><br />
+						<%= formTextBox("CreateAccountSubject", "60", CreateAccountSubject, "AdministrationElement", "Subject", "Invalid Subject") %>
+						<p />
+						<b>Body:</b><br />
+						<%= formTextArea("CreateAccountEmail", CreateAccountEmail, "600", "200", "AdministrationElement", "Body", "Invalid Body") %>
+					</td>
+				</tr>
+				</table>
+			</p>
+			</div>
+
+			<!--
+			**********************************
+			FORGOT PASSWORD EMAIL
+			**********************************
+			-->
+			
+			<div id="tabs-2" name="tabs-2">
+			<p>
+				<fieldset style="border:1px solid #000000">
+    				<legend>LEGEND</legend>
+					<table align="center">
+					<tr>
+    					<td align="right">Username:</td><td><b>###USERNAME###</b></td>
+					</tr>
+					<tr>
+    					<td align="right">Password:</td><td><b>###PASSWORD###</b></td>
+					</tr>
+					</table>
+  				</fieldset>
+				<p />
+				<table>
+				<tr>
+					<td>
+						<b>Subject:</b><br />
+						<%= formTextBox("ForgotPasswordSubject", "60", ForgotPasswordSubject, "AdministrationElement", "Subject", "Invalid Subject") %>
+						<p />
+						<b>Body:</b><br />
+						<%= formTextArea("ForgotPasswordEmail", ForgotPasswordEmail, "600", "200", "AdministrationElement", "Body", "Invalid Body") %>
+					</td>
+				</tr>
+				</table>
+			</p>
+			</div>
+			
+		</div>
+	</td>
+</tr>
+</table>
+<script type="text/javascript">
+	$("#tabs").tabs()
+</script>
+
+<%= formHidden("EmailTemplateID", EmailTemplateID) %>
+<%= formHidden("Template", Template) %>
+</form>

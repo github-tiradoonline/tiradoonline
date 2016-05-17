@@ -1,0 +1,46 @@
+<style type="text/css">
+.dp-highlight .ui-state-default {
+	background: <%= PageThemeColor %>;
+    color: #FFF;
+}
+
+.ui-datepicker.ui-datepicker-multi  {
+	width: 100% !important;
+}
+.ui-datepicker-multi .ui-datepicker-group {
+	float:none;
+}
+
+.ui-datepicker 
+{ 
+	margin-left: 100px;
+  	z-index: 1000;
+}
+
+#datepicker {
+	height: 300px;
+   	overflow-x: scroll;
+}
+
+.ui-widget
+{ 
+	font-size: 100%;
+}
+
+ui-tabs-nav {
+	font-size: 8px;
+}
+ 
+#tabs > li {
+	font-size: 8px;
+}
+
+.Highlighted a{
+   	background-color : <%= PageThemeColor %> !important;
+	background-image :none !important;
+	color: White !important;
+	font-weight:bold !important;
+	font-size: 12pt;
+}
+
+</style>

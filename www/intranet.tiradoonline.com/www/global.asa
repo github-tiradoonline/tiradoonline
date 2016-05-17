@@ -1,0 +1,44 @@
+<script language="vbscript" runat="server">
+
+Sub Application_OnStart
+
+	'***** GLOBAL VARIABLES	
+	Application("AdministratorName") = "Theodoore Tirado"
+	Application("ApplicationName") = "intranet.tiradoonline.com"
+	Application("AdministratorEmail") = "intranet@tiradoonline.com"
+	Application("SendEmail") = 1
+	Application("SQLServer") = ".\SQL2K8"
+	Application("StateID") = 1033
+	'**** GLOBAL STYLES
+	Application("GridRowColor") = "#ffffff"
+	Application("GridAlternateRowColor") = "#EAEAEA"
+	Application("ApplicationTitle") = "Balance Intranet"
+	Application("TableCellpadding") = "5"
+	Application("ThemeColor") = "#336699"
+	Application("DefaultFile") = "/default.asp"
+	
+	'**** USED FOR POP-UP WINDOWS
+	Application("WindowWidth") = "750"
+	Application("WindowHeight") = "500"
+
+	
+	'**** GOOGLE MAPS ******
+	Application("APIKey") = "AIzaSyAdRzKDRFceM_apFk6VKYKY8CWrqL28GTc"
+	Application("MapWindowWidth") = "650"
+	Application("MapWindowHeight") = "500"
+	
+End Sub
+
+Sub Application_OnEnd
+End Sub
+
+Sub Session_OnStart
+	'Session("UserID") = 1001
+	Session("DefaultUserID") = "1001"
+End Sub
+
+Sub Session_OnEnd
+End Sub
+
+</script>
+

@@ -1,0 +1,129 @@
+<form action="<%= SCRIPT_NAME %>" method="post">
+
+<% If BankingErrorMessage <> "" Then %>
+<div class="ErrorMessage"><%= BankingErrorMessage %></div>
+<p />
+<% End If %>
+<table cellpadding="5">
+<tr align="center">
+	<td class="BankingElement SubHeader">Active&nbsp;Accounts</td>
+	<td></td>
+	<td class="BankingElement SubHeader">Inactive&nbsp;Accounts</td>
+</tr>
+<tr valign="top">
+	<!-- ACTIVE ACCOUNTS -->
+	<td>
+	<%
+		sql = "sp_BankingAccount_active_get " & Session("UserID") & ", 1, " & Session("Administrator")
+		sql = "sp_BankingAccount_active_get " & Session("UserID") & ", 1, 0"
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		
+		If NOT ors.EOF Then
+	%>
+		<table cellpadding="5" class="GridView">
+		<tr>
+			<td bgcolor="#ffffff">&nbsp;</td>
+			<td class="BankingTheme">Owner</td>
+			<td class="BankingTheme">Account</td>
+			<td class="BankingTheme" align="right">Banking</td>
+		</tr>
+	<%
+			Do Until ors.EOF
+				UserID = ors("UserID")
+				BankingAccountID = ors("BankingAccountID")
+				Owner = ors("FullName")
+				BankingAccountName = ors("BankingAccountName")
+				Balance = ors("Balance")
+				ReceiveEmails = ors("ReceiveEmails")
+				If ReceiveEmails Then 
+					ReceiveEmails = EMAIL_ICON
+				Else
+					ReceiveEmails = ""
+				End If 
+	%>
+		<tr class="GridViewRow">
+			<td>
+				<%= Button("Button", "Archive", "Button", "", "Archive", "DeleteItem('Are you sure you want to delete this account (" & Owner & " - " & FormatJavaScript(BankingAccountName) & ")?','" & SCRIPT_NAME & "?Template=" & Template & "&BankingAccountID=" & BankingAccountID & "&SubmitButton=ActivateAccount&Active=0')") %>
+			</td>
+			<td><a href="/administration/administration.asp?Template=users&UserID=<%= UserID %>&Action=Edit"><%= HTMLFormat(Owner) %></a></td>
+			<td><a href="<%= SCRIPT_NAME %>?Template=BankingAccount&BankingAccountID=<%= BankingAccountID %>&CurrentDate=<%= CurrentDate %>"><%= HTMLFormat(BankingAccountName) %></a></td>
+			<td align="right"><%= ProfitLoss(Balance) %></td>
+		</tr>
+	<%
+				ors.MoveNext
+			Loop
+	%>
+		</table>
+	<%		
+			ors.Close
+		Else
+	%>
+		<div class="ErrorMessage">No Accounts found.</div>
+
+	<%
+		End If 
+		Set ors = Nothing
+	%>
+	</td>
+	<td>&nbsp;</td>
+	<!-- INACTIVE ACCOUNTS -->
+	<td>
+	<%
+		sql = "sp_BankingAccount_active_get " & Session("UserID") & ", 0, " & Session("Administrator")
+		sql = "sp_BankingAccount_active_get " & Session("UserID") & ", 0, 0"
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		
+		If NOT ors.EOF Then
+	%>
+		<table cellpadding="5" class="GridView">
+		<tr>
+			<td bgcolor="#ffffff">&nbsp;</td>
+			<td class="BankingTheme">Owner</td>
+			<td class="BankingTheme">Account</td>
+			<td class="BankingTheme" align="right">Banking</td>
+		</tr>
+	<%
+			Do Until ors.EOF
+				UserID = ors("UserID")
+				BankingAccountID = ors("BankingAccountID")
+				Owner = ors("FullName")
+				BankingAccountName = ors("BankingAccountName")
+				Balance = ors("Balance")
+				ReceiveEmails = ors("ReceiveEmails")
+				If ReceiveEmails Then 
+					ReceiveEmails = EMAIL_ICON
+				Else
+					ReceiveEmails = ""
+				End If 
+	%>
+		<tr class="GridViewRow">
+			<td>
+				<%= Button("Button", "Activate", "Button", "", "Activate", "DeleteItem('Are you sure you want to activate this account (" & Owner & " - " & FormatJavaScript(BankingAccountName) & ")?','" & SCRIPT_NAME & "?Template=" & Template & "&BankingAccountID=" & BankingAccountID & "&SubmitButton=ActivateAccount&Active=1')") %>
+			</td>
+			<td><a href="/administration/administration.asp?Template=users&UserID=<%= UserID %>&Action=Edit"><%= HTMLFormat(Owner) %></a></td>
+			<td><a href="<%= SCRIPT_NAME %>?Template=BankingAccount&BankingAccountID=<%= BankingAccountID %>&CurrentDate=<%= CurrentDate %>"><%= HTMLFormat(BankingAccountName) %></a></td>
+			<td align="right"><%= ProfitLoss(Balance) %></td>
+		</tr>
+	<%
+				ors.MoveNext
+			Loop
+	%>
+		</table>
+	<%		
+			ors.Close
+		Else
+	%>
+		<div class="ErrorMessage">No Accounts found.</div>
+
+	<%
+		End If 
+		Set ors = Nothing
+	%>
+	</td>
+</tr>
+</table>
+<%= formHidden("Template", Template) %>
+
+</form>

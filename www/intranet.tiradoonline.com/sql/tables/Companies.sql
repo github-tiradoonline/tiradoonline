@@ -1,0 +1,26 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Companies' AND TYPE = 'U')
+DROP TABLE Companies;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Companies' AND TYPE = 'U')
+	DROP TABLE Companies;
+GO
+
+CREATE TABLE Companies
+(
+	CompanyID		IDENTITY (1,1) INT  NOT NULL,
+	UserID		 INT  NOT NULL,
+	CompanyName		 VARCHAR(30)  NOT NULL,
+	StartDate		 SMALLDATETIME  NULL,
+	EndDate		 SMALLDATETIME  NULL
+
+);
+GO
+
+
+
+
+GO
+
+GO
+

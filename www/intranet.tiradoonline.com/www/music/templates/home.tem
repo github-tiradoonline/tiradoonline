@@ -1,0 +1,110 @@
+<%
+	Set objFileSystem = CreateObject("Scripting.FileSystemObject")
+    Set objFolder = objFileSystem.GetFolder(CurrentDirectory)
+
+    ParentDirectory = objFolder.ParentFolder
+
+%>
+
+<table width="100%" border="0">
+<tr>
+	<td align="right">
+		<% If CurrentDirectory <> Music_Directory Then %>
+		<%= Button("Button", "Back", "Button", "", "Back", "location='" & SCRIPT_NAME & "?CurrentDirectory=" & Server.URLEncode(ParentDirectory) & "&SubmitButton=ChangeDirectory'") %>		&nbsp;&nbsp;
+		<% End If %>
+		
+		<%= Button("Button", "Create Folder", "Button", "", "Create Folder", "promptCreateFolder('" & Server.URLEncode(CurrentDirectory & "\") & "')") %>
+	</td>
+</tr>
+</table>
+
+<% If MusicErrorMessage <> "" Then %>
+	<p>
+	<div class="ErrorMessage"><%= MusicErrorMessage %></div>
+<% End If %>
+
+<p>
+
+
+<b>Current&nbsp;Directory</b>:&nbsp;&nbsp;<%= Replace(CurrentDirectory, Music_Directory, "") %>\
+
+<p>
+
+<table width="100%" border="0">
+<tr>
+	<td align="right"><b>Upload&nbsp;Directory:</b></td>
+	<td><input type="file" size="60" name="UploadFile" id="UploadFile" class="Button" /></td>
+</tr>
+<tr>
+	<td>&nbsp;</td>
+	<td>
+		<%= Submit_Button("SubmitButton", "Upload File", "Button", "", "Upload File") %>
+	</td>
+</tr>
+</table>
+<p>
+<!-- 
+*************************************************
+************ FOLDERS ****************************
+*************************************************
+-->
+<% 
+	If objFolder.SubFolders.Count > 0 Then
+		For Each Folder in objFolder.SubFolders
+			SubFolder = Server.URLEncode(CurrentDirectory & "\" & Folder.Name)
+%>
+		<div style="float:left;padding:30px;width:100px;height:150px;text-align:center;">
+			<a href="<%= SCRIPT_NAME %>?CurrentDirectory=<%= SubFolder %>&SubmitButton=ChangeDirectory"><img src="/images/icons/folder_off.gif" title="" width="105" height="116" hspace="0" vspace="0" border="0" class="icon"></a>
+			<div class="iconName_sm"><%= Folder.Name %></div>
+		</div>	
+<%
+		Next
+%>
+
+<% Else %>
+
+<div class="ErrorMessage">No Folders found.</div>
+
+<% End If %>
+
+<p clear="all">
+
+<br clear="all">
+<!-- 
+*************************************************
+************ FILES ****************************
+*************************************************
+-->
+<% 
+	If objFolder.Files.Count > 0 Then
+		For Each File in objFolder.Files
+			FileName = File.Name
+			AudioFile = CurrentDirectory & "\" & FileName
+			DownloadFileName = Replace(CurrentDirectory, Music_Directory, "") & "/"
+			DownloadFileName = Application("MusicDocumentsDirectoryName") & Replace(DownloadFileName, "\", "/") & FileName
+			
+			If LCase(Right(FileName, 4)) = ".mp3" OR LCase(Right(FileName, 4)) = ".wma" Then
+%>
+<li style="line-height:30px"><a href="<%= SCRIPT_NAME %>?Template=player&AudioFile=<%= Server.URLEncode(AudioFile) %>"><%= FileName %></a></li>
+<%
+			Else
+%>
+<li style="line-height:30px"><%= FileName %></li>
+<%
+			End If
+%>
+<%
+		Next
+%>
+
+<% Else %>
+
+<div class="ErrorMessage">No Files found.</div>
+
+<% End If %>
+
+
+<%
+	Set objFolder = Nothing
+	Set objFileSystem = Nothing
+%>

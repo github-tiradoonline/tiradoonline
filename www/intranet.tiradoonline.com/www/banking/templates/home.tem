@@ -1,0 +1,98 @@
+
+<% If BankingErrorMessage <> "" Then %>
+<div class="ErrorMessage"><%= BankingErrorMessage %></div>
+&nbsp;<br />
+<% End If %>
+<!-- 
+***********************************************************
+
+BANKING SUB NAVIGATION
+
+***********************************************************
+-->
+
+<div class="iconSubNav">
+	<a href="/banking/banking.asp?Template=view_accounts"><img src="/images/icons/active_banking_off.gif" title="Reports" width="105" height="116" hspace="0" vspace="0" border="0" class="icon"></a>
+	<div class="iconName">Active/Inactive<br />Accounts</div>
+</div>	
+
+<div class="iconSubNav">
+	<a href="/banking/banking.asp?Template=View&SubmitButton=last_created_transactions"><img src="/images/icons/banking_last_transactions_off.gif" title="Reports" width="105" height="116" hspace="0" vspace="0" border="0" class="icon"></a>
+	<div class="iconName">Last Created<br />Transactions</div>
+</div>	
+
+<div class="iconSubNav">
+	<a href="/banking/banking.asp?Template=View&SubmitButton=last_updated_transactions"><img src="/images/icons/banking_last_transactions_off.gif" title="Reports" width="105" height="116" hspace="0" vspace="0" border="0" class="icon"></a>
+	<div class="iconName">Last Updated<br />Banking Transactions</div>
+</div>	
+
+<div class="iconSubNav">
+	<a href="/banking/banking.asp?Template=bill_reminders"><img src="/images/icons/bill_reminders_off.gif" title="Bill Reminders" width="105" height="116" hspace="0" vspace="0" border="0" class="icon"></a>
+	<div class="iconName">Bill&nbsp;Reminders</div>
+</div>	
+
+<div class="iconSubNav">
+	<a href="/banking/banking.asp?Template=daily_emails"><img src="/images/icons/email_blast_off.gif" title="Daily Emails" width="105" height="116" hspace="0" vspace="0" border="0" class="icon"></a>
+	<div class="iconName">Daily&nbsp;Emails</div>
+</div>	
+
+<div class="iconSubNav">
+	<a href="/banking/banking.asp?Template=Search"><img src="/images/icons/search_off.gif" title="Search" width="105" height="116" hspace="0" vspace="0" border="0" class="icon"></a>
+	<div class="iconName">Search</div>
+</div>	
+<%
+	sql = "sp_BankingAccount_get " & Session("UserID")
+	Set ors = oConn.Execute(sql)
+	If NOT ors.EOF Then 
+		Do Until ors.EOF
+			counter = 1
+			rsTotalBanking = ors("TotalBanking")
+			FONT_PAYMENT = "GREEN"
+			If CDbl(rsTotalBanking) <= 0 Then FONT_PAYMENT = "#ff0000"
+			bgcolor2 = "#ffffff"
+			rsTotalBanking = "$" & FormatNumber(rsTotalBanking, 2)
+			If CStr(BankingAccountID) = CStr(ors("BankingAccountID")) Then bgcolor2 = "#eeeeee"
+%>
+<div class="BankingAccountIcon">
+<!-- 	<a href="/banking/banking.asp?BankingAccountID=<%= ors("BankingAccountID") %>&CurrentDate=<%= CurrentDate %>&Template=View"
+	onMouseOver="changeImage('bankaccount_<%= ors("BankingAccountID") %>_<%= BankingImageID %>', '/images/banking/banking_on.gif')"  
+	onMouseOut="changeImage('bankaccount_<%= ors("BankingAccountID") %>_<%= BankingImageID %>', '/images/banking/banking_off.gif')"> 
+ -->	
+ 	<a href="/banking/banking.asp?BankingAccountID=<%= ors("BankingAccountID") %>&CurrentDate=<%= CurrentDate %>&Template=View"
+		onmouseover="document.getElementById('bankaccount_<%= ors("BankingAccountID") %>_<%= BankingImageID %>').src='/images/banking/banking_on.gif'"
+		onmouseout="document.getElementById('bankaccount_<%= ors("BankingAccountID") %>_<%= BankingImageID %>').src='/images/banking/banking_off.gif'"
+	> 
+		<img id="bankaccount_<%= ors("BankingAccountID") %>_<%= BankingImageID %>" name="bankaccount_<%= ors("BankingAccountID") %>_<%= BankingImageID %>" src="/images/banking/banking_off.gif" title="<%= ors("BankingAccountName") %>" border="0" />
+	</a>	
+	<div class="bankingAccountIconName">
+		<%= ShortenString(ors("BankingAccountName")) %><br />
+		<%= ProfitLoss(ors("TotalBanking")) %>
+	</div>
+</div>
+<%
+			'counter = counter + 1
+			'if counter = 3 Then
+			'	Response.Write "<div style='display:block'></div>"
+			'	counter = 1
+			'End If
+			ors.MoveNext
+		Loop
+		ors.Close
+%>
+<!-- 
+***********************************************************
+
+END OF BANKING SUB NAVIGATION
+
+***********************************************************
+-->
+			
+<% Else	%>
+
+<div class="ErrorMessage">No Accounts found</div>
+
+<% 
+	End If
+	Set ors = Nothing
+%>
+

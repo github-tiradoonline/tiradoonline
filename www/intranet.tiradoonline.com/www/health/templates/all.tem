@@ -1,0 +1,587 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="frmAll" name="frmAll">
+<table>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td>
+		<div class="HealthTheme" style="padding: 5px;">
+		<table width="100%">
+		<tr>
+			<td class="HealthTheme">
+				<h1>ALL</h1>
+			</td>
+			<td align="right">
+				<%= Submit_Button("SubmitButton", "Create All", "Button", "", "Create All") %>&nbsp;&nbsp;
+			</td>
+		</tr>
+		</table>
+		</div>	
+		<p>
+		<% If AllErrorMessage <> "" Then %>
+			<div class="ErrorMessage"><%= AllErrorMessage %></div>
+		<% End If %>
+	<table border=0>
+	<tr valign="top">
+		<td colspan="2">
+			<fieldset>
+				<legend><input type="checkbox" id="checkboxMedicine" name="checkboxMedicine" value="1" /><a href="<%= SCRIPT_NAME %>?Template=medicine_dose">Medicine</a></legend>
+		<div class="ErrorMessage" id="MedicineErrorMessage" name="MedicineErrorMessage"><%= MedicineErrorMessage %></div>
+			<table cellpadding="3">
+				<tr>
+					<td class="frm_label">Date:</td>
+					<td>
+						<%= formTextBox("MedicineDoseDate", "10", MedicineDoseDate, "HealthElement", "Date", "Invalid Dose Date") %>
+					</td>
+				</tr>
+				<tr>
+					<td class="frm_label">Time:</td>
+					<td>
+						<%= formTextBox("MedicineDoseTime", "10", MedicineDoseTime, "HealthElement", "Time", "Invalid Time") %>
+					</td>
+				</tr>
+				<tr>
+					<td class="frm_label">Medicine:</td>
+					<td>
+						<%
+							sql = "sp_Medicine_UserID_get " & Session("UserID")
+							WriteDebugger sql, Debugging, 0
+						%>
+						<%= SelectBox(oConn, sql, "MedicineID", MedicineID, "HealthElement", "Medicine") %>
+					</td>
+				</tr>
+				<tr>
+					<td class="frm_label">Amount:</td>
+					<td>
+						<%= formTextBox("Amount", "5", Amount, "HealthElement", "Amount", "Invalid Amount") %>
+					</td>
+				</tr>
+				<tr valign="top">
+					<td class="frm_label">Description:</td>
+					<td>
+						<%= formTextArea("MedicineDoseDescription", MedicineDoseDescription, "500", "150", "HealthElement", "Description", "Invalid Description") %>
+					</td>
+				</tr>
+				</table>
+				</fieldset>
+				
+				<%= formHidden("MedicidineDose", "1") %>
+
+		</td>
+	</tr>
+	<tr valign="top">
+		<td>
+		<fieldset height="100%">
+			<legend><input type="checkbox" id="checkboxSugar" name="checkboxSugar" value="1" /><a href="<%= SCRIPT_NAME %>?Template=sugar">Sugar</a></legend>
+		<div class="ErrorMessage" id="SugarErrorMessage" name="SugarErrorMessage"><%= SugarErrorMessage %></div>
+		<table cellpadding="3">
+		<tr>
+			<td class="frm_label">Date:</td>
+			<td>
+				<%= formTextBox("SugarDate", "10", SugarDate, "HealthElement", "Date", "Invalid Date") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Time:</td>
+			<td>
+				<%= formTextBox("SugarTime", "10", SugarTime, "HealthElement", "Time", "Invalid Time") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Sugar:</td>
+			<td>
+				<%= formTextBox("Sugar", "5", Sugar, "HealthElement", "Sugar", "Invalid Sugar") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label" valign="top">Comments:</td>
+			<td>
+				<%= formTextArea("SugarComments", SugarComments, "200", "50", "HealthElement", "Description", "Invalid Description") %>
+			</td>
+		</tr>
+		</table>
+ 			</fieldset>
+		</td>
+		<td>
+		<fieldset>
+			<legend><input type="checkbox" id="checkboxBloodPressure" name="checkboxBloodPressure" value="1" /><a href="<%= SCRIPT_NAME %>?Template=blood_pressure">Blood Pressure</a></legend>
+		<div class="ErrorMessage" id="BloodPressureErrorMessage" name="BloodPressureErrorMessage"><%= BloodPressureErrorMessage %></div>
+		<table cellpadding="3">
+		<tr>
+			<td class="frm_label">Date:</td>
+			<td>
+				<%= formTextBox("BloodPressureDate", "10", BloodPressureDate, "HealthElement", "Date", "Invalid Date") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Time:</td>
+			<td>
+				<%= formTextBox("BloodPressureTime", "10", BloodPressureTime, "HealthElement", "Time", "Invalid Time") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+			<tr>
+			<td class="frm_label">Top:</td>
+			<td>
+				<%= formTextBox("BloodPressureTop", "5", BloodPressureTop, "HealthElement", "Top", "Invalid Blood Pressure Top") %><%= REQUIRED_ICON %>
+				<%= formTextBox("BloodPressureBottom", "5", BloodPressureBottom, "HealthElement", "Bottom", "Invalid Blood Pressure Bottom") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label" valign="top">Comments:</td>
+			<td>
+				<%= formTextArea("BloodPressureComments", BloodPressureComments, "200", "50", "HealthElement", "BloodPressure", "Invalid BloodPressure") %>
+			</td>
+		</tr>
+		</table>
+ 			</fieldset>
+		</td>
+	</tr>
+	<tr valign="top">
+		<td>
+			<fieldset>
+			<legend><input type="checkbox" id="checkboxHeartRate" name="checkboxHeartRate" value="1" /><a href="<%= SCRIPT_NAME %>?Template=heart_rate">Heart Rate</a></legend>
+		<div class="ErrorMessage" id="HealthRateErrorMessage" name="HealthRateErrorMessage"><%= HealthRateErrorMessage %></div>
+		<table cellpadding="3">
+		<tr>
+			<td class="frm_label">Date:</td>
+			<td>
+				<%= formTextBox("HeartRateDate", "10", HeartRateDate, "HealthElement", "Date", "Invalid Date") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Time:</td>
+			<td>
+				<%= formTextBox("HeartRateTime", "10", HeartRateTime, "HealthElement", "Time", "Invalid Time") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Heart&nbsp;Rate:</td>
+			<td>
+				<%= formTextBox("HeartRate", "5", HeartRate, "HealthElement", "Heart Rate", "Invalid Heart Rate") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label" valign="top">Comments:</td>
+			<td>
+				<%= formTextArea("HeartRateComments", HeartRateComments, "200", "50", "HealthElement", "Heart Rate", "Invalid Heart Rate") %>
+			</td>
+		</tr>
+		</table>
+			</fieldset>
+		</td>
+		
+		<td>
+			<fieldset>
+			<legend><input type="checkbox" id="checkboxOxygen" name="checkboxOxygen" value="1" /><a href="<%= SCRIPT_NAME %>?Template=oxygen">Oxygen</a></legend>
+		<div class="ErrorMessage" id="HealthRateErrorMessage" name="HealthRateErrorMessage"><%= HealthRateErrorMessage %></div>
+		<table cellpadding="3">
+		<tr>
+			<td class="frm_label">Date:</td>
+			<td>
+				<%= formTextBox("OxygenDate", "10", OxygenDate, "HealthElement", "Date", "Invalid Date") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Time:</td>
+			<td>
+				<%= formTextBox("OxygenTime", "10", OxygenTime, "HealthElement", "Time", "Invalid Time") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Oxygen:</td>
+			<td>
+				<%= formTextBox("Oxygen", "5", Oxygen, "HealthElement", "Heart Rate", "Invalid Heart Rate") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label" valign="top">Comments:</td>
+			<td>
+				<%= formTextArea("OxygenComments", OxygenComments, "200", "50", "HealthElement", "Heart Rate", "Invalid Heart Rate") %>
+			</td>
+		</tr>
+		</table>
+			</fieldset>
+		</td>
+	</tr>
+	<tr valign="top">
+		<td>
+			<fieldset>
+			<legend><input type="checkbox" id="checkboxTemperature" name="checkboxTemperature" value="1" /><a href="<%= SCRIPT_NAME %>?Template=temperatrure">Temperature</a></legend>
+		<div class="ErrorMessage" id="TemperatrureErrorMessage" name="TemperatrureErrorMessage"><%= TemperatrureErrorMessage %></div>
+		<table cellpadding="3">
+		<tr>
+			<td class="frm_label">Date:</td>
+			<td>
+				<%= formTextBox("TemperatureDate", "10", TemperatureDate, "HealthElement", "Date", "Invalid Date") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Time:</td>
+			<td>
+				<%= formTextBox("TemperatureTime", "10", TemperatureTime, "HealthElement", "Time", "Invalid Time") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Temperature:</td>
+			<td>
+				<%= formTextBox("Temperature", "5", Temperature, "HealthElement", "Temperature", "Invalid Temperature") %><%= REQUIRED_ICON %>
+		</tr>
+		<tr>
+			<td class="frm_label" valign="top">Comments:</td>
+			<td>
+				<%= formTextArea("TemperatureComments", TemperatureComments, "200", "50", "HealthElement", "Temperature", "Invalid Temperature") %>
+			</td>
+		</tr>
+		</table>
+			</fieldset>
+		</td>
+		
+		<td>
+		<fieldset height="100%">
+			<legend><input type="checkbox" id="checkboxWeight" name="checkboxWeight" value="1" /><a href="<%= SCRIPT_NAME %>?Template=Weight">Weight</a></legend>
+		<div class="ErrorMessage" id="WeightErrorMessage" name="WeightErrorMessage"><%= WeightErrorMessage %></div>
+		<table cellpadding="3">
+		<tr>
+			<td class="frm_label">Date:</td>
+			<td>
+				<%= formTextBox("WeightDate", "10", WeightDate, "HealthElement", "Date", "Invalid Date") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Time:</td>
+			<td>
+				<%= formTextBox("WeightTime", "10", WeightTime, "HealthElement", "Time", "Invalid Time") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Weight:</td>
+			<td>
+				<%= formTextBox("Weight", "5", Weight, "HealthElement", "Weight", "Invalid Weight") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Location:</td>
+			<td>
+				<%= formTextBox("WeightLocation", "30", WeightLocation, "HealthElement", "Location", "Invalid Location") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label" valign="top">Comments:</td>
+			<td>
+				<%= formTextArea("WeightComments", WeightComments, "200", "50", "HealthElement", "Description", "Invalid Description") %>
+			</td>
+		</tr>
+		</table>
+ 			</fieldset>
+		</td>
+	</tr>
+	</table>
+	</td>
+</tr>
+</table>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<%= Submit_Button("SubmitButton", "Create All", "Button", "", "Create All") %>&nbsp;&nbsp;
+
+<%= formHidden("SugarID", SugarID) %>
+
+
+<%= formHidden("Template", Template) %>
+
+
+
+</form>
+
+ <script type="text/javascript">
+	$( "#MedicineDoseDate" ).datepicker();
+	$( "#SugarDate" ).datepicker();
+	$( "#TemperatureDate" ).datepicker();
+	$( "#HeartRateDate" ).datepicker();
+	$( "#BloodPressureDate" ).datepicker();
+	$( "#WeightDate" ).datepicker();
+	
+	//*******************************
+	// MEDICINE CHECKBOXES
+	//*******************************
+	$('#Amount, #MedicineDoseDescription').keyup
+	(
+		function()
+		{
+			$('#checkboxMedicine').prop('checked', true);
+		}
+	);
+	$('#MedicineDoseDate, #MedicineDoseTime, #MedicineID').change
+	(
+		function()
+		{
+			$('#checkboxMedicine').prop('checked', true);
+		}
+	);
+
+	
+	//*******************************
+	// SUGAR CHECKBOXES
+	//*******************************
+	$('#Sugar, #SugarComments').keyup
+	(
+		function()
+		{
+			$('#checkboxSugar').prop('checked', true);
+		}
+	);
+	$('#SugarDate, #SugarTime').change
+	(
+		function()
+		{
+			$('#checkboxSugar').prop('checked', true);
+		}
+	);
+	
+	
+	
+	//*******************************
+	// BLOODPRESSURE CHECKBOXES
+	//*******************************
+	$('#BloodPressureTop, #BloodPressureBottom, #BloodPressureComments').keyup
+	(
+		function()
+		{
+			$('#checkboxBloodPressure').prop('checked', true);
+		}
+	);
+	$('#BloodPressureDate, #BloodPressureTime').change
+	(
+		function()
+		{
+			$('#checkboxBloodPressure').prop('checked', true);
+		}
+	);
+	
+	
+	//*******************************
+	// HEARTRATE CHECKBOXES
+	//*******************************
+	$('#HeartRate, #HeartRateComments').keyup
+	(
+		function()
+		{
+			$('#checkboxHeartRate').prop('checked', true);
+		}
+	);
+	$('#HeartRateDate, #HeartRateTime').change
+	(
+		function()
+		{
+			$('#checkboxHeartRate').prop('checked', true);
+		}
+	);
+	
+	
+	//*******************************
+	// Oxygen CHECKBOXES
+	//*******************************
+	$('#Oxygen, #OxygenComments').keyup
+	(
+		function()
+		{
+			$('#checkboxOxygen').prop('checked', true);
+		}
+	);
+	$('#OxygenDate, #OxygenTime').change
+	(
+		function()
+		{
+			$('#checkboxOxygen').prop('checked', true);
+		}
+	);
+	
+	
+	//*******************************
+	// TEMPERATURE CHECKBOXES
+	//*******************************
+	$('#Temperature, #TemperatureComments').keyup
+	(
+		function()
+		{
+			$('#checkboxTemperature').prop('checked', true);
+		}
+	);
+	$('#TemperatureDate, #TemperatureTime').change
+	(
+		function()
+		{
+			$('#checkboxTemperature').prop('checked', true);
+		}
+	);
+	
+	
+	//*******************************
+	// WEIGHT CHECKBOXES
+	//*******************************
+	$('#Weight, #WeightLocation, #WeightComments').keyup
+	(
+		function()
+		{
+			$('#checkboxWeight').prop('checked', true);
+		}
+	);
+	$('#WeightDate, #WeightTime').change
+	(
+		function()
+		{
+			$('#checkboxWeight').prop('checked', true);
+		}
+	);
+	
+	
+
+
+
+
+
+
+ 	$('#frmAll').submit
+	(
+		function()
+		{
+			if( $('#checkboxMedicine').prop( "checked" ) == true )
+			{
+				if($MedicineDate != '') 
+				{
+					var $MedicineDate = $.trim($('#MedicineDoseDate').val());
+					var $MedicineTime = $.trim($('#MedicineDoseTime').val());
+					var $Amount = $.trim($('#Amount').val());
+
+					if(!isDate($MedicineDate)) {
+						displayError($('#MedicineDoseDate'));
+						$('#MedicineDate').focus();
+						return false;
+					}
+					else if(!isTime($MedicineTime)) {
+						displayError($('#MedicineDoseTime'));
+						$('#MedicineTime').focus();
+						return false;
+					}
+					else if(isNaNumber($Amount)) {
+						displayError($('#Amount'));
+						$('#Amount').focus();
+						return false;
+					}
+				}
+			}
+
+			var $sugarDate = $.trim($('#SugarDate').val());
+			var $sugarTime = $.trim($('#SugarTime').val());
+			var $Sugar = $.trim($('#Sugar').val());
+
+			if( $('#checkboxSugar').prop( "checked" ) == true )
+			{
+				if($sugarDate != '') 
+				{
+					if(!isDate($sugarDate)) {
+							displayError($('#SugarDate'));
+						$('#SugarDate').focus();
+						return false;
+					}
+					else if(!isTime($sugarTime)) {
+						displayError($('#SugarTime'));
+						$('#SugarTime').focus();
+						return false;
+					}
+					else if($Sugar == '') {
+						displayError($('#Sugar'));
+						$('#Sugar').focus();
+						return false;
+					}
+				}	
+			}
+	
+			var $BloodPressureDate = $.trim($('#BloodPressureDate').val());
+			var $BloodPressureTime = $.trim($('#BloodPressureTime').val());
+			var $BloodPressureTop = $.trim($('#BloodPressureTop').val());
+			var $BloodPressureBottom = $.trim($('#BloodPressureBottom').val());
+	
+			if( $('#checkboxBloodPressureDate').prop( "checked" ) == true )
+			{
+				if($BloodPressureDate != '') 
+				{
+					if(!isDate($BloodPressureDate)) {
+							displayError($('#BloodPressureDate'));
+						$('#BloodPressureDate').focus();
+						return false;
+					}	
+						else if(!isTime($BloodPressureTime)) {
+						displayError($('#BloodPressureTime'));
+						$('#BloodPressureTime').focus();
+						return false;
+					}
+					else if(isNaNumber($BloodPressureTop)) {
+						displayError($('#BloodPressureTop'));
+						$('#BloodPressureTop').focus();
+						return false;
+					}
+					else if(isNaNumber($BloodPressureBottom)) {
+						displayError($('#BloodPressureBottom'));
+						$('#BloodPressureBottom').focus();
+						return false;
+					}
+				}
+			}
+	
+			var $HeartRateDate = $.trim($('#HeartRateDate').val());
+			var $HeartRateTime = $.trim($('#HeartRateTime').val());
+			var $HeartRate = $.trim($('#HeartRate').val());
+	
+			if( $('#checkboxHeartRate').prop( "checked" ) == true )
+			{
+				if($HeartRateDate != '') 
+				{
+					if(!isDate($HeartRateDate)) {
+						displayError($('#HeartRateDate'));
+						$('#HeartRateDate').focus();
+						return false;
+					}
+					else if(!isTime($HeartRateTime)) {
+						displayError($('#HeartRateTime'));
+						$('#HeartRateTime').focus();
+						return false;
+					}
+					else if(isNaNumber($HeartRate)) {
+						displayError($('#HeartRate'));
+						$('#HeartRate').focus();
+						return false;
+					}
+				}
+			}
+	
+			if( $('#checkboxTemperatureDate').prop( "checked" ) == true )
+			{
+				var $TemperatureDate = $.trim($('#TemperatureDate').val());
+				var $TemperatureTime = $.trim($('#TemperatureTime').val());
+				var $Temperature = $.trim($('#Temperature').val());
+		
+				if($TemperatureDate != '') 
+				{
+					if(!isDate($TemperatureDate)) {
+						displayError($('#TemperatureDate'));
+						$('#TemperatureDate').focus();
+						return false;
+					}	
+					else if(!isTime($TemperatureTime)) {
+							displayError($('#TemperatureTime'));
+						$('#TemperatureTime').focus();
+						return false;
+					}
+					else if(isNaNumber($Temperature)) {
+						displayError($('#Temperature'));
+						$('#Temperature').focus();
+						return false;
+					}
+				}
+			}
+		}
+	);
+	
+</script>
+
+<%= formHidden("Template", "all") %>
+

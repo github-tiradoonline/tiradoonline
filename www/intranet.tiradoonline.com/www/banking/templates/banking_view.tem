@@ -1,0 +1,483 @@
+<%
+	If SubmitButton = "Search" Then
+		checkboxBankingAccountID = Trim(Request("checkboxBankingAccountID"))
+		checkboxTransactionID = Trim(Request("checkboxTransactionID"))
+		radioDebitCredit = Trim(Request("radioDebitCredit"))
+		searchBankingAccountStartDate = Trim(Request("searchBankingAccountStartDate"))
+		searchBankingAccountEndDate = Trim(Request("searchBankingAccountEndDate"))
+		searchComment = Trim(Request("searchComment"))
+
+		'RESET COOKIES
+		Response.Cookies("checkboxBankingAccountIDCookies") = ""
+		Response.Cookies("checkboxBankingAccountIDCookies").Expires = Date - 10
+
+		Response.Cookies("radioDebitCreditCookies") = ""
+		Response.Cookies("radioDebitCreditCookies").Expires = Date - 10
+
+		Response.Cookies("checkboxTransactionIDCookies") = ""
+		Response.Cookies("checkboxTransactionIDCookies").Expires = Date - 10
+
+		Response.Cookies("searchBankingAccountStartDateCookies") = ""
+		Response.Cookies("searchBankingAccountStartDateCookies").Expires = Date - 10
+
+		Response.Cookies("searchBankingAccountEndDateCookies") = ""
+		Response.Cookies("searchBankingAccountEndDateCookies").Expires = Date - 10
+ 
+		Response.Cookies("searchCommentCookies") = ""
+		Response.Cookies("searchCommentCookies").Expires = Date - 10
+		
+
+		
+		Response.Cookies("checkboxBankingAccountIDCookies") = checkboxBankingAccountID
+		Response.Cookies("checkboxBankingAccountIDCookies").Expires = Date + 10
+
+		Response.Cookies("radioDebitCreditCookies") = radioDebitCredit
+		Response.Cookies("radioDebitCreditCookies").Expires = Date + 10
+
+		Response.Cookies("checkboxTransactionIDCookies") = checkboxTransactionID
+		Response.Cookies("checkboxTransactionIDCookies").Expires = Date + 10
+
+		Response.Cookies("searchBankingAccountStartDateCookies") = searchBankingAccountStartDate
+		Response.Cookies("searchBankingAccountStartDateCookies").Expires = Date + 10
+
+		Response.Cookies("searchBankingAccountEndDateCookies") = searchBankingAccountEndDate
+		Response.Cookies("searchBankingAccountEndDateCookies").Expires = Date + 10
+ 
+		Response.Cookies("searchCommentCookies") = searchComment
+		Response.Cookies("searchCommentCookies").Expires = Date + 10
+
+		sql = "sp_Banking_Search_get " & _
+			Session("UserID") & ", " & _
+			"'" & checkboxBankingAccountID & "', " & _
+			"'" & checkboxTransactionID & "', " & _
+			"'" & radioDebitCredit & "', " & _
+			"'" & searchBankingAccountStartDate & "', " & _
+			"'" & searchBankingAccountEndDate & "', " & _
+			"'" & SQLEncode(searchComment) & "'"
+		
+	ElseIf SubmitButton = "last_created_transactions" Then
+		sql =  "sp_Banking_Last_Created_Transactions_UserID_get " & Session("UserID")
+	ElseIf SubmitButton = "last_updated_transactions" Then
+		sql =  "sp_Banking_Last_Updated_Transactions_UserID_get " & Session("UserID")
+	Else
+		ViewType = Trim(Request("ViewType"))
+		If ViewType = "" Then
+			sql = "sp_Banking_BankingAccountID_BankingDate_get " & Trim(Request("BankingAccountID")) & ", '" & CurrentDate & "'"
+		ElseIf ViewType = "Transactions" Then
+			sql = "sp_Banking_BankingAccountID_TransactionID_get " & Trim(Request("BankingAccountID")) & ", " & Trim(Request("TransactionID"))
+		Else
+			sql = "sp_Banking_BankingAccountID " & Trim(Request("BankingAccountID"))
+		End If	
+	End If
+
+	'Response.Write sql
+	'Response.End
+	WriteDebugger sql, Debugging, 0 & "<p>"
+	Set ors = oConn.Execute(sql)
+
+	'**********************
+	'Get PreviousBanking
+	'**********************
+	If SubmitButton <> "Search" AND SubmitButton <> "last_created_transactions" AND SubmitButton <> "last_updated_transactions" Then
+		If ViewType = "" Then
+			sql = "sp_Banking_sum_UserID_BankingDate " & Trim(Request("BankingAccountID")) & ", '" & CurrentDate & "'"
+			WriteDebugger sql, Debugging, 0 & "<p>"
+			Set Sum_ors = oConn.Execute(sql)
+			PreviousBanking = Sum_ors("PreviousBanking")
+			TotalBanking = Sum_ors("TotalBanking")
+			If IsNull(PreviousBanking) Then PreviousBanking = 0.0
+			Sum_ors.Close
+			Set Sum_ors = Nothing
+		Else
+			PreviousBanking = 0.0
+		End If
+	End If 
+	
+	If SubmitButton <> "Search" AND SubmitButton <> "last_created_transactions" AND SubmitButton <> "last_updated_transactions" Then
+		sql = "SELECT BankingAccountName FROM BankingAccount WHERE BankingAccountID = " & Trim(Request("BankingAccountID"))
+		WriteDebugger sql, Debugging, 0
+		Set rs = oConn.Execute(sql)
+		BankingAccountName = rs("BankingAccountName")
+		rs.Close
+		Set rs = Nothing
+	End If
+	
+	If vDebugging Then Response.Write "Previous&nbsp;Banking:&nbsp;" & PreviousBanking & "<p>"
+%>
+		<% If Preview = "" Then %>
+
+		<% If SubmitButton = "Search" OR Template = "Search" Then %>
+		<!-- <div style="background-color:#000;color:#fff;font-size:20px;padding:10px;">Search</div> -->
+		<div class="BankingElement" style="text-shadow: 1px 1px #000000;padding:10px;font-size:20px;border:3px solid #000">Search</div>
+		<% End If %>
+
+		<% If SubmitButton = "last_created_transactions" Then %>
+		<div class="BankingElement" style="text-shadow: 1px 1px #000000;padding:10px;font-size:20px;border:3px solid #000">Last Created Transactions</div>
+		<% End If %>
+
+		<% If SubmitButton = "last_updated_transactions" Then %>
+		<div class="BankingElement" style="text-shadow: 1px 1px #000000;padding:10px;font-size:20px;border:3px solid #000">Last Updated Transactions</div>
+		<% End If %>
+
+		<%
+			BankingText = "<table cellspacing=1 cellpadding=3 width=""700"" bgcolor=""#c6ba9c"" border=0>" & vbCRLF
+
+
+			If SubmitButton <> "Search" AND SubmitButton <> "last_created_transactions" AND SubmitButton <> "last_updated_transactions" Then
+				BankingText = BankingText & "<tr bgcolor=""#639a63"">" & vbCRLF
+				If SubmitButton = "Search" OR SubmitButton = "last_created_transactions" OR SubmitButton = "last_updated_transactions" Then
+					BankingText = BankingText & "<td colspan=""7"" align=""center"">" & vbCRLF
+				Else
+					BankingText = BankingText & "<td colspan=""4"" align=""center"">" & vbCRLF
+				End If
+				BankingText = BankingText & "<table cellspacing=0 cellpadding=0 border=0 width=""100%"">" & vbCRLF
+				BankingText = BankingText & "<tr class=""BankingSubElement"">" & vbCRLF
+				BankingText = BankingText & "<td align=""center"" style=""text-shadow: 1px 1px #000""><font face=""Arial"" size=2 color=""#ffffff"" style=""text-shadow: 1px 1px #000""><b>Account#&nbsp;" & Trim(Request("BankingAccountID")) & "&nbsp;-&nbsp;" & BankingAccountName & "&nbsp;(&nbsp;$" & FormatNumber(TotalBanking, 2) & "&nbsp;)</td>" & vbCRLF
+				BankingText = BankingText & "</tr>" & vbCRLF
+				BankingText = BankingText & "</table>" & vbCRLF
+				BankingText = BankingText & "</td>" & vbCRLF
+				BankingText = BankingText & "</tr>" & vbCRLF
+			End If
+
+			If NOT ors.EOF Then
+				BankingText = BankingText  & "<tr bgcolor=""#ded7b5"">" & vbCRLF
+				If SubmitButton = "Search" OR SubmitButton = "last_created_transactions" OR SubmitButton = "last_updated_transactions" Then
+					BankingText = BankingText  & "<td align=""right""><font face=""Arial"" size=2><b>Created</b>&nbsp;</td>" & vbCRLF
+					BankingText = BankingText  & "<td align=""right""><font face=""Arial"" size=2><b>Updated</b>&nbsp;</td>" & vbCRLF
+					BankingText = BankingText  & "<td align=""right""><font face=""Arial"" size=2><b>Account</b>&nbsp;</td>" & vbCRLF
+				End If
+				BankingText = BankingText  & "<td align=""right""><font face=""Arial"" size=2><b>Date</b>&nbsp;</td>" & vbCRLF
+
+				'BankingText = BankingText  & "<td><font face=""Arial"" size=2><b>Linked&nbsp;Account</b>&nbsp;</td>" & vbCRLF
+				BankingText = BankingText  & "<td width=""100%""><font face=""Arial"" size=2><b>Transaction</b></td>" & vbCRLF
+				BankingText = BankingText  & "<td align=""right""><font face=""Arial"" size=2><b>&nbsp;Amount</b>&nbsp;</td>" & vbCRLF
+				BankingText = BankingText  & "<td align=""right""><font face=""Arial"" size=2><b>&nbsp;Banking</b>&nbsp;</td>" & vbCRLF
+				BankingText = BankingText  & "</tr>" & vbCRLF
+			End If 
+
+			FONT_PAYMENT = "GREEN"
+
+			If SubmitButton <> "Search" AND SubmitButton <> "last_created_transactions" AND SubmitButton <> "last_updated_transactions" Then
+				If CDbl(PreviousBanking) <= 0 Then FONT_PAYMENT = "#ff0000"
+				BankingText = BankingText & "<tr bgcolor=""#c6ba9c"">" & vbCrLF
+				BankingText = BankingText & "	<td align=right style=""text-align:right"">&nbsp;</td>" & vbCrLF
+				BankingText = BankingText & "	<td ><font face=""Arial"" size=2 color=""#000000""><b>" & _
+				
+				
+				
+				"<img src=""/images/icons/trash_icon.png"" alt=""Delete"" size=""17"" width=""17"" border=""0"" onclick=""EmptyTrash()"">" & _
+				
+				"</b>&nbsp;&nbsp;</td>" & vbCrLF
+				BankingText = BankingText & "	<td align=right colspan=1 style=""text-align:right""><font face=""Arial"" size=2 color=""#000000""><b>Previous&nbsp;Banking</b>&nbsp;&nbsp;</td>" & vbCrLF
+				BankingText = BankingText & "	<td align=right><font face=""Arial"" size=2 color=""" & FONT_PAYMENT & """>&nbsp;<b>" & "$" & FormatNumber(PreviousBanking, 2) & "</b></td>" & vbCrLF
+				BankingText = BankingText & "</tr>" & vbCrLF
+			Else
+				If CDbl(PreviousBanking) <= 0 Then FONT_PAYMENT = "#ff0000"
+				BankingText = BankingText & "<tr bgcolor=""#c6ba9c"">" & vbCrLF
+				BankingText = BankingText & "	<td align=right colspan=6 style=""text-align:right""><font face=""Arial"" size=2 color=""#000000""><b>Previous&nbsp;Banking</b>&nbsp;&nbsp;</td>" & vbCrLF
+				BankingText = BankingText & "	<td align=right><font face=""Arial"" size=2 color=""" & FONT_PAYMENT & """>&nbsp;<b>" & "$" & FormatNumber(PreviousBanking, 2) & "</b></td>" & vbCrLF
+				BankingText = BankingText & "</tr>" & vbCrLF
+			End If
+
+			Banking = PreviousBanking
+			'BankingText = ""
+			Redim BankingArray(1)
+			x = 0
+			If NOT ors.EOF Then
+				Do Until ors.EOF
+					Redim PRESERVE BankingArray(x)
+					If SubmitButton = "Search" OR SubmitButton = "last_created_transactions" OR SubmitButton = "last_updated_transactions" Then
+						Created = ors("create_dt")
+						Created = FormatDateTime(Created, 2)
+						Updated = ors("update_dt")
+						Updated = FormatDateTime(Updated, 2)
+					End If
+					BankingID = ors("BankingID")
+					BankingFile = ors("BankingFile")
+					BankingFileName = ors("BankingFileName")
+					SubBankingAccountID = ors("SubBankingAccountID")
+					SubAccountName = ors("SubAccountName")
+					BankingAccountID = ors("BankingAccountID")					 
+					BankingDate = FormatDateTime(ors("BankingDate"), 2)
+					Transaction = ors("Description")
+					Comment = Trim(ors("Comment"))
+					Comment = HTMLFormat2(Comment)
+					Payment = ors("Payment")
+					Banking = CDbl(Banking) + CDbl(Payment)
+					FONT_PAYMENT = "GREEN"
+					If CDbl(Payment) <= 0 Then FONT_PAYMENT = "#ff0000"
+					'If (isNull(SubBankingAccountID) OR Trim(SubBankingAccountID) = "") OR (BankingAccountID = SubBankingAccountID) Then 
+					'	SubAccountName = ""
+					'	If BankingAccountID = SubBankingAccountID Then 
+					'		Banking = CDbl(Banking) - CDbl(Payment)
+					'	Else
+					'		Banking = CDbl(Banking) + CDbl(Payment)
+					' 	End If
+					'Else
+					'		FONT_PAYMENT = "GREEN"
+					'		'If BankingAccountName = SubAccountName Then 
+					'		'	Banking = CDbl(Banking) + (CDbl(Payment))
+					'		'Else
+					'		'	Banking = CDbl(Banking) - (CDbl(Payment))
+					'		'	'Payment = ABS(CDbl(Payment))
+					'		'End If
+					'		'Payment = CDbl(Payment) - (CDbl(Payment))
+					'End If
+					FONT_Banking = "GREEN"
+					If CDbl(Banking) <= 0 Then FONT_Banking = "#ff0000"
+					If Len(CStr(BankingDate)) > 7 Then
+						DateTab = vbTab
+					Else
+						DateTab = vbTab & vbTab
+					End If
+					If Len(Transaction) <= 7 Then
+						TabToUse = vbTab & vbTab & vbTab & vbTab
+					ElseIf Len(Transaction) <= 15 Then
+						TabToUse = vbTab & vbTab & vbTab 
+					Else
+						TabToUse = vbTab & vbTab
+					End If
+					If Len(CStr(FormatNumber(Payment,2))) > 7 Then
+						PaymentTab = vbTab
+					Else
+						PaymentTab = vbTab & vbTab
+					End If
+					'BankingText = ""
+					BankingText = BankingText & "<tr bgcolor=""#c6ba9c"" valign=top>" & vbCrLF
+					If SubmitButton = "Search" OR SubmitButton = "last_created_transactions" OR SubmitButton = "last_updated_transactions" Then
+						BankingAccountName = HTMLFormat(ors("BankingAccountName"))
+						If Comment <> "" Then
+							BankingText = BankingText & "	<td bgcolor=""#ffffff"" align=""right"" rowspan=""2"">&nbsp;<strong>" & Created & "</strong>&nbsp;&nbsp;</td>" & vbCrLF
+							BankingText = BankingText & "	<td bgcolor=""#ffffff"" align=""right"" rowspan=""2"">&nbsp;<strong>" & Updated & "</strong>&nbsp;&nbsp;</td>" & vbCrLF
+							BankingText = BankingText & "	<td bgcolor=""#ffffff"" align=""right"" rowspan=""2"">&nbsp;<strong>" & BankingAccountName & "</strong>&nbsp;&nbsp;</td>" & vbCrLF
+						Else
+							BankingText = BankingText & "	<td bgcolor=""#ffffff"" align=""right"">&nbsp;<strong>" & Created & "</strong>&nbsp;&nbsp;</td>" & vbCrLF
+							BankingText = BankingText & "	<td bgcolor=""#ffffff"" align=""right"">&nbsp;<strong>" & Updated & "</strong>&nbsp;&nbsp;</td>" & vbCrLF
+							BankingText = BankingText & "	<td bgcolor=""#ffffff"" align=""right"">&nbsp;<strong>" & BankingAccountName & "</strong>&nbsp;&nbsp;</td>" & vbCrLF
+						End If
+					End If
+					If Comment <> "" Then
+						BankingText = BankingText & "	<td rowspan=2 bgcolor=""#ffffff"" align=""right"">&nbsp;<a href=""" & Request.ServerVariables("SCRIPT_NAME") & "?Template=Edit&BankingID=" & BankingID & """><font face=""Arial"" size=2 color=""#000000"">" & BankingDate & "</a>&nbsp;&nbsp;</td>" & vbCrLF
+						'BankingText = BankingText & "	<td rowspan=2 bgcolor=""#ffffff"" align=""right"">&nbsp;<a href=""" & Request.ServerVariables("SCRIPT_NAME") & "?Template=Edit&BankingID=" & BankingID & """><font face=""Arial"" size=2 color=""#000000"">" & SubAccountName & "</a>&nbsp;&nbsp;</td>" & vbCrLF
+					Else
+						BankingText = BankingText & "	<td bgcolor=""#ffffff"" align=""right"">&nbsp;<a href=""" & Request.ServerVariables("SCRIPT_NAME") & "?Template=Edit&BankingID=" & BankingID & """><font face=""Arial"" size=2 color=""#000000"">" & BankingDate & "</a>&nbsp;&nbsp;</td>" & vbCrLF
+						'BankingText = BankingText & "	<td bgcolor=""#ffffff"" align=""right"">&nbsp;<a href=""" & Request.ServerVariables("SCRIPT_NAME") & "?Template=Edit&BankingID=" & BankingID & """><font face=""Arial"" size=2 color=""#000000"">" & SubAccountName & "</a>&nbsp;&nbsp;</td>" & vbCrLF
+					End If
+					
+					BankingImage = ""
+					If BankingFile Then 
+						BankingImage = "&nbsp;&nbsp;<span onclick=""$('#divModal" & BankingID & "').show();"">" & NOTEPAD_ICON & "</span>"
+				%>
+<div id="divModal<%= BankingID %>" name="divModal<%= BankingID %>" class="divModal">
+	<div>
+		<img src="uploads/<%= BankingAccountID %>/<%= BankingID %>/<%= BankingFileName %>" onclick="$('#divModal<%= BankingID %>').hide()" hspace="0" vspace="0" border="0">
+	</div>
+</div>
+				<%
+					End If
+					BankingText = BankingText & "	<td bgcolor=""#ffffff"">" & _
+					
+					"<input type=checkbox id=""checkboxBanking"" name=""checkboxBanking"" value='" & BankingID & "' />" & _
+					
+					"<a href=""" & Request.ServerVariables("SCRIPT_NAME") & "?Template=Edit&BankingAccountID=" & BankingAccountID & "&BankingID=" & BankingID & """><font face=""Arial"" size=2 color=""green"">" & _
+					
+					"&nbsp;&nbsp;" & Transaction & "</a>&nbsp;" & BankingImage & "</td>" & vbCrLF
+					If Comment <> "" Then
+						BankingText = BankingText & "	<td rowspan=2 align=right valign=""top"" bgcolor=""#ffffff""><font face=""Arial"" size=2 color=""" & FONT_PAYMENT & """><nobr>$" & FormatNumber(Payment, 2) & "</nobr></td>" & vbCrLF
+					Else
+						BankingText = BankingText & "	<td align=right valign=""top"" bgcolor=""#ffffff""><font face=""Arial"" size=2 color=""" & FONT_PAYMENT & """><nobr>" & "$" & FormatNumber(Payment, 2) & "</td>" & vbCrLF
+					End If
+					If Comment <> "" Then
+						'TotalBanking = "$" & Replace(FormatNumber(Banking, 2), "-", "")
+						TotalBanking = FormatNumber(Banking, 2)
+						'BankingText = BankingText & "	<td rowspan=2 align=right bgcolor=""#ffffff"" align=""right""><font face=""Arial"" size=2 color=""" & FONT_Banking & """><nobr>" & "$" & Replace(FormatNumber(Banking, 2), "-", "") & "</nobr></td>" & vbCrLF
+						BankingText = BankingText & "	<td rowspan=2 align=right bgcolor=""#ffffff"" align=""right""><font face=""Arial"" size=2 color=""" & FONT_Banking & """><nobr>" & "$" & FormatNumber(Banking, 2) & "</nobr></td>" & vbCrLF
+					Else
+						'TotalBanking = "$" & Replace(FormatNumber(Banking, 2), "-", "")
+						TotalBanking = FormatNumber(Banking, 2)
+						'BankingText = BankingText & "	<td align=right bgcolor=""#ffffff"" align=""right""><font face=""Arial"" size=2 color=""" & FONT_Banking & """><nobr>" & "$" & Replace(FormatNumber(Banking, 2), "-", "") & "</nobr></td>" & vbCrLF
+						BankingText = BankingText & "	<td align=right bgcolor=""#ffffff"" align=""right""><font face=""Arial"" size=2 color=""" & FONT_Banking & """><nobr>" & "$" & FormatNumber(Banking, 2) & "</nobr></td>" & vbCrLF
+					End If
+					BankingText = BankingText & "</tr>" & vbCrLF
+					If Comment <> "" Then
+						BankingText = BankingText & "<tr>" & vbCrLF
+						BankingText = BankingText & "	<td bgcolor=""#d6e3ce""><font face=""Arial"" size=1 color=""#000000"">" & Comment & "&nbsp;</td>" & vbCrLF
+						BankingText = BankingText & "</tr>" & vbCrLF
+					End If
+					BankingArray(x) = BankingText
+					x = x + 1
+					ors.MoveNext
+				Loop
+
+				ors.Close
+				Set ors = Nothing
+			Else
+				TotalBanking = Banking
+				BankingText = BankingText & "<tr>" & vbCrLF
+				If SubmitButton <> "Search" AND SubmitButton <> "last_created_transactions" AND SubmitButton <> "last_updated_transactions" Then
+					BankingText = BankingText & "	<td bgcolor=""#ffffff"" align=center colspan=6><font face=""Arial"" size=2 color=""green""><b>No Transactions found.</b></td>" & vbCrLF
+				Else
+					BankingText = BankingText & "	<td bgcolor=""#ffffff"" align=center colspan=9><font face=""Arial"" size=2 color=""green""><b>No Transactions found.</b></td>" & vbCrLF
+				End If
+				
+				BankingText = BankingText & "</tr>" & vbCrLF
+				'BankingArray(0) = BankingText
+			End If
+			FONT_PAYMENT = "GREEN"
+			If CDbl(TotalBanking)  <= 0 Then 
+				FONT_PAYMENT = "#ff0000"
+				TotalBanking = FormatNumber(TotalBanking, 2)
+			End If
+				BankingText = BankingText & "<tr bgcolor=""#c6ba9c"">" & vbCrLF
+			If SubmitButton <> "Search" AND SubmitButton <> "last_created_transactions" AND SubmitButton <> "last_updated_transactions" Then
+				BankingText = BankingText & "	<td>&nbsp;</td>" & vbCrLF
+				BankingText = BankingText & "	<td align=right colspan=2 width=""100%""><font face=""Arial"" size=2 color=""#000000""><b>Final&nbsp;Banking</b>&nbsp;&nbsp;</td>" & vbCrLF
+				BankingText = BankingText & "	<td align=right><font face=""Arial"" size=2 color=""" & FONT_PAYMENT & """>&nbsp;<b>$" & TotalBanking & "</b></td>" & vbCrLF
+				BankingText = BankingText & "</tr>" & vbCrLF
+			Else
+				BankingText = BankingText & "	<td>&nbsp;</td>" & vbCrLF
+				BankingText = BankingText & "	<td align=right colspan=5 width=""100%""><font face=""Arial"" size=2 color=""#000000""><b>Final&nbsp;Banking</b>&nbsp;&nbsp;</td>" & vbCrLF
+				BankingText = BankingText & "	<td align=right><font face=""Arial"" size=2 color=""" & FONT_PAYMENT & """>&nbsp;<b>$" & TotalBanking & "</b></td>" & vbCrLF
+				BankingText = BankingText & "</tr>" & vbCrLF
+			End If
+%>
+		<table cellspacing=0 cellpadding=2 border=0 class="shadow">
+		<%
+			If SubmitButton <> "Search" AND SubmitButton <> "last_created_transactions" AND SubmitButton <> "last_updated_transactions" Then
+		%>
+		<tr bgcolor="#c6ba9c">
+			<td><a href="<%= Request.ServerVariables("SCRIPT_NAME") %>?BankingAccountID=<%= Trim(Request("BankingAccountID")) %>&CurrentDate=<%= PreviousMonthDate %>&Template=View"><img src="/images/banking/previous.gif" style="padding:5px"  width=13 height=16 hspace=0 vspace=0 border=0></a></td>
+			<td align=center width="100%">
+				<select id="CurrentMonth" name="CurrentMonth" class="BankingElement" title="Month">
+					<% for x = 1 to 12 %>
+						<% If CStr(x) = CStr(Month(CurrentDate)) Then %>
+							<option value=<%= x %> SELECTED><%= MonthName(x) %></option>
+						<% Else %>
+							<option value=<%= x %>><%= MonthName(x) %></option>
+						<% End If %>
+					<% Next %>
+				</select>&nbsp;
+				<select id="CurrentYear" name="CurrentYear" class="BankingElement" title="Year">
+					<% for x = Year(Now) to Year(Now) - 20 Step -1 %>
+						<% If CStr(x) = CStr(Year(CurrentDate)) Then %>
+							<option value=<%= x %> SELECTED><%= x %></option>
+						<% Else %>
+							<option value=<%= x %>><%= x %></option>
+						<% End If %>
+					<% Next %>
+				</select>&nbsp;
+				<%= Button("buttonGo", "Go", "Button", "Go", "Go", "") %>
+			</td>
+			<td><a href="<%= Request.ServerVariables("SCRIPT_NAME") %>?BankingAccountID=<%= Trim(Request("BankingAccountID")) %>&CurrentDate=<%= NextMonthDate %>&Template=View"><img src="/images/banking/next.gif" style="padding:5px" width=13 height=16 hspace=0 vspace=0 border=0></a></td>
+		</tr>
+		<%
+			End If
+		%>
+		<tr>
+			<td colspan="3" align="center">
+				<table cellspacing=0 cellpadding=0 border=0 width="100%">
+				<tr>
+					<td align="center">
+						<table cellspacing=0 cellpadding=0 border=0 width="100%">
+						<tr>
+							<td>
+								<%= Button("EmailButton", "Email Statement", "Button", "Email me Monthly Statement", "Email me Monthly Statement", "EmailMonthlyStatement('" & Request.ServerVariables("SCRIPT_NAME") & "?BankingAccountID=" & Trim(Request("BankingAccountID")) & "&CurrentDate=" & CurrentDate & "&SubmitButton=Email&TotalBanking=" & Replace(FormatNumber(Banking, 2), "-", "") & "')") %>
+								<!-- <%= Button("EmailButton", "Email me Monthly Statement", "Button", "Email me Monthly Statement", "Email me Monthly Statement", "") %> -->
+							</td>
+		<%
+			If SubmitButton <> "Search" AND SubmitButton <> "last_created_transactions" AND SubmitButton <> "last_updated_transactions" Then
+		%>
+ 							<td align="center">
+								<%= Button("SearchButton", "Search", "Button", "", "", "location.href='" & SCRIPT_NAME & "?Template=Search'") %>&nbsp;&nbsp;
+							</td>	
+ 							<td align="right">
+ 									<%= Button("Button", "Add Transaction", "Button", "", "Add Transaction", "location='" & SCRIPT_NAME & "?BankingAccountID=" & Trim(Request("BankingAccountID")) & "&CurrentDate=" & CurrentDate & "&Template=Add'") %>
+								</td>
+		<%
+			End If
+		%>
+						</tr>
+						</table>
+					</td>
+				</tr>
+				</table>
+		<% End If %>
+<%			
+			If EmailSent = "1" Then
+%>
+<script>
+	alert("<%= Trim(Request("MailMessage")) %>");
+</script>
+<%
+			End If
+			
+			BankingText = BankingText & "</table></td></tr></table>"
+			BankingText2 = Replace(BankingText, "<img src=""/images/icons/trash_icon.png"" alt=""Delete"" size=""17"" width=""17"" border=""0"" onclick=""EmptyTrash()"">", "")
+
+			Set objRegExp = New Regexp
+
+  			objRegExp.IgnoreCase = True
+  			objRegExp.Global = True
+
+  			objRegExp.Pattern = "</?(a|A).*?>"
+  			BankingText2 = objRegExp.Replace(BankingText2, "")
+
+  			objRegExp.Pattern = "</?(input type=checkbox|INPUT TYPE=CHECKBOX).*?>"
+  			BankingText2	 = objRegExp.Replace(BankingText2, "")
+
+			'Response.End
+			Session("BankingAccountName") = BankingAccountName
+			Session("BankingText") = BankingText
+			ToEmail = Session("Email")
+			FromEmail = Session("Email")
+			Subject = "BankingIntranet -- " & BankingAccountName & _
+				   	  " : " & MonthName(Month(CurrentDate)) & " " & Year(CurrentDate) & _
+				   	  " Transactions (" & TotalBanking & ")"
+			sql = "sp_BankingEmail_insert " & _
+				  Session("UserID") & ", " & _
+				  "'" & SQLEncode(ToEmail) & "', " & _
+				  "'" & SQLEncode(FromEmail) & "', " & _
+				  "'" & SQLEncode(Subject) & "', " & _
+				  "'" & SQLEncode(BankingText2) & "'"
+			WriteDebugger sql, Debugging, 0
+			oConn.Execute sql
+%>
+
+<%= BankingText %>
+
+<%= formHidden("Template", "View") %>
+<%= formHidden("BankingAccountID", Trim(Request("BankingAccountID"))) %>
+<%= formHidden("CurrentDate", CurrentDate) %>
+<%= formHidden("PreviousPage", PreviousPage) %>
+
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+&nbsp;<br>
+<script type="text/javascript">
+	
+	function EmptyTrash()
+	{
+		if(confirm("Are you sure you want to delete these transactions"))
+		{
+			var vals = $("input[name=checkboxBanking]:checked").map(
+    	 	function () {return this.value;}).get().join(",");
+			redirectString = "<%= SCRIPT_NAME %>?SubmitButton=EmptyTrash&BankingAccountID=<%= BankingAccountID %>&CurrentDate=<%= Server.UrlEncode(CurrentDate) %>&Template=<%= Template %>&checkboxBanking=" + encodeURIComponent(vals);
+			//alert(redirectString);
+			location.href = redirectString;
+		}
+	}
+
+	$('#buttonGo').click
+	(
+		function ()
+		{
+			var $CurrentMonth = $('#CurrentMonth').val();
+			var $CurrentYear = $('#CurrentYear').val();
+			var $CurrentDate = $CurrentMonth + '/' + 1 + '/' + $CurrentYear;
+			var $redirectURL = '<%= SCRIPT_NAME %>?BankingAccountID=<%= BankingAccountID %>&CurrentDate=' + encodeURIComponent($CurrentDate) + '&Template=View';
+			location.href = $redirectURL;
+		}
+	);
+
+</script>

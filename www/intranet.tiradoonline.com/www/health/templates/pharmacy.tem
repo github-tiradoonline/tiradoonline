@@ -1,0 +1,136 @@
+<form action="<%= SCRIPT_NAME %>" method="post" id="formPharmacy" name="formPharmacy">
+<% 
+	SubmitButtonValue = "Create Pharmacy"
+	If PharmacyID <> "" Then
+		SubmitButtonValue = "Save Pharmacy"
+		sql = "SELECT * FROM Pharmacy WHERE PharmacyID = " & PharmacyID
+		WriteDebugger sql, Debugging, 0
+		Set ors = oConn.Execute(sql)
+		PharmacyName = ors("PharmacyName")
+		PharmacyAddress = ors("PharmacyAddress")
+		PharmacyCity = ors("PharmacyCity")
+		PharmacyStateID = ors("PharmacyStateID")
+		if isNull(PharmacyStateID) Then PharmacyStateID = Application("StateID")
+		PharmacyZipCode = ors("PharmacyZipCode")
+		PharmacyTelephoneNumber = ors("PharmacyTelephoneNumber")
+		ors.Close
+		Set ors = Nothing
+	End If
+%>
+<table>
+<tr>
+	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td>
+		<div class="HealthTheme"><h1 class="Header" style="padding: 5px;">Pharmacy(s)</h1></div>
+		<p>
+		<p>
+		<div class="ErrorMessage" id="HealthErrorMessage" name="HealthErrorMessage"><%= HealthErrorMessage %></div>
+		<table cellpadding="3">
+		<tr>
+			<td class="frm_label">Name:</td>
+			<td>
+				<%= formTextBox("PharmacyName", "40", PharmacyName, "HealthElement", "Pharmacy", "Invalid Pharmacy") %><%= REQUIRED_ICON %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Address:</td>
+			<td>
+				<%= formTextBox("PharmacyAddress", "40", PharmacyAddress, "HealthElement", "Address", "Invalid Address") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">City:</td>
+			<td>
+				<%= formTextBox("PharmacyCity", "20", PharmacyCity, "HealthElement", "City", "Invalid City") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">State:</td>
+			<td>
+				<%= SelectBox(oConn, "sp_States_get", "PharmacyStateID", PharmacyStateID, "HealthElement", "State") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Zip&nbsp;Code:</td>
+			<td>
+				<%= formTextBox("PharmacyZipCode", "10", PharmacyZipCode, "HealthElement", "ZipCode", "Invalid Zip Code") %>
+			</td>
+		</tr>
+		<tr>
+			<td class="frm_label">Telephone&nbsp;Number:</td>
+			<td>
+				<%= formTextBox("PharmacyTelephoneNumber", "20", PharmacyTelephoneNumber, "HealthElement", "Telephone Number", "Invalid Telephone Number") %>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<%= Submit_Button("SubmitButton", SubmitButtonValue, "Button", "", SubmitButtonValue) %>&nbsp;&nbsp;
+				
+
+				<%= Button("Button", "Cancel", "Button", "", "Cancel", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "'") %>
+				
+			</td>
+		</tr>
+		</table>
+		&nbsp;<br />
+		&nbsp;<br />
+		<table cellpadding="3" class="GridViewAlteringRows">
+		<%
+			sql = "sp_Pharmacy_UserID_get " & Session("UserID")
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+		%>
+		<tr class="HealthTheme" valign="top">
+			<td>Pharmacy</td>
+			<td bgcolor="#ffffff">&nbsp;</td>
+		</tr>
+		<%
+				Do Until ors.EOF
+					Pharmacy_ID = ors("PharmacyID")
+					PharmacyName = ors("PharmacyName")
+					PharmacyAddress = ors("PharmacyAddress")
+					PharmacyCity = ors("PharmacyCity")
+					PharmacyState = ors("PharmacyState")
+					PharmacyZipCode = ors("PharmacyZipCode")
+					PharmacyTelephoneNumber = ors("PharmacyTelephoneNumber")
+					Address = PharmacyAddress & " " & PharmacyCity & ", " & PharmacyState & " " & PharmacyZipCode
+		%>
+		<tr class="GridViewRow" valign="top">
+			<td>
+				<div style="float:right">
+					<%= ShowMap(Address) %>
+				</div>
+				<b><%= PharmacyName %></b><br />
+				<%= HTMLFormat(PharmacyAddress) %><br />
+				<%= PharmacyCity %>,&nbsp;<%= PharmacyState %>&nbsp;<%= PharmacyZipCode %><br />
+				<%= PharmacyTelephoneNumber %>
+			</td>
+			<td>
+				<%= Button("Button", "Edit", "Button", "", "Edit", "location.href='" & SCRIPT_NAME & "?Template=" & Template & "&PharmacyID=" & Pharmacy_ID & "'") %>
+			</td>
+		</tr>
+		<%
+					ors.MoveNext
+				Loop
+				ors.Close
+			
+			Else
+		%>
+		<tr>
+			<td class="ErrorMessage">No records found.</td>
+		</tr>
+		<% 	
+			End If 
+			Set ors = Nothing
+		%>
+		</table>
+	</td>
+</tr>
+</table>
+
+<%= formHidden("PharmacyID", PharmacyID) %>
+
+<%= formHidden("Template", Template) %>
+</form>

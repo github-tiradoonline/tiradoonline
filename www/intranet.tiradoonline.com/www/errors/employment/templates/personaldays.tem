@@ -1,0 +1,192 @@
+<%
+
+	Action = Trim(Request("Action"))
+	CompanyID = Trim(Request("CompanyID"))
+	ErrorMessage = Trim(Request("ErrorMessage"))
+	PersonalDayID = Trim(Request("PersonalDayID"))
+	Personalday = Trim(Request("Personalday"))
+	PersonalMonth = Trim(Request("PersonalMonth"))
+	PersonalYear = Trim(Request("PersonalYear"))
+	PersonalDate = PersonalMonth & "/" & Personalday & "/" & PersonalYear
+	If IsDate(PersonalDate) Then
+		PersonalDate = CDate(PersonalDate)
+	Else
+		PersonalDate = Date
+	End If
+	SCRIPT_NAME = Request.ServerVariables("SCRIPT_NAME")
+	SubmitButton = Trim(Request("SubmitButton"))
+	
+	If SubmitButton = "Cancel" Then Response.Redirect Request.ServerVariables("SCRIPT_NAME") & "?Template=" & Template
+
+	If Request.ServerVariables("REQUEST_METHOD") = "POST" Then
+		For Each Item IN Request.Form
+			Response.Write Item & "&nbsp;=&nbsp;" & Request.Form(Item) & "<br />"
+		Next
+		If SubmitButton = "Add" Then
+			sql = "sp_PersonalDays_CompanyID_PersonalDate " & CompanyID & ", '" & PersonalDate & "'"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If ors.EOF Then
+				ors.Close
+				Set ors = Nothing
+				sql = "sp_PersonalDays_insert " & CompanyID & ", '" & PersonalDate & "'"
+				WriteDebugger sql, Debugging, 0
+				oConn.Execute sql
+				ErrorMessage = "Personal day added"
+				Response.Redirect Request.ServerVariables("SCRIPT_NAME") & "?Template=Personaldays&CompanyID=" & CompanyID & "&ErrorMessage=" & Server.URLEncode(ErrorMessage)
+			Else
+				ors.Close
+				Set ors = Nothing
+				ErrorMessage = "Personal day already exists"
+			End If
+		ElseIf SubmitButton = "Save" Then
+			sql = "sp_PersonalDays_CompanyID_PersonalDate " & CompanyID & ", '" & PersonalDate & "'"
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			If NOT ors.EOF Then
+				Set ors = Nothing
+				sql = "sp_PersonalDays_update " & PersonalDayID & ", " & CompanyID & ", '" & PersonalDate & "'"
+				WriteDebugger sql, Debugging, 0
+				oConn.Execute sql
+				ErrorMessage = "Personal day updated"
+				Response.Redirect Request.ServerVariables("SCRIPT_NAME") & "?Template=Personaldays&PersonalDayID=" & PersonalDayID & "&ErrorMessage=" & Server.URLEncode(ErrorMessage)
+			End If
+		End If
+	End If
+	
+	Function FormatPersonalDate(Personal_date)
+		PersonalMonth = Month(Personal_date)
+		Personalday = Day(Personal_date)
+		PersonalYear = Year(Personal_date)
+		
+		PersonalDateText = ""
+		PersonalDateText = PersonalDateText & "<SELECT name=""PersonalMonth"" class=""EmploymentElement"">"
+		For x = 1 to 12
+			If PersonalMonth = x Then
+				PersonalDateText = PersonalDateText & "<option value=""" & x & """ SELECTED>" & MonthName(x) & "</option>" & vbCrLF
+			Else
+				PersonalDateText = PersonalDateText & "<option value=""" & x & """>" & MonthName(x) & "</option>" & vbCrLF
+			End If
+		Next
+		PersonalDateText = PersonalDateText & "</SELECT>&nbsp;"
+		PersonalDateText = PersonalDateText & "<SELECT name=""Personalday"" class=""EmploymentElement"">"
+		For x = 1 to 31
+			If Personalday = x Then
+				PersonalDateText = PersonalDateText & "<option value=""" & x & """ SELECTED>" & x & "</option>" & vbCrLF
+			Else
+				PersonalDateText = PersonalDateText & "<option value=""" & x & """>" & x & "</option>" & vbCrLF
+			End If
+		Next
+		PersonalDateText = PersonalDateText & "</SELECT>&nbsp;"
+		PersonalDateText = PersonalDateText & "<SELECT name=""PersonalYear"" class=""EmploymentElement"">"
+		For x = (Year(Now) - 1 ) to Year(Now) + 3
+			If PersonalYear = x Then
+				PersonalDateText = PersonalDateText & "<option value=""" & x & """ SELECTED>" & x & "</option>" & vbCrLF
+			Else
+				PersonalDateText = PersonalDateText & "<option value=""" & x & """>" & x & "</option>" & vbCrLF
+			End If
+		Next
+		PersonalDateText = PersonalDateText & "</SELECT>"
+		FormatPersonalDate = PersonalDateText
+	End Function
+
+	If PersonalDayID <> "" Then
+		sql = "sp_PersonalDays_PersonalDayID_get " & PersonalDayID
+		WriteDebugger sql, Debugging, 0
+		Set rs_PersonalDay = oConn.Execute(sql)
+		CompanyID = rs_PersonalDay("CompanyID")
+		PersonalDate = rs_PersonalDay("PersonalDate")
+	Else
+		CompanyID = Request("CompanyID")
+		PersonalDate = Date
+	End IF
+%>
+
+<table cellspacing=0 cellpadding=0 border=0 width="100%">
+<tr>
+	<td align=center colspan=2><font face="Arial,Verdana" size=2 color="#ffffff"><b>Personal days</td>
+</tr>
+<tr>
+	<td bgcolor="#ffffff" valign=top>
+		<table>
+		<%
+			CompanyID_tmp = ""
+			sql = "sp_PersonalDays_UserID_get " & Session("UserID")
+			WriteDebugger sql, Debugging, 0
+			Set ors = oConn.Execute(sql)
+			Do Until ors.EOF
+		%>
+		<% If ors("CompanyID") <> CompanyID_tmp Then %>
+		<tr>
+			<td bgcolor="#0000aa"><font face="Verdana" size=2 color="#ffffff"><b>&nbsp;&nbsp;<%= Replace(ors("CompanyName"), " ", "&nbsp;") %>&nbsp;&nbsp;</b></td>
+		</tr>
+		<% CompanyID_tmp = ors("CompanyID") %>
+		<% End If %>
+		<% If CStr(ors("PersonalDayID")) = PersonalDayID Then %>
+		<tr>
+			<td align="right" bgcolor="#639AFF"><font face="Verdana" size=1>&nbsp;&nbsp;<a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&PersonalDayID=<%= ors("PersonalDayID") %>" style="text-decoration:none;"><font face="Verdana" size=1 color="#ffffff"><%= ors("PersonalDate") %></a>&nbsp;&nbsp;</td>
+		</tr>
+		<% Else %>
+		<tr>
+			<td align="right"><font face="Verdana" size=1>&nbsp;&nbsp;<a href="<%= SCRIPT_NAME %>?Template=<%= Template %>&PersonalDayID=<%= ors("PersonalDayID") %>"><%= ors("PersonalDate") %></a>&nbsp;&nbsp;</td>
+		</tr>
+		<% End If %>
+		<%
+				ors.MoveNext
+			Loop
+			ors.Close
+			Set ors = Nothing
+		%>
+		<tr>
+			<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+		</tr>
+		</table>
+	</td>
+	<td bgcolor="#ffffff" valign=top>
+		<table>
+		<tr>
+			<td colspan=2><font face="Verdana" size=2 color="#ff0000"><b>&nbsp;<%= ErrorMessage %>&nbsp;</b></font></td>
+		</tr>
+		<tr>
+			<td><font face="Verdana" size=2>Company</td>
+			<td>
+				<select name="CompanyID" class="EmploymentElement">
+				<%
+					sql = "sp_Companies_CompanyID_CompanyName " & Session("UserID")
+					Set ors = oConn.Execute(sql)
+					Do Until ors.EOF
+						If CStr(CompanyID) = CStr(ors("CompanyID")) Then
+							Response.Write "<option value=""" & ors("CompanyID") & """ SELECTED>" & ors("CompanyName") & "</option>"
+						Else
+							Response.Write "<option value=""" & ors("CompanyID") & """>" & ors("CompanyName") & "</option>"
+						End If
+						ors.MoveNext
+					Loop
+					ors.Close
+					Set ors = Nothing
+				%>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td><font face="Verdana" size=2>Personal&nbsp;day</td>
+			<td>
+				<%= FormatPersonalDate(PersonalDate) %>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td><input type="submit" name="SubmitButton" value="<% If PersonalDayID = "" Then %>Add<% Else %>Save<% End If %>" class="EmploymentElement"></td>
+		</tr>
+		</table>
+	</td>
+</tr>
+</table>
+
+<% If PersonalDayID <> "" Then %>
+
+<%= formHidden("PersonalDayID", PersonalDayID) %>
+
+<% End IF %>
+<%= formHidden("Action", Action) %>
+<%= formHidden("Template", Template) %>

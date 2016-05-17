@@ -1,0 +1,26 @@
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Notes' AND TYPE = 'U')
+DROP TABLE Notes;
+GO
+
+IF EXISTS (SELECT NAME FROM sysobjects WHERE NAME = 'Notes' AND TYPE = 'U')
+	DROP TABLE Notes;
+GO
+
+CREATE TABLE Notes
+(
+	NoteID		IDENTITY (1001,1) INT  NOT NULL,
+	UserID		 INT  NOT NULL,
+	NoteName		 VARCHAR(100)  NOT NULL,
+	NoteText		 VARCHAR(MAX)  NOT NULL,
+	create_dt		 DATETIME DEFAULT (getdate()) NOT NULL
+
+);
+GO
+
+
+
+
+GO
+
+GO
+
